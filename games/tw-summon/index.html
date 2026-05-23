@@ -106,7 +106,7 @@
 <body>
 <div id="stage"></div>
 <a id="back" href="../../">←</a>
-<div id="hint">按 任意键 召唤鸟鸟<br>Esc 返回</div>
+<div id="hint">戳一戳召唤鸟鸟</div>
 
 <script>
   const stage = document.getElementById('stage');
@@ -132,7 +132,8 @@
     el.style.height = height + 'px';
     el.style.left = (x - width / 2) + 'px';
     el.style.top = (y - height / 2) + 'px';
-    el.innerHTML = TW.svg(charKey, { expression: 'cheer' });
+    // noFilter: 同屏可能 4 个 summon char 都存在，filter 叠加会卡 iPad
+    el.innerHTML = TW.svg(charKey, { expression: 'cheer', noFilter: true });
     stage.appendChild(el);
     setTimeout(() => el.remove(), 2500);
 

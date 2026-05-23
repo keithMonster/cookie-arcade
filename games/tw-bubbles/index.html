@@ -150,7 +150,7 @@
   <div class="char-slot" data-char="bighoo"></div>
 </div>
 <a id="back" href="../../">←</a>
-<div id="hint">戳泡泡 · Esc 返回</div>
+<div id="hint">戳一戳泡泡</div>
 
 <script>
   const stage = document.getElementById('stage');
@@ -243,12 +243,17 @@
 
   function popAt(px, py) {
     const now = performance.now();
+    // 容差半径放大：泡泡 wobble 在 compositor 上跑 (Web Animations API)，
+    // JS 算 cx 拿不到实时 transform 偏移（±50px）。半径放大 1.4 倍
+    // 让 cookie 戳偏 30-40px 也能命中——避免"明明戳到了却没破"的挫败
+    const TOUCH_PAD = 1.4;
     for (let i = liveBubbles.length - 1; i >= 0; i--) {
       const b = liveBubbles[i];
       if (b.popping) continue;
       const { cx, cy, r } = bubbleCenter(b, now);
+      const tr = r * TOUCH_PAD;
       const dx = px - cx, dy = py - cy;
-      if (dx * dx + dy * dy < r * r) {
+      if (dx * dx + dy * dy < tr * tr) {
         popBubble(b, cx, cy);
       }
     }
