@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>四鸟合唱 · Cookie's Arcade</title>
+<script src="../_lib/twirlywoos.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: #fff5e0;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: -apple-system, "PingFang SC", sans-serif;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  @media (hover: none) {
+    #back { color: rgba(0, 0, 0, 0.4) !important; }
+  }
+
+  #grid {
+    position: fixed; inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+  .cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: background 100ms;
+  }
+  .cell[data-char="bighoo"]   { background: #cfe2fd; }
+  .cell[data-char="toodloo"]  { background: #fbd0c8; }
+  .cell[data-char="chickedy"] { background: #fde8b0; }
+  .cell[data-char="chick"]    { background: #fff3b0; }
+  .cell.flash[data-char="bighoo"]   { background: #74b3fe; }
+  .cell.flash[data-char="toodloo"]  { background: #f89186; }
+  .cell.flash[data-char="chickedy"] { background: #fbcd5c; }
+  .cell.flash[data-char="chick"]    { background: #fde047; }
+
+  .cell-char {
+    width: 60%;
+    height: 80%;
+    max-width: 360px;
+    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform;
+  }
+  .cell-char.bounce {
+    animation: bounce 460ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes bounce {
+    0%   { transform: scale(1) translateY(0); }
+    30%  { transform: scale(1.15) translateY(-30px); }
+    60%  { transform: scale(0.95) translateY(0); }
+    100% { transform: scale(1) translateY(0); }
+  }
+  .cell-char svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.1));
+  }
+
+  /* 名字标签（戳时出现） */
+  .name-tag {
+    position: absolute;
+    bottom: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: clamp(24px, 4vw, 52px);
+    font-weight: 800;
+    color: rgba(0, 0, 0, 0.4);
+    letter-spacing: 0.06em;
+    opacity: 0;
+    transition: opacity 200ms;
+    pointer-events: none;
+  }
+  .cell.flash .name-tag {
+    opacity: 1;
+    color: rgba(0, 0, 0, 0.75);
+  }
+
+  /* 音符飘起 */
+  .note {
+    position: absolute;
+    pointer-events: none;
+    font-size: 42px;
+    will-change: transform, opacity;
+    animation: note-fly 900ms ease-out forwards;
+  }
+  @keyframes note-fly {
+    0%   { transform: translateY(0) scale(0.5); opacity: 0; }
+    20%  { transform: translateY(-20px) scale(1.2); opacity: 1; }
+    100% { transform: translateY(-120px) scale(1) rotate(20deg); opacity: 0; }
+  }
+
+  #back {
+    position: fixed; top: 0; right: 0;
+    width: 70px; height: 70px;
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    color: rgba(0, 0, 0, 0.15);
+    text-decoration: none;
+  }
+  #back:hover { color: rgba(0, 0, 0, 0.7); background: rgba(0, 0, 0, 0.04); }
+
+  #hint {
+    position: fixed; bottom: 20px; left: 0; right: 0;
+    text-align: center;
+    color: rgba(0, 0, 0, 0.35);
+    font-size: 18px;
+    letter-spacing: 0.1em;
+    pointer-events: none;
+    z-index: 100;
+    transition: opacity 600ms;
+  }
+  #hint.gone { opacity: 0; }
+</style>
+</head>
+<body>
+<div id="grid">
+  <div class="cell" data-char="bighoo">
+    <div class="cell-char" data-char="bighoo"></div>
+    <div class="name-tag">大蓝</div>
+  </div>
+  <div class="cell" data-char="toodloo">
+    <div class="cell-char" data-char="toodloo"></div>
+    <div class="name-tag">红红</div>
+  </div>
+  <div class="cell" data-char="chickedy">
+    <div class="cell-char" data-char="chickedy"></div>
+    <div class="name-tag">小黄</div>
+  </div>
+  <div class="cell" data-char="chick">
+    <div class="cell-char" data-char="chick"></div>
+    <div class="name-tag">小小</div>
+  </div>
+</div>
+<a id="back" href="../../">←</a>
+<div id="hint">戳格子 · 鸟鸟唱歌 · Esc 返回</div>
+
+<script>
+  const grid = document.getElementById('grid');
+  const hint = document.getElementById('hint');
+  let started = false;
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  // 渲染 4 角色
+  document.querySelectorAll('.cell-char').forEach(node => {
+    const ck = node.dataset.char;
+    node.innerHTML = TW.svg(ck, { expression: 'idle' });
+  });
+
+  function triggerCell(cell, x, y) {
+    if (!started) start();
+    const ck = cell.dataset.char;
+    const charNode = cell.querySelector('.cell-char');
+
+    // 视觉：闪 + bounce + 表情切 surprised
+    cell.classList.add('flash');
+    charNode.classList.remove('bounce');
+    void charNode.offsetWidth;
+    charNode.classList.add('bounce');
+    charNode.innerHTML = TW.svg(ck, { expression: 'cheer' });
+
+    setTimeout(() => {
+      cell.classList.remove('flash');
+      charNode.innerHTML = TW.svg(ck, { expression: 'idle' });
+    }, 460);
+
+    // 音符飘起
+    if (x !== undefined && y !== undefined) {
+      const noteEl = document.createElement('div');
+      noteEl.className = 'note';
+      noteEl.textContent = pick(['♪', '♫', '♬', '♩']);
+      noteEl.style.left = (x - 20) + 'px';
+      noteEl.style.top = (y - 20) + 'px';
+      noteEl.style.color = TW.CHARS[ck].body;
+      document.body.appendChild(noteEl);
+      setTimeout(() => noteEl.remove(), 950);
+    }
+
+    TW.playCall(ck);
+  }
+
+  function start() {
+    if (started) return;
+    started = true;
+    hint.classList.add('gone');
+    setTimeout(() => hint.remove(), 800);
+    TW.ensureCtx();
+  }
+
+  function cellAt(x, y) {
+    const el = document.elementFromPoint(x, y);
+    return el ? el.closest('.cell') : null;
+  }
+
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#back')) return;
+    const cell = e.target.closest('.cell');
+    if (cell) triggerCell(cell, e.clientX, e.clientY);
+  });
+  document.addEventListener('touchstart', (e) => {
+    if (e.target.closest('#back')) return;
+    if (!started) start();
+    for (const t of e.changedTouches) {
+      const cell = cellAt(t.clientX, t.clientY);
+      if (cell) triggerCell(cell, t.clientX, t.clientY);
+    }
+    e.preventDefault();
+  }, { passive: false });
+
+  // 键盘：1/2/3/4 = 4 个 cell；其它键随机
+  const CELL_BY_INDEX = ['bighoo', 'toodloo', 'chickedy', 'chick'];
+  document.addEventListener('keydown', (e) => {
+    if (e.metaKey || e.ctrlKey) return;
+    if (e.key === 'Escape') {
+      if (!document.fullscreenElement) location.href = '../../';
+      return;
+    }
+    e.preventDefault();
+    if (e.key === 'f' || e.key === 'F') {
+      const el = document.documentElement;
+      if (!document.fullscreenElement && el.requestFullscreen) {
+        el.requestFullscreen().catch(() => {});
+      }
+      return;
+    }
+    if (!started) start();
+    let ck;
+    const idx = parseInt(e.key, 10);
+    if (idx >= 1 && idx <= 4) ck = CELL_BY_INDEX[idx - 1];
+    else ck = pick(CELL_BY_INDEX);
+    const cell = document.querySelector(`.cell[data-char="${ck}"]`);
+    if (cell) {
+      const rect = cell.getBoundingClientRect();
+      triggerCell(cell, rect.left + rect.width / 2, rect.top + rect.height / 2);
+    }
+  });
+</script>
+</body>
+</html>

@@ -24,32 +24,30 @@
     -webkit-touch-callout: none;
     -webkit-tap-highlight-color: transparent;
   }
-  /* 顶部标题 */
   .title {
     position: fixed;
-    top: 28px;
+    top: 18px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 18px;
+    font-size: 16px;
     letter-spacing: 0.4em;
     color: rgba(255, 255, 255, 0.4);
     text-transform: uppercase;
     font-weight: 300;
     z-index: 10;
   }
-  /* 主网格 */
   .grid {
     position: fixed;
     inset: 0;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    gap: 24px;
-    padding: 80px 32px 32px;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 14px;
+    padding: 48px 16px 32px;
   }
   .tile {
     position: relative;
-    border-radius: 28px;
+    border-radius: 22px;
     overflow: hidden;
     cursor: pointer;
     transition: transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -61,35 +59,32 @@
     background: #11173a;
   }
   .tile:hover {
-    transform: scale(1.02);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5),
+    transform: scale(1.03);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5),
                 0 0 0 2px rgba(255, 255, 255, 0.1);
   }
-  .tile:active { transform: scale(0.98); }
+  .tile:active { transform: scale(0.97); }
 
-  /* preview 区 */
   .preview {
     flex: 1;
     position: relative;
     overflow: hidden;
   }
-
-  /* 卡片底部标签 */
   .label {
-    padding: 16px 24px 20px;
+    padding: 10px 16px 12px;
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    background: rgba(0, 0, 0, 0.25);
+    background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(8px);
   }
   .label .name {
-    font-size: 22px;
+    font-size: 17px;
     font-weight: 500;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
   }
   .label .num {
-    font-size: 14px;
+    font-size: 12px;
     color: rgba(255, 255, 255, 0.4);
     letter-spacing: 0.2em;
     font-variant-numeric: tabular-nums;
@@ -144,10 +139,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12%;
+    gap: 8%;
   }
   .preview.drums .pad {
-    width: 16%;
+    width: 14%;
     aspect-ratio: 1;
     border-radius: 50%;
     animation: pad-beat 1.6s ease-in-out infinite;
@@ -158,7 +153,7 @@
   .preview.drums .pad:nth-child(4) { background: #ba68c8; animation-delay: 1.2s; }
   @keyframes pad-beat {
     0%, 100% { transform: scale(0.7); opacity: 0.3; box-shadow: 0 0 0 0 currentColor; }
-    20%      { transform: scale(1.2); opacity: 1;   box-shadow: 0 0 30px 8px currentColor; }
+    20%      { transform: scale(1.2); opacity: 1;   box-shadow: 0 0 20px 6px currentColor; }
   }
 
   /* ====== 卡片 4: Cascade preview ====== */
@@ -176,13 +171,148 @@
     100% { background: #d18ab2; }
   }
 
-  /* 底部提示 */
+  /* ====== Twirlywoos 主题预览（共享）====== */
+  .preview.tw {
+    background: linear-gradient(180deg, #fff5e8 0%, #ffe9c8 100%);
+    overflow: hidden;
+  }
+  .tw-bird {
+    position: absolute;
+    pointer-events: none;
+    will-change: transform;
+  }
+  .tw-bird svg { width: 100%; height: 100%; display: block; }
+
+  /* 5. 召唤鸟鸟 */
+  .preview.tw-summon .tw-bird {
+    width: 38%; aspect-ratio: 200/270;
+    animation: summon-pop 3s ease-in-out infinite;
+  }
+  .preview.tw-summon .tw-bird:nth-child(1) { left: 15%; top: 20%; animation-delay: 0s; }
+  .preview.tw-summon .tw-bird:nth-child(2) { left: 50%; top: 30%; animation-delay: 1.5s; }
+  @keyframes summon-pop {
+    0%, 60%, 100% { transform: scale(0); opacity: 0; }
+    10%           { transform: scale(1.15); opacity: 1; }
+    50%           { transform: scale(1);    opacity: 1; }
+  }
+
+  /* 6. 戳泡泡 (鸟) */
+  .preview.tw-bubbles {
+    background: linear-gradient(180deg, #fff8ec 0%, #ffe9c8 60%, #ffd9a8 100%);
+  }
+  .preview.tw-bubbles .tw-bird {
+    width: 28%; aspect-ratio: 200/270;
+    bottom: 0;
+  }
+  .preview.tw-bubbles .tw-bird:nth-child(1) { left: 10%; width: 14%; }
+  .preview.tw-bubbles .tw-bird:nth-child(2) { left: 26%; width: 18%; }
+  .preview.tw-bubbles .tw-bird:nth-child(3) { left: 48%; width: 22%; }
+  .preview.tw-bubbles .tw-bird:nth-child(4) { left: 72%; width: 26%; }
+  .preview.tw-bubbles .pv-bubble {
+    position: absolute;
+    border-radius: 50%;
+    animation: pv-bub-fall 4s linear infinite;
+    box-shadow:
+      inset -3px -4px 8px rgba(0, 0, 0, 0.1),
+      inset 3px 4px 8px rgba(255, 255, 255, 0.55);
+  }
+  .preview.tw-bubbles .pv-bubble:nth-child(5) { left: 30%; width: 18%; aspect-ratio: 1; animation-delay: 0s;   background: radial-gradient(circle at 30% 30%, #8be0e855, #8be0e81a); }
+  .preview.tw-bubbles .pv-bubble:nth-child(6) { left: 60%; width: 14%; aspect-ratio: 1; animation-delay: 2s; background: radial-gradient(circle at 30% 30%, #ffafd155, #ffafd11a); }
+  @keyframes pv-bub-fall {
+    0%   { top: -25%; opacity: 0; }
+    20%  { opacity: 1; }
+    80%  { opacity: 1; }
+    100% { top: 75%; opacity: 0; }
+  }
+
+  /* 7. 四鸟合唱 */
+  .preview.tw-chorus {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 4px;
+    background: #fff5e0;
+  }
+  .preview.tw-chorus .chorus-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .preview.tw-chorus .chorus-cell:nth-child(1) { background: #cfe2fd; }
+  .preview.tw-chorus .chorus-cell:nth-child(2) { background: #fbd0c8; }
+  .preview.tw-chorus .chorus-cell:nth-child(3) { background: #fde8b0; }
+  .preview.tw-chorus .chorus-cell:nth-child(4) { background: #fff3b0; }
+  .preview.tw-chorus .chorus-cell .tw-bird {
+    width: 70%; aspect-ratio: 200/270;
+    position: relative;
+    animation: chorus-bounce 2.4s ease-in-out infinite;
+  }
+  .preview.tw-chorus .chorus-cell:nth-child(1) .tw-bird { animation-delay: 0s; }
+  .preview.tw-chorus .chorus-cell:nth-child(2) .tw-bird { animation-delay: 0.6s; }
+  .preview.tw-chorus .chorus-cell:nth-child(3) .tw-bird { animation-delay: 1.2s; }
+  .preview.tw-chorus .chorus-cell:nth-child(4) .tw-bird { animation-delay: 1.8s; }
+  @keyframes chorus-bounce {
+    0%, 70%, 100% { transform: translateY(0) scale(1); }
+    15%           { transform: translateY(-12%) scale(1.06); }
+    30%           { transform: translateY(0)    scale(1); }
+  }
+
+  /* 8. 彩色心情 */
+  .preview.tw-mood {
+    animation: mood-cycle 8s linear infinite;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .preview.tw-mood .tw-bird {
+    position: relative;
+    width: 56%; aspect-ratio: 200/270;
+    animation: mood-pulse 2s ease-in-out infinite;
+  }
+  @keyframes mood-cycle {
+    0%   { background: #bedffd; }
+    25%  { background: #fdc4b8; }
+    50%  { background: #fde29a; }
+    75%  { background: #fff39c; }
+    100% { background: #bedffd; }
+  }
+  @keyframes mood-pulse {
+    0%, 100% { transform: scale(0.96); }
+    50%      { transform: scale(1.06); }
+  }
+
+  /* 9. More More More */
+  .preview.tw-more {
+    background: linear-gradient(180deg, #fff5e8 0%, #ffe8c8 100%);
+  }
+  .preview.tw-more .tw-bird {
+    bottom: 0;
+    width: 22%; aspect-ratio: 200/270;
+  }
+  .preview.tw-more .tw-bird:nth-child(1) { left: 6%;  width: 13%; }
+  .preview.tw-more .tw-bird:nth-child(2) { left: 20%; width: 17%; }
+  .preview.tw-more .tw-bird:nth-child(3) { left: 36%; width: 21%; }
+  .preview.tw-more .tw-bird:nth-child(4) { left: 56%; width: 25%; }
+  .preview.tw-more .pv-ball {
+    position: absolute;
+    border-radius: 50%;
+    box-shadow: inset -3px -4px 8px rgba(0,0,0,0.2), inset 3px 4px 8px rgba(255,255,255,0.3);
+    animation: pv-ball-drop 3s ease-in infinite;
+  }
+  .preview.tw-more .pv-ball:nth-child(5) { left: 30%; width: 18%; aspect-ratio: 1; background: radial-gradient(circle at 30% 30%, #ef4444, #b91c1c); animation-delay: 0s; }
+  .preview.tw-more .pv-ball:nth-child(6) { left: 55%; width: 16%; aspect-ratio: 1; background: radial-gradient(circle at 30% 30%, #3b82f6, #1e40af); animation-delay: 1s; }
+  .preview.tw-more .pv-ball:nth-child(7) { left: 72%; width: 14%; aspect-ratio: 1; background: radial-gradient(circle at 30% 30%, #fbbf24, #b45309); animation-delay: 2s; }
+  @keyframes pv-ball-drop {
+    0%   { top: -25%; opacity: 0; }
+    15%  { opacity: 1; }
+    100% { top: 65%; opacity: 1; }
+  }
+
   .footer {
     position: fixed;
-    bottom: 16px;
+    bottom: 8px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 13px;
+    font-size: 11px;
     letter-spacing: 0.3em;
     color: rgba(255, 255, 255, 0.25);
   }
@@ -209,58 +339,102 @@
         <path d="M50,85 C20,65 5,45 5,28 C5,15 15,5 28,5 C38,5 45,12 50,22 C55,12 62,5 72,5 C85,5 95,15 95,28 C95,45 80,65 50,85 Z" fill="#ba68c8"/>
       </svg>
     </div>
-    <div class="label">
-      <span class="name">键盘小子</span>
-      <span class="num">01</span>
-    </div>
+    <div class="label"><span class="name">键盘小子</span><span class="num">01</span></div>
   </a>
 
   <!-- 2. Bubbles -->
   <a class="tile" href="games/bubbles/" data-num="2">
     <div class="preview bubbles">
-      <div class="bubble"></div>
-      <div class="bubble"></div>
-      <div class="bubble"></div>
-      <div class="bubble"></div>
+      <div class="bubble"></div><div class="bubble"></div>
+      <div class="bubble"></div><div class="bubble"></div>
     </div>
-    <div class="label">
-      <span class="name">戳泡泡</span>
-      <span class="num">02</span>
-    </div>
+    <div class="label"><span class="name">戳泡泡</span><span class="num">02</span></div>
   </a>
 
   <!-- 3. Drums -->
   <a class="tile" href="games/drums/" data-num="3">
     <div class="preview drums">
-      <div class="pad"></div>
-      <div class="pad"></div>
-      <div class="pad"></div>
-      <div class="pad"></div>
+      <div class="pad"></div><div class="pad"></div>
+      <div class="pad"></div><div class="pad"></div>
     </div>
-    <div class="label">
-      <span class="name">小鼓机</span>
-      <span class="num">03</span>
-    </div>
+    <div class="label"><span class="name">小鼓机</span><span class="num">03</span></div>
   </a>
 
   <!-- 4. Cascade -->
   <a class="tile" href="games/cascade/" data-num="4">
     <div class="preview cascade"></div>
-    <div class="label">
-      <span class="name">变色屏</span>
-      <span class="num">04</span>
+    <div class="label"><span class="name">变色屏</span><span class="num">04</span></div>
+  </a>
+
+  <!-- 5. tw-summon -->
+  <a class="tile" href="games/tw-summon/" data-num="5">
+    <div class="preview tw tw-summon">
+      <div class="tw-bird" data-char="bighoo"></div>
+      <div class="tw-bird" data-char="toodloo"></div>
     </div>
+    <div class="label"><span class="name">召唤鸟鸟</span><span class="num">05</span></div>
+  </a>
+
+  <!-- 6. tw-bubbles -->
+  <a class="tile" href="games/tw-bubbles/" data-num="6">
+    <div class="preview tw tw-bubbles">
+      <div class="tw-bird" data-char="chick"></div>
+      <div class="tw-bird" data-char="chickedy"></div>
+      <div class="tw-bird" data-char="toodloo"></div>
+      <div class="tw-bird" data-char="bighoo"></div>
+      <div class="pv-bubble"></div>
+      <div class="pv-bubble"></div>
+    </div>
+    <div class="label"><span class="name">戳泡泡 (鸟)</span><span class="num">06</span></div>
+  </a>
+
+  <!-- 7. tw-chorus -->
+  <a class="tile" href="games/tw-chorus/" data-num="7">
+    <div class="preview tw tw-chorus">
+      <div class="chorus-cell"><div class="tw-bird" data-char="bighoo"></div></div>
+      <div class="chorus-cell"><div class="tw-bird" data-char="toodloo"></div></div>
+      <div class="chorus-cell"><div class="tw-bird" data-char="chickedy"></div></div>
+      <div class="chorus-cell"><div class="tw-bird" data-char="chick"></div></div>
+    </div>
+    <div class="label"><span class="name">四鸟合唱</span><span class="num">07</span></div>
+  </a>
+
+  <!-- 8. tw-mood -->
+  <a class="tile" href="games/tw-mood/" data-num="8">
+    <div class="preview tw tw-mood">
+      <div class="tw-bird" data-char="bighoo"></div>
+    </div>
+    <div class="label"><span class="name">彩色心情</span><span class="num">08</span></div>
+  </a>
+
+  <!-- 9. tw-more -->
+  <a class="tile" href="games/tw-more/" data-num="9">
+    <div class="preview tw tw-more">
+      <div class="tw-bird" data-char="chick"></div>
+      <div class="tw-bird" data-char="chickedy"></div>
+      <div class="tw-bird" data-char="toodloo"></div>
+      <div class="tw-bird" data-char="bighoo"></div>
+      <div class="pv-ball"></div>
+      <div class="pv-ball"></div>
+      <div class="pv-ball"></div>
+    </div>
+    <div class="label"><span class="name">More More More</span><span class="num">09</span></div>
   </a>
 </div>
 
-<div class="footer">按 1-4 选游戏 · 任意键随机进入</div>
+<div class="footer">按 1-9 选游戏 · 任意键随机进入</div>
 
+<script src="games/_lib/twirlywoos.js"></script>
 <script>
+  // 把 preview 里所有 .tw-bird 用对应角色 SVG 填充
+  document.querySelectorAll('.tw-bird').forEach(node => {
+    const ck = node.dataset.char || 'bighoo';
+    node.innerHTML = TW.svg(ck, { expression: 'idle' });
+  });
+
   const tiles = document.querySelectorAll('.tile');
   document.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey) return;
-
-    // 数字键 1-4：精确跳转
     const idx = parseInt(e.key, 10);
     if (idx >= 1 && idx <= tiles.length) {
       const tile = tiles[idx - 1];
@@ -270,9 +444,6 @@
         return;
       }
     }
-
-    // 任意可打印字符 / Enter / Space：随机进入一款
-    // Cookie 还不会用鼠标，拍键就能玩
     if (e.key.length === 1 || e.key === 'Enter') {
       e.preventDefault();
       const random = tiles[Math.floor(Math.random() * tiles.length)];
