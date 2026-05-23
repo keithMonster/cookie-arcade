@@ -31,7 +31,7 @@
   const CHARS = {
     bighoo: {
       key: 'bighoo',
-      name: '大蓝',
+      name: '蓝呼呼',                 // 官方中文译名
       body: '#3a6dc7',          // 钴蓝偏柔
       belly: '#f0e0b8',         // 米奶色
       sizeRatio: 1.0,
@@ -40,7 +40,7 @@
     },
     toodloo: {
       key: 'toodloo',
-      name: '红红',
+      name: '红涂涂',                 // 官方中文译名
       body: '#d8442e',          // 偏橙的红
       belly: '#f0e0b8',
       sizeRatio: 0.78,
@@ -49,7 +49,7 @@
     },
     chickedy: {
       key: 'chickedy',
-      name: '小黄',
+      name: '唧唧',                   // 官方中文译名
       body: '#f0b020',          // 暖金黄
       belly: '#fff2c8',
       sizeRatio: 0.6,
@@ -58,7 +58,7 @@
     },
     chick: {
       key: 'chick',
-      name: '小小',
+      name: '啾啾',                   // 官方中文译名
       body: '#ffd84a',          // 奶油浅黄
       belly: '#fff6dc',
       sizeRatio: 0.48,
