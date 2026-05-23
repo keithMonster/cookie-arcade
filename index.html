@@ -427,9 +427,10 @@
 <script src="games/_lib/twirlywoos.js"></script>
 <script>
   // 把 preview 里所有 .tw-bird 用对应角色 SVG 填充
+  // noFilter: 首屏 11 个 tw-bird 小尺寸缩略，feTurbulence 滤镜跑这么多会卡首页
   document.querySelectorAll('.tw-bird').forEach(node => {
     const ck = node.dataset.char || 'bighoo';
-    node.innerHTML = TW.svg(ck, { expression: 'idle' });
+    node.innerHTML = TW.svg(ck, { expression: 'idle', noFilter: true });
   });
 
   const tiles = document.querySelectorAll('.tile');

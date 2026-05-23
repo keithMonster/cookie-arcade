@@ -116,6 +116,10 @@
   function rand(a, b) { return a + Math.random() * (b - a); }
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
+  // 唯一化状态：同屏 tag 唯一 / 同屏角色最多 4 个
+  let activeTag = null;
+  const liveChars = [];
+
   function summonAt(x, y, charKey) {
     const c = TW.CHARS[charKey];
     // 角色大小按 sizeRatio 缩放，base 200px
@@ -144,7 +148,8 @@
     stage.appendChild(ring);
     setTimeout(() => ring.remove(), 750);
 
-    // 名字
+    // 名字（唯一化：连续召唤时旧 tag 立即清，避免叠一团）
+    if (activeTag) activeTag.remove();
     const tag = document.createElement('div');
     tag.className = 'name-tag';
     tag.textContent = c.name + '！';
@@ -153,7 +158,23 @@
     tag.style.top = (y - height / 2 - 60) + 'px';
     tag.style.transform = 'translateX(-50%)';
     stage.appendChild(tag);
-    setTimeout(() => tag.remove(), 1850);
+    activeTag = tag;
+    setTimeout(() => {
+      if (activeTag === tag) activeTag = null;
+      tag.remove();
+    }, 1850);
+
+    // 同屏角色超 4 个时立即清最老
+    while (liveChars.length >= 4) {
+      const old = liveChars.shift();
+      old.remove();
+    }
+    liveChars.push(el);
+    // 角色 2.5s 后已 remove，从 liveChars 也清
+    setTimeout(() => {
+      const i = liveChars.indexOf(el);
+      if (i >= 0) liveChars.splice(i, 1);
+    }, 2500);
 
     TW.playCall(charKey);
   }

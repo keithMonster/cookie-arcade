@@ -166,27 +166,22 @@
   function rand(a, b) { return a + Math.random() * (b - a); }
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-  // 渲染角色
-  function renderCast(expression) {
-    cast.querySelectorAll('.char-slot').forEach(slot => {
-      const ck = slot.dataset.char;
-      const sr = TW.CHARS[ck].sizeRatio;
-      slot.style.height = (sr * 100) + '%';
-      slot.innerHTML = TW.svg(ck, { expression });
-    });
-  }
-  renderCast('idle');
+  // 一次性渲染 cast（不重渲染——表情切换由 CSS 仰头动画承担，性能优先）
+  // noFilter: 4 角色排底部小尺寸 + 持续 spawn 泡泡占 GPU，省掉 feTurbulence 防卡
+  cast.querySelectorAll('.char-slot').forEach(slot => {
+    const ck = slot.dataset.char;
+    const sr = TW.CHARS[ck].sizeRatio;
+    slot.style.height = (sr * 100) + '%';
+    slot.innerHTML = TW.svg(ck, { expression: 'idle', noFilter: true });
+  });
 
   function castLookUp() {
-    // 整排仰头
+    // 整排仰头（CSS 动画，零 DOM 重渲染）
     cast.querySelectorAll('.char-slot').forEach(s => {
       s.classList.remove('lookup');
       void s.offsetWidth;
       s.classList.add('lookup');
     });
-    // 临时换 surprised 表情
-    renderCast('surprised');
-    setTimeout(() => renderCast('idle'), 600);
   }
 
   // ===== 泡泡：从顶部生成往下飘（与画面方向一致） =====

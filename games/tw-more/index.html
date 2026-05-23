@@ -193,23 +193,34 @@
   function renderCast(expression) {
     cast.querySelectorAll('.char-slot').forEach(slot => {
       const ck = slot.dataset.char;
-      // 用 sizeRatio 控制高度
       const sr = TW.CHARS[ck].sizeRatio;
       slot.style.height = (sr * 100) + '%';
-      slot.innerHTML = TW.svg(ck, { expression });
+      // noFilter: 整页持续 spawn 球，省 GPU
+      slot.innerHTML = TW.svg(ck, { expression, noFilter: true });
     });
   }
   renderCast('idle');
 
-  // 当前表情根据球数自动决定
+  // 球数 → 表情：0-4 idle / 5-9 surprised / 10+ cheer
   function expressionFor(count) {
     if (count >= 10) return 'cheer';
     if (count >= 5) return 'surprised';
     return 'idle';
   }
+  // 只在跨阈值时才重渲染（不是每球都重渲染——之前 15 球 = 15 次全量重渲染）
+  let lastExpression = 'idle';
   function updateCastExpression() {
     const exp = expressionFor(balls.length);
-    renderCast(exp);
+    if (exp !== lastExpression) {
+      renderCast(exp);
+      lastExpression = exp;
+    }
+  }
+  function resetCastExpression() {
+    if (lastExpression !== 'idle') {
+      renderCast('idle');
+      lastExpression = 'idle';
+    }
   }
 
   // ===== 抖动反馈 =====
@@ -321,7 +332,7 @@
         stage.innerHTML = '';
         balls = [];
         resetting = false;
-        renderCast('idle');
+        resetCastExpression();
         hideCaption();
       }, totalDelay);
     }, 1400);

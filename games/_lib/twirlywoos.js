@@ -83,6 +83,9 @@
     const c = CHARS[charKey];
     if (!c) return '';
     const expr = opts.expression || 'idle';
+    // noFilter: true → 跳过 feTurbulence + feDisplacementMap，节省 GPU
+    // 适用：首页 preview / 数量多的角色排 / 移动设备性能不足时
+    const noFilter = !!opts.noFilter;
     const bodyStroke = darken(c.body, 0.22);
     const bellyStroke = darken(c.belly, 0.12);
 
@@ -157,6 +160,14 @@
     const bodyDeep = darken(c.body, 0.15);
     const bellyLight = lighten(c.belly, 0.06);
 
+    // 仅在需要时插入 filter 引用（noFilter=true 时省去 GPU 开销）
+    const filterAttr = noFilter ? '' : `filter="url(#${fluffId})"`;
+    const filterDef = noFilter ? '' : `
+        <filter id="${fluffId}" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="${Math.floor(Math.random() * 100)}" result="noise"/>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.2"/>
+        </filter>`;
+
     return `<svg viewBox="0 0 200 270" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
       <defs>
         <!-- 身体立体渐变：左上偏亮、右下偏暗 -->
@@ -170,22 +181,18 @@
           <stop offset="0%" stop-color="${bellyLight}"/>
           <stop offset="100%" stop-color="${c.belly}"/>
         </radialGradient>
-        <!-- 毛绒边缘 filter：turbulence + displacement 模拟毛茸边缘 -->
-        <filter id="${fluffId}" x="-5%" y="-5%" width="110%" height="110%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="${Math.floor(Math.random() * 100)}" result="noise"/>
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.2"/>
-        </filter>
+        ${filterDef}
       </defs>
       <!-- 头顶 3 根橙刺羽毛：独立分散（不连成皇冠），左右斜短、中央直立稍粗深色 -->
-      <polygon points="78,32 64,0 90,30" fill="${FEATHER_LIGHT}" stroke="${FEATHER_DARK}" stroke-width="1.2" filter="url(#${fluffId})"/>
-      <polygon points="95,28 100,-8 108,30" fill="${FEATHER_DARK}" stroke="${darken(FEATHER_DARK, 0.25)}" stroke-width="1.2" filter="url(#${fluffId})"/>
-      <polygon points="110,30 136,0 122,32" fill="${FEATHER_LIGHT}" stroke="${FEATHER_DARK}" stroke-width="1.2" filter="url(#${fluffId})"/>
+      <polygon points="78,32 64,0 90,30" fill="${FEATHER_LIGHT}" stroke="${FEATHER_DARK}" stroke-width="1.2" ${filterAttr}/>
+      <polygon points="95,28 100,-8 108,30" fill="${FEATHER_DARK}" stroke="${darken(FEATHER_DARK, 0.25)}" stroke-width="1.2" ${filterAttr}/>
+      <polygon points="110,30 136,0 122,32" fill="${FEATHER_LIGHT}" stroke="${FEATHER_DARK}" stroke-width="1.2" ${filterAttr}/>
       <!-- 身体 squat 不倒翁形 + radial gradient 立体 + fluff filter 毛绒边缘 -->
       <path d="M 42 80
                Q 100 18 158 80
                C 180 130, 198 220, 100 262
                C 2 220, 20 130, 42 80 Z"
-            fill="url(#${gradId})" stroke="${bodyStroke}" stroke-width="2" filter="url(#${fluffId})"/>
+            fill="url(#${gradId})" stroke="${bodyStroke}" stroke-width="2" ${filterAttr}/>
       <!-- 毛绒纹理（细密斑点 + 短弧"毛茬"，加强毡感） -->
       <g opacity="0.18" fill="${OUTLINE}">
         <circle cx="50" cy="135" r="2.5"/>
@@ -202,7 +209,7 @@
       <!-- 身体亮面高光（左上斜向白色 patch） -->
       <ellipse cx="62" cy="105" rx="28" ry="14" fill="white" opacity="0.13" transform="rotate(-30 62 105)"/>
       <!-- 肚兜：椭圆奶白补丁（位置略下） -->
-      <ellipse cx="100" cy="180" rx="48" ry="55" fill="url(#${gradId}-b)" stroke="${bellyStroke}" stroke-width="1.2" filter="url(#${fluffId})"/>
+      <ellipse cx="100" cy="180" rx="48" ry="55" fill="url(#${gradId}-b)" stroke="${bellyStroke}" stroke-width="1.2" ${filterAttr}/>
       <!-- 手臂 -->
       ${armL}
       ${armR}
@@ -232,8 +239,8 @@
     return _ctx;
   }
 
-  // 单音 tone：频率 f0→f1 滑音
-  function _tone(wave, f0, f1, dur, vol, attack, ctx, startAt) {
+  // 单音 tone：频率 f0→f1 滑音 + 可选 vibrato（颤音）让叫声更"生物"感
+  function _tone(wave, f0, f1, dur, vol, attack, ctx, startAt, vibrato) {
     const t = startAt || ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -244,6 +251,17 @@
     gain.gain.linearRampToValueAtTime(vol, t + (attack || 0.015));
     gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
     osc.connect(gain).connect(ctx.destination);
+    // vibrato 通过低频 LFO 调制 osc.frequency
+    if (vibrato) {
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      lfo.type = 'sine';
+      lfo.frequency.value = vibrato.rate || 8;     // Hz
+      lfoGain.gain.value = vibrato.depth || f0 * 0.04; // 频率偏移幅度
+      lfo.connect(lfoGain).connect(osc.frequency);
+      lfo.start(t);
+      lfo.stop(t + dur + 0.02);
+    }
     osc.start(t);
     osc.stop(t + dur + 0.02);
   }
@@ -255,18 +273,23 @@
     const now = ctx.currentTime;
     const cfg = c.call;
     if (cfg.kind === 'tone') {
-      _tone(cfg.wave, cfg.f0, cfg.f1, cfg.dur, cfg.vol, 0.04, ctx, now);
+      // BigHoo Hooo——加慢颤音（5Hz 小幅）有低沉浑厚感
+      _tone(cfg.wave, cfg.f0, cfg.f1, cfg.dur, cfg.vol, 0.04, ctx, now,
+            { rate: 5, depth: cfg.f0 * 0.05 });
     } else if (cfg.kind === 'twoNote') {
-      // Too-dloo: 两短音
+      // Too-dloo: 两短音 + 第二音稍颤
       _tone(cfg.wave, cfg.f0, cfg.f0 * 0.95, 0.18, cfg.vol, 0.01, ctx, now);
-      _tone(cfg.wave, cfg.f1, cfg.f1 * 0.9, 0.24, cfg.vol, 0.01, ctx, now + 0.2);
+      _tone(cfg.wave, cfg.f1, cfg.f1 * 0.9, 0.26, cfg.vol, 0.01, ctx, now + 0.2,
+            { rate: 9, depth: cfg.f1 * 0.04 });
     } else if (cfg.kind === 'tripletChirp') {
-      // Chic-ke-dy 三音
-      _tone(cfg.wave, cfg.f0, cfg.f0, 0.07, cfg.vol, 0.005, ctx, now);
-      _tone(cfg.wave, cfg.f0 * 0.85, cfg.f0 * 0.85, 0.07, cfg.vol, 0.005, ctx, now + 0.1);
-      _tone(cfg.wave, cfg.f0 * 1.1, cfg.f0 * 0.95, 0.12, cfg.vol, 0.005, ctx, now + 0.2);
+      // Chic-ke-dy 三音——快速三连音模拟雀跃感
+      _tone(cfg.wave, cfg.f0, cfg.f0 * 1.05, 0.08, cfg.vol, 0.005, ctx, now);
+      _tone(cfg.wave, cfg.f0 * 0.85, cfg.f0 * 0.9, 0.08, cfg.vol, 0.005, ctx, now + 0.11);
+      _tone(cfg.wave, cfg.f0 * 1.15, cfg.f0 * 0.95, 0.14, cfg.vol, 0.005, ctx, now + 0.22,
+            { rate: 12, depth: cfg.f0 * 0.05 });
     } else if (cfg.kind === 'pip') {
-      _tone(cfg.wave, cfg.f0, cfg.f0 * 0.9, cfg.dur, cfg.vol, 0.005, ctx, now);
+      // Chick 一个高 Chic——尖锐短促，无颤音
+      _tone(cfg.wave, cfg.f0 * 1.1, cfg.f0 * 0.85, cfg.dur, cfg.vol, 0.005, ctx, now);
     }
   }
 

@@ -159,10 +159,11 @@
   function rand(a, b) { return a + Math.random() * (b - a); }
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-  // 渲染 4 角色
+  // 一次性渲染 4 角色（idle；戳格子只触发 bounce 动画不重渲染 SVG）
+  // noFilter: 4 角色大尺寸 + 频繁 bounce 动画 + flash 切换背景色，省掉 feTurbulence
   document.querySelectorAll('.cell-char').forEach(node => {
     const ck = node.dataset.char;
-    node.innerHTML = TW.svg(ck, { expression: 'idle' });
+    node.innerHTML = TW.svg(ck, { expression: 'idle', noFilter: true });
   });
 
   function triggerCell(cell, x, y) {
@@ -170,16 +171,14 @@
     const ck = cell.dataset.char;
     const charNode = cell.querySelector('.cell-char');
 
-    // 视觉：闪 + bounce + 表情切 surprised
+    // 视觉：cell 闪 + 角色 bounce 跳起（CSS 动画，零重渲染）
     cell.classList.add('flash');
     charNode.classList.remove('bounce');
     void charNode.offsetWidth;
     charNode.classList.add('bounce');
-    charNode.innerHTML = TW.svg(ck, { expression: 'cheer' });
 
     setTimeout(() => {
       cell.classList.remove('flash');
-      charNode.innerHTML = TW.svg(ck, { expression: 'idle' });
     }, 460);
 
     // 音符飘起
