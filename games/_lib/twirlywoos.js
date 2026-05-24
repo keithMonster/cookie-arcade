@@ -1,5 +1,12 @@
 // Twirlywoos 4 角色共享组件
-// 形象抓手：圆胖蛋身 + 头顶 3 根橙色羽毛 + 大黑眼 + 橙色喙 + 橙色 stick 脚
+// 真实形象抓手（v0.11 对照 BBC 节目剧照重画）：
+//   ① 头是独立的小圆球，叠在身体顶（眼/喙长在头上，不是脸长在身体上）
+//   ② 头顶 2 片翘起的橙色羽冠（不是 3 根尖刺羽毛）
+//   ③ 身体葫芦/不倒翁毛绒躯干（上窄下宽，保留 v0.7 形态）
+//   ④ 手臂是半月形小翅膀从身体侧面外伸（不是 stroke 直线）
+//   ⑤ 脚是 2 根橙细杆 + 末端水平橙色脚板（像小木屐，不是鸡爪三趾）
+//   ⑥ 大眼黑瞳带高光，眉/眼皮线根据表情切
+//
 // 五款 tw-* 游戏共用：window.TW.svg / playCall / playOooo / playCheer / CHARS
 
 (function () {
@@ -8,6 +15,7 @@
   const BEAK = '#ff8c00';
   const BEAK_DARK = '#c46100';
   const FEET = '#ff8c00';
+  const FEET_DARK = '#c46100';
   const OUTLINE = '#3a2410';
 
   // 颜色变暗 / 变亮工具
@@ -28,6 +36,7 @@
   }
 
   // 4 角色：颜色（接近节目里的绒毛质感色）+ 体型梯度 + 中文小名 + 叫声配置
+  // 颜色对照真实节目剧照微调：红涂涂从偏橙红 #d8442e → 砖红 #c83a2c
   const CHARS = {
     bighoo: {
       key: 'bighoo',
@@ -41,7 +50,7 @@
     toodloo: {
       key: 'toodloo',
       name: '红涂涂',                 // 官方中文译名
-      body: '#d8442e',          // 偏橙的红
+      body: '#c83a2c',          // 砖红 (v0.11 微调，对照真品)
       belly: '#f0e0b8',
       sizeRatio: 0.78,
       // Too-dloo——两个 note
@@ -69,16 +78,19 @@
   const CHAR_LIST = ['bighoo', 'toodloo', 'chickedy', 'chick'];
 
   // ===== SVG 角色生成 =====
-  // expression: 'idle' | 'surprised' | 'cheer'
-  // 设计还原点：
-  // ① 身体 squat 不倒翁/葫芦形（上窄下宽），不是椭圆蛋形
-  // ② 眼睛靠近脸中央（间距 24），不是分两边
-  // ③ 眼睛上方有眼皮线（idle/cheer），surprised 时眼皮线消失露出大圆睁眼
-  // ④ 头顶 3 根橙刺羽毛错落（中央长直、左右斜短），主羽颜色更深
-  // ⑤ 手臂是短杆 + 圆球末端（stroke-linecap=round），不是椭圆色块
-  // ⑥ 喙在两眼正中下方，小三角实心橙
-  // ⑦ 脚是橙细 stick + 末端三趾鸡爪
-  // ⑧ 身体加细纹（毛绒质感）+ 主体描边（毡感）
+  // expression: 'idle' | 'surprised' | 'cheer' | 'lying'
+  //   - idle: 正常站姿，眼皮线 + 圆眼
+  //   - surprised: 圆睁大眼 + 张菱形嘴 + 翅膀略抬
+  //   - cheer: 笑眼 + 大笑张嘴 + 翅膀上举
+  //   - lying: 瘫倒/趴下（首页 idle 招牌姿态），整体倾斜 + 眼半闭
+  // 设计还原点（v0.11）：
+  // ① 头独立——cy=58 的圆球叠在身体顶 (身体从 y=92 起)
+  // ② 头顶 2 片矩形/梯形翘起羽冠（不是 3 根尖刺）
+  // ③ 眼睛在头上 (cy=58)，间距 28，不是分两边
+  // ④ 喙在头底 (cy=80)，小三角实心橙
+  // ⑤ 翅膀=半月形 path 从身体侧伸出，不是直线段
+  // ⑥ 脚=2 根橙细杆 + 末端水平橙板（小木屐）
+  // ⑦ 身体加细纹（毛绒质感）+ 主体描边（毡感）+ 葫芦不倒翁形保留
   function svg(charKey, opts = {}) {
     const c = CHARS[charKey];
     if (!c) return '';
@@ -89,72 +101,85 @@
     const bodyStroke = darken(c.body, 0.22);
     const bellyStroke = darken(c.belly, 0.12);
 
-    // ===== 眼区（眼皮 + 眼睛）=====
-    // 位置上移到脸 1/3 (cy=92)，更接近 Twirlywoos 真实
+    // ===== 眼睛（在头上 cy=58，间距 28）=====
     let eyeArea;
     if (expr === 'cheer') {
       // 笑眼：弯月形
       eyeArea = `
-        <path d="M76 90 Q88 100 100 90" fill="none" stroke="${OUTLINE}" stroke-width="4" stroke-linecap="round"/>
-        <path d="M100 90 Q112 100 124 90" fill="none" stroke="${OUTLINE}" stroke-width="4" stroke-linecap="round"/>
+        <path d="M82 56 Q90 64 98 56" fill="none" stroke="${OUTLINE}" stroke-width="3.6" stroke-linecap="round"/>
+        <path d="M102 56 Q110 64 118 56" fill="none" stroke="${OUTLINE}" stroke-width="3.6" stroke-linecap="round"/>
       `;
     } else if (expr === 'surprised') {
-      // 圆睁眼睛（更大、无眼皮线）
+      // 圆睁大眼睛 + 大白底（无眼皮）
       eyeArea = `
-        <circle cx="88" cy="92" r="14" fill="${OUTLINE}"/>
-        <circle cx="112" cy="92" r="14" fill="${OUTLINE}"/>
-        <circle cx="91" cy="87" r="4" fill="#fff"/>
-        <circle cx="115" cy="87" r="4" fill="#fff"/>
+        <circle cx="86" cy="58" r="13" fill="#fff" stroke="${OUTLINE}" stroke-width="1.8"/>
+        <circle cx="114" cy="58" r="13" fill="#fff" stroke="${OUTLINE}" stroke-width="1.8"/>
+        <circle cx="86" cy="58" r="8" fill="${OUTLINE}"/>
+        <circle cx="114" cy="58" r="8" fill="${OUTLINE}"/>
+        <circle cx="89" cy="54" r="3" fill="#fff"/>
+        <circle cx="117" cy="54" r="3" fill="#fff"/>
+      `;
+    } else if (expr === 'lying') {
+      // 半闭眼（眯起 idle 状）—— 一道弧线下垂
+      eyeArea = `
+        <path d="M76 58 Q86 64 96 58" fill="none" stroke="${OUTLINE}" stroke-width="3" stroke-linecap="round"/>
+        <path d="M104 58 Q114 64 124 58" fill="none" stroke="${OUTLINE}" stroke-width="3" stroke-linecap="round"/>
       `;
     } else {
-      // idle：眼皮线 + 圆眼带高光
+      // idle：白底大眼 + 黑瞳 + 高光（最常见姿态）
       eyeArea = `
-        <path d="M78 82 Q88 75 98 82" fill="none" stroke="${OUTLINE}" stroke-width="2.6" stroke-linecap="round"/>
-        <path d="M102 82 Q112 75 122 82" fill="none" stroke="${OUTLINE}" stroke-width="2.6" stroke-linecap="round"/>
-        <circle cx="88" cy="94" r="11" fill="${OUTLINE}"/>
-        <circle cx="112" cy="94" r="11" fill="${OUTLINE}"/>
-        <circle cx="91" cy="90" r="3.5" fill="#fff"/>
-        <circle cx="115" cy="90" r="3.5" fill="#fff"/>
+        <circle cx="86" cy="58" r="11" fill="#fff" stroke="${OUTLINE}" stroke-width="1.5"/>
+        <circle cx="114" cy="58" r="11" fill="#fff" stroke="${OUTLINE}" stroke-width="1.5"/>
+        <circle cx="86" cy="58" r="6.5" fill="${OUTLINE}"/>
+        <circle cx="114" cy="58" r="6.5" fill="${OUTLINE}"/>
+        <circle cx="88" cy="55" r="2.4" fill="#fff"/>
+        <circle cx="116" cy="55" r="2.4" fill="#fff"/>
       `;
     }
 
-    // ===== 喙（位于眼睛下方 30px ≈ cy=120）=====
+    // ===== 喙（在头底 cy~78-82）=====
     let mouth;
     if (expr === 'surprised') {
       // 上下两半喙合成菱形张开嘴
       mouth = `
-        <path d="M88 117 L100 124 L112 117 L100 113 Z" fill="${BEAK}" stroke="${BEAK_DARK}" stroke-width="1"/>
-        <path d="M88 124 L100 134 L112 124 L100 120 Z" fill="${BEAK_DARK}" stroke="${darken(BEAK_DARK, 0.2)}" stroke-width="1"/>
+        <path d="M92 78 L100 84 L108 78 L100 75 Z" fill="${BEAK}" stroke="${BEAK_DARK}" stroke-width="1"/>
+        <path d="M92 84 L100 92 L108 84 L100 80 Z" fill="${BEAK_DARK}" stroke="${darken(BEAK_DARK, 0.2)}" stroke-width="1"/>
       `;
     } else if (expr === 'cheer') {
       // 张大笑：上喙翘 + 下方笑弧
       mouth = `
-        <path d="M88 115 L100 110 L112 115 L100 122 Z" fill="${BEAK}" stroke="${BEAK_DARK}" stroke-width="1"/>
-        <path d="M82 128 Q100 148 118 128" fill="${OUTLINE}" stroke="${OUTLINE}" stroke-width="2"/>
+        <path d="M92 78 L100 74 L108 78 L100 84 Z" fill="${BEAK}" stroke="${BEAK_DARK}" stroke-width="1"/>
       `;
     } else {
       // 小三角喙
-      mouth = `<path d="M91 114 L100 130 L109 114 Z" fill="${BEAK}" stroke="${BEAK_DARK}" stroke-width="1"/>`;
+      mouth = `<path d="M93 76 L100 88 L107 76 Z" fill="${BEAK}" stroke="${BEAK_DARK}" stroke-width="1"/>`;
     }
 
-    // ===== 手臂（短杆 + 圆球末端，用 stroke-linecap=round 实现）=====
-    let armL, armR;
+    // ===== 翅膀（身体侧面伸出的半月形小翅）=====
+    let wingL, wingR;
+    const bodyLight2 = lighten(c.body, 0.1);
+    const bodyDeep2 = darken(c.body, 0.18);
     if (expr === 'cheer') {
-      // 上举庆祝
-      armL = `<line x1="48" y1="100" x2="18" y2="40" stroke="${c.body}" stroke-width="22" stroke-linecap="round"/>`;
-      armR = `<line x1="152" y1="100" x2="182" y2="40" stroke="${c.body}" stroke-width="22" stroke-linecap="round"/>`;
+      // 上举庆祝：翅膀向上外翻
+      wingL = `<path d="M 42 130 Q 14 80 26 50 Q 38 70 50 130 Z" fill="${c.body}" stroke="${bodyDeep2}" stroke-width="1.5"/>`;
+      wingR = `<path d="M 158 130 Q 186 80 174 50 Q 162 70 150 130 Z" fill="${c.body}" stroke="${bodyDeep2}" stroke-width="1.5"/>`;
     } else if (expr === 'surprised') {
-      // 略微抬起
-      armL = `<line x1="40" y1="155" x2="8" y2="135" stroke="${c.body}" stroke-width="22" stroke-linecap="round"/>`;
-      armR = `<line x1="160" y1="155" x2="192" y2="135" stroke="${c.body}" stroke-width="22" stroke-linecap="round"/>`;
+      // 略微抬起，翅膀水平外伸
+      wingL = `<path d="M 38 150 Q 4 138 8 110 Q 28 130 50 152 Z" fill="${c.body}" stroke="${bodyDeep2}" stroke-width="1.5"/>`;
+      wingR = `<path d="M 162 150 Q 196 138 192 110 Q 172 130 150 152 Z" fill="${c.body}" stroke="${bodyDeep2}" stroke-width="1.5"/>`;
+    } else if (expr === 'lying') {
+      // 瘫倒：翅膀外摊（向外向下）
+      wingL = `<path d="M 38 160 Q 4 200 18 220 Q 32 198 50 170 Z" fill="${c.body}" stroke="${bodyDeep2}" stroke-width="1.5"/>`;
+      wingR = `<path d="M 162 160 Q 196 200 182 220 Q 168 198 150 170 Z" fill="${c.body}" stroke="${bodyDeep2}" stroke-width="1.5"/>`;
     } else {
-      // idle 自然垂下偏外
-      armL = `<line x1="38" y1="170" x2="14" y2="200" stroke="${c.body}" stroke-width="22" stroke-linecap="round"/>`;
-      armR = `<line x1="162" y1="170" x2="186" y2="200" stroke="${c.body}" stroke-width="22" stroke-linecap="round"/>`;
+      // idle：自然垂在身体两侧，半月形微外翻
+      wingL = `<path d="M 38 145 Q 18 175 26 200 Q 40 180 52 160 Z" fill="${c.body}" stroke="${bodyDeep2}" stroke-width="1.5"/>`;
+      wingR = `<path d="M 162 145 Q 182 175 174 200 Q 160 180 148 160 Z" fill="${c.body}" stroke="${bodyDeep2}" stroke-width="1.5"/>`;
     }
 
     // 立体明暗渐变 ID（每角色独立避免冲突）
     const gradId = `g-${charKey}-${Math.random().toString(36).slice(2, 8)}`;
+    const headGradId = `gh-${charKey}-${Math.random().toString(36).slice(2, 8)}`;
     const fluffId = `f-${charKey}-${Math.random().toString(36).slice(2, 8)}`;
     const bodyLight = lighten(c.body, 0.18);
     const bodyDeep = darken(c.body, 0.15);
@@ -168,12 +193,21 @@
           <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.2"/>
         </filter>`;
 
-    return `<svg viewBox="0 0 200 270" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
+    // ===== 整体倾斜（lying 表情身体歪向左）=====
+    const transform = expr === 'lying' ? 'rotate(-14 100 200)' : '';
+
+    return `<svg viewBox="-4 -10 208 280" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
       <defs>
         <!-- 身体立体渐变：左上偏亮、右下偏暗 -->
         <radialGradient id="${gradId}" cx="38%" cy="32%" r="78%">
           <stop offset="0%" stop-color="${bodyLight}"/>
           <stop offset="60%" stop-color="${c.body}"/>
+          <stop offset="100%" stop-color="${bodyDeep}"/>
+        </radialGradient>
+        <!-- 头部立体渐变 -->
+        <radialGradient id="${headGradId}" cx="35%" cy="30%" r="80%">
+          <stop offset="0%" stop-color="${bodyLight}"/>
+          <stop offset="70%" stop-color="${c.body}"/>
           <stop offset="100%" stop-color="${bodyDeep}"/>
         </radialGradient>
         <!-- 肚兜浅渐变 -->
@@ -183,50 +217,63 @@
         </radialGradient>
         ${filterDef}
       </defs>
-      <!-- 头顶 3 根橙刺羽毛：独立分散（不连成皇冠），左右斜短、中央直立稍粗深色 -->
-      <polygon points="78,32 64,0 90,30" fill="${FEATHER_LIGHT}" stroke="${FEATHER_DARK}" stroke-width="1.2" ${filterAttr}/>
-      <polygon points="95,28 100,-8 108,30" fill="${FEATHER_DARK}" stroke="${darken(FEATHER_DARK, 0.25)}" stroke-width="1.2" ${filterAttr}/>
-      <polygon points="110,30 136,0 122,32" fill="${FEATHER_LIGHT}" stroke="${FEATHER_DARK}" stroke-width="1.2" ${filterAttr}/>
-      <!-- 身体 squat 不倒翁形 + radial gradient 立体 + fluff filter 毛绒边缘 -->
-      <path d="M 42 80
-               Q 100 18 158 80
-               C 180 130, 198 220, 100 262
-               C 2 220, 20 130, 42 80 Z"
-            fill="url(#${gradId})" stroke="${bodyStroke}" stroke-width="2" ${filterAttr}/>
-      <!-- 毛绒纹理（细密斑点 + 短弧"毛茬"，加强毡感） -->
-      <g opacity="0.18" fill="${OUTLINE}">
-        <circle cx="50" cy="135" r="2.5"/>
-        <circle cx="160" cy="125" r="2"/>
-        <circle cx="36" cy="200" r="2.5"/>
-        <circle cx="170" cy="195" r="2.2"/>
-        <circle cx="78" cy="232" r="2"/>
-        <circle cx="135" cy="240" r="2.5"/>
-        <circle cx="42" cy="160" r="2"/>
-        <circle cx="155" cy="170" r="2"/>
-        <circle cx="68" cy="110" r="1.6"/>
-        <circle cx="138" cy="100" r="1.6"/>
-      </g>
-      <!-- 身体亮面高光（左上斜向白色 patch） -->
-      <ellipse cx="62" cy="105" rx="28" ry="14" fill="white" opacity="0.13" transform="rotate(-30 62 105)"/>
-      <!-- 肚兜：椭圆奶白补丁（位置略下） -->
-      <ellipse cx="100" cy="180" rx="48" ry="55" fill="url(#${gradId}-b)" stroke="${bellyStroke}" stroke-width="1.2" ${filterAttr}/>
-      <!-- 手臂 -->
-      ${armL}
-      ${armR}
-      <!-- 眼睛 / 眼皮 -->
-      ${eyeArea}
-      <!-- 喙 -->
-      ${mouth}
-      <!-- 脚 + 三趾鸡爪 -->
-      <g stroke="${FEET}" stroke-linecap="round" fill="none">
-        <line x1="80" y1="248" x2="80" y2="260" stroke-width="6"/>
-        <line x1="120" y1="248" x2="120" y2="260" stroke-width="6"/>
-        <line x1="80" y1="260" x2="68" y2="266" stroke-width="4.5"/>
-        <line x1="80" y1="260" x2="80" y2="268" stroke-width="4.5"/>
-        <line x1="80" y1="260" x2="92" y2="266" stroke-width="4.5"/>
-        <line x1="120" y1="260" x2="108" y2="266" stroke-width="4.5"/>
-        <line x1="120" y1="260" x2="120" y2="268" stroke-width="4.5"/>
-        <line x1="120" y1="260" x2="132" y2="266" stroke-width="4.5"/>
+      <g transform="${transform}">
+        <!-- ====== 身体层（在头后面） ====== -->
+        <!-- 翅膀（左，垫在身体后） -->
+        ${wingL}
+        <!-- 身体 squat 不倒翁形 + radial gradient 立体 + fluff filter 毛绒边缘 -->
+        <path d="M 48 110
+                 C 30 150, 18 220, 100 262
+                 C 182 220, 170 150, 152 110
+                 Q 100 95 48 110 Z"
+              fill="url(#${gradId})" stroke="${bodyStroke}" stroke-width="2" ${filterAttr}/>
+        <!-- 毛绒纹理（细密斑点） -->
+        <g opacity="0.18" fill="${OUTLINE}">
+          <circle cx="56" cy="155" r="2.5"/>
+          <circle cx="148" cy="145" r="2"/>
+          <circle cx="42" cy="200" r="2.5"/>
+          <circle cx="160" cy="195" r="2.2"/>
+          <circle cx="78" cy="240" r="2"/>
+          <circle cx="135" cy="245" r="2.5"/>
+          <circle cx="50" cy="180" r="2"/>
+          <circle cx="155" cy="170" r="2"/>
+        </g>
+        <!-- 身体亮面高光 -->
+        <ellipse cx="68" cy="135" rx="22" ry="11" fill="white" opacity="0.13" transform="rotate(-30 68 135)"/>
+        <!-- 肚兜：椭圆奶白补丁（位置略下） -->
+        <ellipse cx="100" cy="190" rx="44" ry="50" fill="url(#${gradId}-b)" stroke="${bellyStroke}" stroke-width="1.2" ${filterAttr}/>
+        <!-- 翅膀（右，垫在身体后） -->
+        ${wingR}
+
+        <!-- ====== 头层（叠在身体顶，独立圆球） ====== -->
+        <!-- 头顶 2 片翘起的橙色羽冠（梯形，左右各一片，对内倾） -->
+        <polygon points="84,22 70,-6 92,8 92,28" fill="${FEATHER_LIGHT}" stroke="${FEATHER_DARK}" stroke-width="1.5" ${filterAttr}/>
+        <polygon points="108,8 130,-6 116,22 108,28" fill="${FEATHER_DARK}" stroke="${darken(FEATHER_DARK, 0.25)}" stroke-width="1.5" ${filterAttr}/>
+        <!-- 头：独立椭圆球（紧贴身体顶） -->
+        <ellipse cx="100" cy="58" rx="42" ry="40" fill="url(#${headGradId})" stroke="${bodyStroke}" stroke-width="2" ${filterAttr}/>
+        <!-- 头部毛绒纹理 -->
+        <g opacity="0.18" fill="${OUTLINE}">
+          <circle cx="74" cy="40" r="1.6"/>
+          <circle cx="128" cy="38" r="1.6"/>
+          <circle cx="70" cy="78" r="1.6"/>
+          <circle cx="130" cy="78" r="1.6"/>
+        </g>
+        <!-- 头部高光 -->
+        <ellipse cx="80" cy="40" rx="14" ry="8" fill="white" opacity="0.18" transform="rotate(-25 80 40)"/>
+        <!-- 眼睛 -->
+        ${eyeArea}
+        <!-- 喙 -->
+        ${mouth}
+
+        <!-- ====== 脚层 (2 根细杆 + 横向木屐板) ====== -->
+        <g stroke="${FEET}" stroke-linecap="round" fill="${FEET}">
+          <!-- 左脚 -->
+          <line x1="80" y1="250" x2="80" y2="262" stroke-width="6"/>
+          <rect x="66" y="260" width="28" height="6" rx="2" stroke="${FEET_DARK}" stroke-width="1"/>
+          <!-- 右脚 -->
+          <line x1="120" y1="250" x2="120" y2="262" stroke-width="6"/>
+          <rect x="106" y="260" width="28" height="6" rx="2" stroke="${FEET_DARK}" stroke-width="1"/>
+        </g>
       </g>
     </svg>`;
   }

@@ -14,9 +14,9 @@
   html, body {
     width: 100%;
     min-height: 100vh;
-    background: #0a0e27;
+    background: transparent;
     font-family: -apple-system, "PingFang SC", sans-serif;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(60, 40, 25, 0.9);
     user-select: none;
     -webkit-user-select: none;
     overflow: hidden;
@@ -26,28 +26,31 @@
   }
   .title {
     position: fixed;
-    top: 18px;
+    top: 22px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 16px;
-    letter-spacing: 0.4em;
-    color: rgba(255, 255, 255, 0.4);
+    font-size: 14px;
+    letter-spacing: 0.45em;
+    color: rgba(80, 50, 30, 0.45);
     text-transform: uppercase;
-    font-weight: 300;
+    font-weight: 400;
     z-index: 10;
   }
+  /* 9 宫格上方占 64%，下方留给 idle 角色排站在台面上 */
   .grid {
     position: fixed;
-    inset: 0;
+    top: 52px;
+    left: 14px;
+    right: 14px;
+    bottom: 32vh;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
-    gap: 14px;
-    padding: 48px 16px 32px;
+    gap: 12px;
   }
   .tile {
     position: relative;
-    border-radius: 22px;
+    border-radius: 18px;
     overflow: hidden;
     cursor: pointer;
     transition: transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -57,11 +60,15 @@
     display: flex;
     flex-direction: column;
     background: #11173a;
+    box-shadow:
+      0 6px 16px rgba(80, 50, 20, 0.18),
+      0 1px 2px rgba(80, 50, 20, 0.1);
   }
   .tile:hover {
     transform: scale(1.03);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5),
-                0 0 0 2px rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 16px 40px rgba(80, 50, 20, 0.3),
+      0 0 0 2px rgba(255, 255, 255, 0.15);
   }
   .tile:active { transform: scale(0.97); }
 
@@ -314,7 +321,8 @@
     transform: translateX(-50%);
     font-size: 11px;
     letter-spacing: 0.3em;
-    color: rgba(255, 255, 255, 0.25);
+    color: rgba(80, 50, 30, 0.35);
+    z-index: 10;
   }
 </style>
 </head>
@@ -425,10 +433,16 @@
 <div class="footer">按 1-9 选游戏 · 任意键随机进入</div>
 
 <script src="games/_lib/twirlywoos.js"></script>
+<script src="games/_lib/stage.js"></script>
 <script>
+  // 挂木板墙 + 树影底（首页不带红船，纯舞台）
+  TW.Stage.mount();
+  // 底部 4 角色排（30s 无操作切瘫倒态，任意活动复活）
+  TW.Stage.mountIdleCast({ idleMs: 30000 });
+
   // 把 preview 里所有 .tw-bird 用对应角色 SVG 填充
-  // noFilter: 首屏 11 个 tw-bird 小尺寸缩略，feTurbulence 滤镜跑这么多会卡首页
-  document.querySelectorAll('.tw-bird').forEach(node => {
+  // noFilter: 首屏 tw-bird 小尺寸缩略，feTurbulence 滤镜跑这么多会卡首页
+  document.querySelectorAll('.tile .tw-bird').forEach(node => {
     const ck = node.dataset.char || 'bighoo';
     node.innerHTML = TW.svg(ck, { expression: 'idle', noFilter: true });
   });
