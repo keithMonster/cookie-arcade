@@ -36,17 +36,17 @@
     font-weight: 400;
     z-index: 10;
   }
-  /* 10 块：3 列 × 4 行；最后一块横跨满列做 hero；下方留点 idle 角色排站的台面 */
+  /* 11 块：3 列 × 5 行；末两块横跨满列做 hero；下方留点 idle 角色排站的台面 */
   .grid {
     position: fixed;
     top: 52px;
     left: 14px;
     right: 14px;
-    bottom: 16vh;
+    bottom: 10vh;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(4, 1fr);
-    gap: 12px;
+    grid-template-rows: repeat(5, 1fr);
+    gap: 10px;
   }
   .tile.hero { grid-column: 1 / -1; }
   .tile {
@@ -315,6 +315,41 @@
     100% { top: 65%; opacity: 1; }
   }
 
+  /* ====== 卡片 11: Cars preview ====== */
+  .preview.cars {
+    background: linear-gradient(180deg, #bfe0ff 0%, #e2f0fc 55%, #98d086 55%, #6cba5f 100%);
+    overflow: hidden;
+    position: relative;
+  }
+  .preview.cars .car-em {
+    position: absolute;
+    font-size: 14vmin;
+    line-height: 1;
+    bottom: 5%;
+    left: -20%;
+    will-change: transform;
+    animation: car-cross 6s linear infinite;
+    filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.15));
+  }
+  .preview.cars .car-em.c1 { animation-delay: 0s;    bottom: 8%;  font-size: 10vmin; }
+  .preview.cars .car-em.c2 { animation-delay: 2s;    bottom: 4%;  font-size: 12vmin; }
+  .preview.cars .car-em.c3 { animation-delay: 4s;    bottom: 12%; font-size: 8vmin; }
+  @keyframes car-cross {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(200%); }
+  }
+  .preview.cars .sun-em {
+    position: absolute;
+    top: 8%; right: 8%;
+    font-size: 7vmin;
+    line-height: 1;
+    animation: sun-spin 8s linear infinite;
+  }
+  @keyframes sun-spin {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.15); }
+  }
+
   /* ====== 卡片 10: Animals preview ====== */
   .preview.animals {
     display: grid;
@@ -463,6 +498,17 @@
       <div class="quad">🐸</div>
     </div>
     <div class="label"><span class="name">动物园</span><span class="num">10</span></div>
+  </a>
+
+  <!-- 11. cars (hero, 横跨满列) -->
+  <a class="tile hero" href="games/cars/" data-num="11">
+    <div class="preview cars">
+      <div class="sun-em">☀️</div>
+      <div class="car-em c1">🚌</div>
+      <div class="car-em c2">🚒</div>
+      <div class="car-em c3">🚜</div>
+    </div>
+    <div class="label"><span class="name">车车</span><span class="num">11</span></div>
   </a>
 </div>
 
