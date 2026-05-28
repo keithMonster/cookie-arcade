@@ -212,48 +212,31 @@
 
 <script>
 // ===== 车车池 =====
-// emoji + 中文名 + 拟声词 + 可选闪光灯配色
-// 紧急车（消防/警车/救护）多一对闪烁双灯
+// emoji + 中文名 + 拟声词 + audio key（对应 audio/<key>.mp3）+ 可选闪光灯
 const VEHICLES = [
-  { emoji: '🚌', name: '校车',     cry: '嘀嘀' },
-  { emoji: '🚒', name: '消防车',   cry: '呜呜呜', flash: ['#ff3a3a', '#ffeb3b'] },
-  { emoji: '🚓', name: '警车',     cry: '嘀嘟嘀嘟', flash: ['#3a6dff', '#ff3a3a'] },
-  { emoji: '🚑', name: '救护车',   cry: '呜哇呜哇', flash: ['#ff3a3a', '#ffffff'] },
-  { emoji: '🚜', name: '拖拉机',   cry: '突突突' },
-  { emoji: '🚛', name: '大卡车',   cry: '嘟嘟' },
-  { emoji: '🚗', name: '小汽车',   cry: '滴滴' },
-  { emoji: '🚂', name: '小火车',   cry: '呜呜呜，哐当哐当' },
-  { emoji: '🏍️', name: '摩托车',  cry: '嗡嗡嗡' },
+  { emoji: '🚌', name: '校车',     cry: '嘀嘀',           key: 'bus' },
+  { emoji: '🚒', name: '消防车',   cry: '呜呜呜',         key: 'firetruck', flash: ['#ff3a3a', '#ffeb3b'] },
+  { emoji: '🚓', name: '警车',     cry: '嘀嘟嘀嘟',       key: 'police',    flash: ['#3a6dff', '#ff3a3a'] },
+  { emoji: '🚑', name: '救护车',   cry: '呜哇呜哇',       key: 'ambulance', flash: ['#ff3a3a', '#ffffff'] },
+  { emoji: '🚜', name: '拖拉机',   cry: '突突突',         key: 'tractor' },
+  { emoji: '🚛', name: '大卡车',   cry: '嘟嘟',           key: 'truck' },
+  { emoji: '🚗', name: '小汽车',   cry: '滴滴',           key: 'car' },
+  { emoji: '🚂', name: '小火车',   cry: '呜呜呜，哐当哐当', key: 'train' },
+  { emoji: '🏍️', name: '摩托车',  cry: '嗡嗡嗡',         key: 'motorbike' },
 ];
 
-// ===== Speech =====
-let _voicesReady = false;
-let _zhVoice = null;
-function loadVoices() {
-  if (_voicesReady) return;
-  const list = speechSynthesis.getVoices();
-  if (!list.length) return;
-  _zhVoice = list.find(v => /zh(-|_)CN/i.test(v.lang))
-          || list.find(v => /zh/i.test(v.lang))
-          || null;
-  _voicesReady = true;
-}
-if (typeof speechSynthesis !== 'undefined') {
-  loadVoices();
-  speechSynthesis.onvoiceschanged = loadVoices;
-}
-
-function speak(text) {
-  if (typeof speechSynthesis === 'undefined') return;
-  speechSynthesis.cancel();
-  loadVoices();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'zh-CN';
-  u.rate = 0.85;
-  u.pitch = 1.25;   // 童声偏高
-  u.volume = 1.0;
-  if (_zhVoice) u.voice = _zhVoice;
-  speechSynthesis.speak(u);
+// ===== 音频（预录 mp3，避开 iOS SpeechSynthesis 整段——Keith iPad 实证 SpeechSynthesis 静默） =====
+// audio/<key>.mp3 是 macOS say -v Tingting 婷婷音色离线生成
+const audioCache = {};
+function playAudio(key) {
+  let a = audioCache[key];
+  if (!a) {
+    a = new Audio(`audio/${key}.mp3`);
+    a.preload = 'auto';
+    audioCache[key] = a;
+  }
+  a.currentTime = 0;
+  a.play().catch(() => {});
 }
 
 // ===== 工具 =====
@@ -326,8 +309,8 @@ function spawn(x, y, v) {
     spawnTrail(tx, ty);
   }, 220);
 
-  // 报名 + 拟声词
-  speak(v.name + '，' + v.cry);
+  // 预录 mp3 念「name，cry」
+  playAudio(v.key);
 
   // 退场清理
   setTimeout(() => {

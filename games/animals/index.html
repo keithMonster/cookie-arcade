@@ -213,74 +213,39 @@
 
 <script>
 // ===== 动物池 =====
-// 每只动物：emoji + 中文名 + 中文拟声词（speech 念出来，不做合成音）
+// emoji + 中文名 + 拟声词（视觉 burst）+ audio key（对应 audio/<key>.mp3）
 const ANIMALS = [
-  // 家养小可爱
-  { emoji: '🐱', name: '小猫',    cry: '喵' },
-  { emoji: '🐶', name: '小狗',    cry: '汪汪' },
-  { emoji: '🐭', name: '小老鼠',  cry: '吱吱' },
-  { emoji: '🐰', name: '小兔子',  cry: '蹦蹦跳' },
-
-  // 农场
-  { emoji: '🐮', name: '奶牛',    cry: '哞' },
-  { emoji: '🐷', name: '小猪',    cry: '哼哼' },
-  { emoji: '🐑', name: '绵羊',    cry: '咩' },
-  { emoji: '🐔', name: '母鸡',    cry: '咯咯哒' },
-  { emoji: '🦆', name: '鸭子',    cry: '嘎嘎' },
-  { emoji: '🐴', name: '小马',    cry: '哒哒哒' },
-
-  // 野生
-  { emoji: '🐯', name: '老虎',    cry: '嗷呜' },
-  { emoji: '🦁', name: '狮子',    cry: '吼' },
-  { emoji: '🐘', name: '大象',    cry: '长鼻子' },
-  { emoji: '🐵', name: '猴子',    cry: '吱吱' },
-
-  // 小生灵
-  { emoji: '🐝', name: '蜜蜂',    cry: '嗡嗡' },
-  { emoji: '🐸', name: '青蛙',    cry: '呱呱' },
-  { emoji: '🐦', name: '小鸟',    cry: '啾啾' },
+  { emoji: '🐱', name: '小猫',    cry: '喵',       key: 'cat' },
+  { emoji: '🐶', name: '小狗',    cry: '汪汪',     key: 'dog' },
+  { emoji: '🐭', name: '小老鼠',  cry: '吱吱',     key: 'mouse' },
+  { emoji: '🐰', name: '小兔子',  cry: '蹦蹦跳',   key: 'rabbit' },
+  { emoji: '🐮', name: '奶牛',    cry: '哞',       key: 'cow' },
+  { emoji: '🐷', name: '小猪',    cry: '哼哼',     key: 'pig' },
+  { emoji: '🐑', name: '绵羊',    cry: '咩',       key: 'sheep' },
+  { emoji: '🐔', name: '母鸡',    cry: '咯咯哒',   key: 'chicken' },
+  { emoji: '🦆', name: '鸭子',    cry: '嘎嘎',     key: 'duck' },
+  { emoji: '🐴', name: '小马',    cry: '哒哒哒',   key: 'horse' },
+  { emoji: '🐯', name: '老虎',    cry: '嗷呜',     key: 'tiger' },
+  { emoji: '🦁', name: '狮子',    cry: '吼',       key: 'lion' },
+  { emoji: '🐘', name: '大象',    cry: '长鼻子',   key: 'elephant' },
+  { emoji: '🐵', name: '猴子',    cry: '吱吱',     key: 'monkey' },
+  { emoji: '🐝', name: '蜜蜂',    cry: '嗡嗡',     key: 'bee' },
+  { emoji: '🐸', name: '青蛙',    cry: '呱呱',     key: 'frog' },
+  { emoji: '🐦', name: '小鸟',    cry: '啾啾',     key: 'bird' },
 ];
 
-// ===== Speech (中文报名) =====
-// iOS Safari 需用户手势首次激活；首次 tap 用静音 utterance 预热 + 不主动 cancel（cancel→speak 抢音是已知 iOS bug）
-let _voicesReady = false;
-let _zhVoice = null;
-let _primed = false;
-function loadVoices() {
-  if (_voicesReady) return;
-  const list = speechSynthesis.getVoices();
-  if (!list.length) return;
-  _zhVoice = list.find(v => /zh(-|_)CN/i.test(v.lang))
-          || list.find(v => /zh/i.test(v.lang))
-          || null;
-  _voicesReady = true;
-}
-if (typeof speechSynthesis !== 'undefined') {
-  loadVoices();
-  speechSynthesis.onvoiceschanged = loadVoices;
-}
-
-function primeSpeech() {
-  if (_primed || typeof speechSynthesis === 'undefined') return;
-  _primed = true;
-  // iOS 静音 utterance 解锁引擎；空格 + volume=0
-  const u = new SpeechSynthesisUtterance(' ');
-  u.volume = 0;
-  u.rate = 1;
-  speechSynthesis.speak(u);
-}
-
-function speak(text) {
-  if (typeof speechSynthesis === 'undefined') return;
-  loadVoices();
-  // 不 cancel——iOS 上 cancel→speak 抢音会丢音
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'zh-CN';
-  u.rate = 0.85;
-  u.pitch = 1.0;    // iOS 上一些声音对 pitch>1 反应怪，保守用 1
-  u.volume = 1.0;
-  // 不主动设 voice，让系统按 lang='zh-CN' 自选（_zhVoice 句柄跨 page 可能 stale）
-  speechSynthesis.speak(u);
+// ===== 音频（预录 mp3，避开 iOS SpeechSynthesis 整段——Keith iPad 实证 SpeechSynthesis 静默） =====
+// audio/<key>.mp3 是 macOS say -v Tingting 婷婷音色离线生成的「name，cry」组合语音
+const audioCache = {};
+function playAudio(key) {
+  let a = audioCache[key];
+  if (!a) {
+    a = new Audio(`audio/${key}.mp3`);
+    a.preload = 'auto';
+    audioCache[key] = a;
+  }
+  a.currentTime = 0;
+  a.play().catch(() => {});  // play() 是 promise；用户手势链外 / 加载失败都 silently 吃掉
 }
 
 // ===== 游戏状态 =====
@@ -358,9 +323,6 @@ function tap(p) {
   if (p.swapping) return;
   const a = ANIMALS[p.animalIdx];
 
-  // iOS 引擎预热（首次 tap 才生效）
-  primeSpeech();
-
   // 闪光圈
   p.ring.classList.remove('pulse');
   // 强制 reflow 重启动画
@@ -383,8 +345,8 @@ function tap(p) {
   void p.cryBurst.offsetWidth;
   p.cryBurst.classList.add('pop');
 
-  // 报名 + 拟声词（"小猫，喵" / "小狗，汪汪"）
-  speak(a.name + '，' + a.cry);
+  // 预录 mp3 念「name，cry」
+  playAudio(a.key);
 
   // 累点
   p.clicks++;
