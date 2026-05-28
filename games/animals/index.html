@@ -183,214 +183,33 @@
 
 <script>
 // ===== 动物池 =====
-// 每只动物：emoji + 中文名 + Web Audio 合成参数 (kind + 频率/时长)
-// kind 类型与合成函数 playSound() 一一对应
+// 每只动物：emoji + 中文名 + 中文拟声词（speech 念出来，不做合成音）
 const ANIMALS = [
   // 家养小可爱
-  { emoji: '🐱', name: '小猫',    sound: { kind: 'meow' } },
-  { emoji: '🐶', name: '小狗',    sound: { kind: 'bark' } },
-  { emoji: '🐭', name: '小老鼠',  sound: { kind: 'squeak' } },
-  { emoji: '🐰', name: '小兔子',  sound: { kind: 'sniff' } },
+  { emoji: '🐱', name: '小猫',    cry: '喵' },
+  { emoji: '🐶', name: '小狗',    cry: '汪汪' },
+  { emoji: '🐭', name: '小老鼠',  cry: '吱吱' },
+  { emoji: '🐰', name: '小兔子',  cry: '蹦蹦跳' },
 
   // 农场
-  { emoji: '🐮', name: '奶牛',    sound: { kind: 'moo' } },
-  { emoji: '🐷', name: '小猪',    sound: { kind: 'oink' } },
-  { emoji: '🐑', name: '绵羊',    sound: { kind: 'baa' } },
-  { emoji: '🐔', name: '母鸡',    sound: { kind: 'cluck' } },
-  { emoji: '🦆', name: '鸭子',    sound: { kind: 'quack' } },
-  { emoji: '🐴', name: '小马',    sound: { kind: 'neigh' } },
+  { emoji: '🐮', name: '奶牛',    cry: '哞' },
+  { emoji: '🐷', name: '小猪',    cry: '哼哼' },
+  { emoji: '🐑', name: '绵羊',    cry: '咩' },
+  { emoji: '🐔', name: '母鸡',    cry: '咯咯哒' },
+  { emoji: '🦆', name: '鸭子',    cry: '嘎嘎' },
+  { emoji: '🐴', name: '小马',    cry: '哒哒哒' },
 
   // 野生
-  { emoji: '🐯', name: '老虎',    sound: { kind: 'roar' } },
-  { emoji: '🦁', name: '狮子',    sound: { kind: 'bigRoar' } },
-  { emoji: '🐘', name: '大象',    sound: { kind: 'trumpet' } },
-  { emoji: '🐵', name: '猴子',    sound: { kind: 'chitter' } },
+  { emoji: '🐯', name: '老虎',    cry: '嗷呜' },
+  { emoji: '🦁', name: '狮子',    cry: '吼' },
+  { emoji: '🐘', name: '大象',    cry: '长鼻子' },
+  { emoji: '🐵', name: '猴子',    cry: '吱吱' },
 
   // 小生灵
-  { emoji: '🐝', name: '蜜蜂',    sound: { kind: 'buzz' } },
-  { emoji: '🐸', name: '青蛙',    sound: { kind: 'croak' } },
-  { emoji: '🐦', name: '小鸟',    sound: { kind: 'chirp' } },
+  { emoji: '🐝', name: '蜜蜂',    cry: '嗡嗡' },
+  { emoji: '🐸', name: '青蛙',    cry: '呱呱' },
+  { emoji: '🐦', name: '小鸟',    cry: '啾啾' },
 ];
-
-// ===== Web Audio =====
-let _ctx = null;
-function ensureCtx() {
-  if (!_ctx) _ctx = new (window.AudioContext || window.webkitAudioContext)();
-  if (_ctx.state === 'suspended') _ctx.resume();
-  return _ctx;
-}
-
-// 单音工具：osc + gain envelope，可选 vibrato (LFO 调制频率)
-function tone(wave, f0, f1, dur, vol, attack, ctx, startAt, vibrato) {
-  const t = startAt || ctx.currentTime;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = wave;
-  osc.frequency.setValueAtTime(f0, t);
-  osc.frequency.exponentialRampToValueAtTime(Math.max(20, f1 || f0), t + dur);
-  gain.gain.setValueAtTime(0, t);
-  gain.gain.linearRampToValueAtTime(vol, t + (attack || 0.015));
-  gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
-  osc.connect(gain).connect(ctx.destination);
-  if (vibrato) {
-    const lfo = ctx.createOscillator();
-    const lg = ctx.createGain();
-    lfo.type = 'sine';
-    lfo.frequency.value = vibrato.rate || 8;
-    lg.gain.value = vibrato.depth || f0 * 0.04;
-    lfo.connect(lg).connect(osc.frequency);
-    lfo.start(t);
-    lfo.stop(t + dur + 0.02);
-  }
-  osc.start(t);
-  osc.stop(t + dur + 0.02);
-}
-
-// 噪声（用于狗吠、老虎吼等带气声的音色）
-function noise(dur, vol, filterFreq, ctx, startAt) {
-  const t = startAt || ctx.currentTime;
-  const len = Math.max(1, Math.floor(ctx.sampleRate * dur));
-  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
-  const src = ctx.createBufferSource();
-  src.buffer = buf;
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'bandpass';
-  filter.frequency.value = filterFreq || 800;
-  filter.Q.value = 1.5;
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0, t);
-  gain.gain.linearRampToValueAtTime(vol, t + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
-  src.connect(filter).connect(gain).connect(ctx.destination);
-  src.start(t);
-  src.stop(t + dur + 0.02);
-}
-
-// 调度表：每种 kind 一段合成
-const SOUND_RECIPES = {
-  meow(ctx, t) {
-    // 小猫"喵~"：上滑 + 下滑 + 颤音
-    tone('sawtooth', 600, 800, 0.18, 0.16, 0.02, ctx, t,
-      { rate: 8, depth: 30 });
-    tone('sawtooth', 800, 480, 0.32, 0.18, 0.01, ctx, t + 0.16,
-      { rate: 7, depth: 40 });
-  },
-  bark(ctx, t) {
-    // 小狗"汪汪"：两声短促，低频 + 噪声
-    for (let i = 0; i < 2; i++) {
-      const at = t + i * 0.22;
-      tone('sawtooth', 240, 140, 0.14, 0.22, 0.005, ctx, at);
-      noise(0.12, 0.18, 600, ctx, at);
-    }
-  },
-  squeak(ctx, t) {
-    // 老鼠"吱吱"：超高短促 pip × 3
-    for (let i = 0; i < 3; i++) {
-      tone('square', 2400, 1800, 0.06, 0.10, 0.003, ctx, t + i * 0.09);
-    }
-  },
-  sniff(ctx, t) {
-    // 小兔子：嗅嗅声 + 一声轻 chirp（emoji 没真叫，做个可爱拟声）
-    noise(0.08, 0.12, 1200, ctx, t);
-    noise(0.08, 0.10, 1500, ctx, t + 0.14);
-    tone('triangle', 1100, 1300, 0.10, 0.08, 0.005, ctx, t + 0.3);
-  },
-  moo(ctx, t) {
-    // 奶牛"哞~"：低沉拉长 + 慢颤音
-    tone('sawtooth', 140, 95, 0.85, 0.22, 0.08, ctx, t,
-      { rate: 5, depth: 12 });
-  },
-  oink(ctx, t) {
-    // 小猪"哼哼"：短促鼻音两声
-    for (let i = 0; i < 2; i++) {
-      const at = t + i * 0.18;
-      tone('sawtooth', 280, 200, 0.12, 0.20, 0.005, ctx, at,
-        { rate: 24, depth: 30 });
-      noise(0.10, 0.06, 400, ctx, at);
-    }
-  },
-  baa(ctx, t) {
-    // 绵羊"咩~"：颤音很强
-    tone('sawtooth', 420, 380, 0.55, 0.18, 0.04, ctx, t,
-      { rate: 22, depth: 50 });
-  },
-  cluck(ctx, t) {
-    // 母鸡"咯咯哒"：三连音
-    tone('square', 800, 700, 0.07, 0.13, 0.003, ctx, t);
-    tone('square', 850, 760, 0.07, 0.13, 0.003, ctx, t + 0.13);
-    tone('square', 600, 480, 0.18, 0.15, 0.003, ctx, t + 0.28);
-  },
-  quack(ctx, t) {
-    // 鸭子"嘎嘎"：sawtooth 中频 + noise
-    for (let i = 0; i < 2; i++) {
-      const at = t + i * 0.22;
-      tone('sawtooth', 700, 500, 0.16, 0.18, 0.005, ctx, at,
-        { rate: 28, depth: 40 });
-      noise(0.14, 0.08, 1500, ctx, at);
-    }
-  },
-  neigh(ctx, t) {
-    // 小马嘶鸣：高 + 抖 + 下滑
-    tone('sawtooth', 520, 480, 0.18, 0.18, 0.02, ctx, t,
-      { rate: 14, depth: 35 });
-    tone('sawtooth', 460, 240, 0.42, 0.18, 0.01, ctx, t + 0.18,
-      { rate: 18, depth: 50 });
-  },
-  roar(ctx, t) {
-    // 老虎吼：低沉 sawtooth + 大量噪声
-    tone('sawtooth', 110, 75, 0.65, 0.20, 0.05, ctx, t,
-      { rate: 6, depth: 8 });
-    noise(0.65, 0.15, 250, ctx, t);
-  },
-  bigRoar(ctx, t) {
-    // 狮子吼：更低 + 更厚 + 双层
-    tone('sawtooth', 90, 60, 0.85, 0.22, 0.06, ctx, t,
-      { rate: 5, depth: 6 });
-    tone('square',   180, 120, 0.85, 0.10, 0.06, ctx, t);
-    noise(0.85, 0.18, 200, ctx, t);
-  },
-  trumpet(ctx, t) {
-    // 大象号鸣：上升后回落，铜管感
-    tone('sawtooth', 220, 540, 0.30, 0.20, 0.03, ctx, t);
-    tone('sawtooth', 540, 480, 0.18, 0.20, 0.005, ctx, t + 0.30);
-    tone('sawtooth', 480, 200, 0.35, 0.18, 0.005, ctx, t + 0.48);
-  },
-  chitter(ctx, t) {
-    // 猴子吱吱：快速高音 pulses
-    const notes = [1200, 900, 1400, 1000, 1500, 1100];
-    notes.forEach((f, i) => {
-      tone('square', f, f * 0.85, 0.07, 0.10, 0.003, ctx, t + i * 0.08);
-    });
-  },
-  buzz(ctx, t) {
-    // 蜜蜂嗡嗡：低音 sawtooth + 强 AM
-    tone('sawtooth', 200, 220, 0.7, 0.15, 0.04, ctx, t,
-      { rate: 35, depth: 25 });
-  },
-  croak(ctx, t) {
-    // 青蛙呱呱：低频 square + noise 两声
-    for (let i = 0; i < 2; i++) {
-      const at = t + i * 0.28;
-      tone('square', 160, 120, 0.20, 0.18, 0.005, ctx, at,
-        { rate: 30, depth: 20 });
-      noise(0.18, 0.08, 350, ctx, at);
-    }
-  },
-  chirp(ctx, t) {
-    // 小鸟啾啾：三连快上扬
-    tone('triangle', 1800, 2400, 0.08, 0.12, 0.003, ctx, t);
-    tone('triangle', 2000, 2600, 0.08, 0.12, 0.003, ctx, t + 0.11);
-    tone('triangle', 2200, 2900, 0.10, 0.12, 0.003, ctx, t + 0.22);
-  },
-};
-
-function playSound(soundCfg) {
-  const ctx = ensureCtx();
-  const fn = SOUND_RECIPES[soundCfg.kind];
-  if (fn) fn(ctx, ctx.currentTime);
-}
 
 // ===== Speech (中文报名) =====
 // iOS Safari 在用户首次交互后才能 speak；本游戏总是交互触发，OK
@@ -410,12 +229,12 @@ if (typeof speechSynthesis !== 'undefined') {
   speechSynthesis.onvoiceschanged = loadVoices;
 }
 
-function speakName(name) {
+function speak(text) {
   if (typeof speechSynthesis === 'undefined') return;
   // 取消上一条，避免叠加排队
   speechSynthesis.cancel();
   loadVoices();
-  const u = new SpeechSynthesisUtterance(name);
+  const u = new SpeechSynthesisUtterance(text);
   u.lang = 'zh-CN';
   u.rate = 0.85;
   u.pitch = 1.25;   // 偏童声
@@ -496,7 +315,6 @@ function paintPanel(p) {
 
 function tap(p) {
   if (p.swapping) return;
-  ensureCtx();
   const a = ANIMALS[p.animalIdx];
 
   // 闪光圈
@@ -515,10 +333,8 @@ function tap(p) {
   void p.el.offsetWidth;
   p.el.classList.add('pop');
 
-  // 报名 + 叫声
-  speakName(a.name);
-  // 叫声稍微晚一点点，避开语音同时启动的尖峰
-  setTimeout(() => playSound(a.sound), 280);
+  // 报名 + 拟声词（"小猫，喵" / "小狗，汪汪"）
+  speak(a.name + '，' + a.cry);
 
   // 累点
   p.clicks++;
@@ -526,7 +342,7 @@ function tap(p) {
     p.clicks = 0;
     p.threshold = randInt(3, 5);
     // 切换到下一只
-    setTimeout(() => swapAnimal(p), 900);
+    setTimeout(() => swapAnimal(p), 1400);
   }
 }
 
