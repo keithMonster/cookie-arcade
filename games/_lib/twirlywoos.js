@@ -403,6 +403,8 @@
     CHARS,
     CHAR_LIST,
     svg,
+    darken,
+    lighten,
     ensureCtx,
     playCall,
     playOooo,

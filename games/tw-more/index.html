@@ -273,7 +273,7 @@
     el.className = 'ball falling';
     el.style.width = size + 'px';
     el.style.height = size + 'px';
-    el.style.background = `radial-gradient(circle at 32% 32%, ${color}, ${darken(color, 0.4)})`;
+    el.style.background = `radial-gradient(circle at 32% 32%, ${color}, ${TW.darken(color, 0.4)})`;
     el.style.left = (x - size / 2) + 'px';
     el.style.top = (-size - 20) + 'px';
     stage.appendChild(el);
@@ -298,14 +298,6 @@
         }
       }
     }, 700);
-  }
-
-  function darken(hex, amt) {
-    const n = parseInt(hex.slice(1), 16);
-    const r = Math.max(0, ((n >> 16) & 255) * (1 - amt)) | 0;
-    const g = Math.max(0, ((n >> 8) & 255) * (1 - amt)) | 0;
-    const b = Math.max(0, (n & 255) * (1 - amt)) | 0;
-    return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
   }
 
   // ===== 欢呼 + 清场 =====

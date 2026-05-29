@@ -245,9 +245,23 @@ function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 
 // ===== 召唤一辆车 =====
+const MAX_VEHICLES = 12;   // baby 狂戳上限：超限删最老，防 DOM 节点 + setInterval 无限堆积
+const liveVehicles = [];   // { el, trailInterval, exitTimer }
+
+// 清理一辆车（自然退场 / 被上限挤掉都走这里），indexOf 守卫保证幂等
+function removeVehicle(rec) {
+  const i = liveVehicles.indexOf(rec);
+  if (i === -1) return;
+  liveVehicles.splice(i, 1);
+  clearInterval(rec.trailInterval);
+  clearTimeout(rec.exitTimer);
+  rec.el.remove();
+}
+
 // v 不传 = 随机；传了 = 指定那辆
 function spawn(x, y, v) {
   if (!v) v = pick(VEHICLES);
+  while (liveVehicles.length >= MAX_VEHICLES) removeVehicle(liveVehicles[0]);  // 删最老
   const W = window.innerWidth;
   const H = window.innerHeight;
 
@@ -312,11 +326,10 @@ function spawn(x, y, v) {
   // 预录 mp3 念「name，cry」
   playAudio(v.key);
 
-  // 退场清理
-  setTimeout(() => {
-    clearInterval(trailInterval);
-    el.remove();
-  }, duration * 1000 + 200);
+  // 登记进 liveVehicles，退场清理统一走 removeVehicle（自然退场 / 被上限挤掉同源）
+  const rec = { el, trailInterval, exitTimer: null };
+  rec.exitTimer = setTimeout(() => removeVehicle(rec), duration * 1000 + 200);
+  liveVehicles.push(rec);
 }
 
 function spawnDust(x, y) {
