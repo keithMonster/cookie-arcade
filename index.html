@@ -36,7 +36,7 @@
     font-weight: 400;
     z-index: 10;
   }
-  /* 11 块：3 列 × 5 行；末两块横跨满列做 hero；下方留点 idle 角色排站的台面 */
+  /* 12 块：3 列 × 6 行；末三块横跨满列做 hero；下方留点 idle 角色排站的台面 */
   .grid {
     position: fixed;
     top: 52px;
@@ -45,7 +45,7 @@
     bottom: 10vh;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(5, 1fr);
+    grid-template-rows: repeat(6, 1fr);
     gap: 10px;
   }
   .tile.hero { grid-column: 1 / -1; }
@@ -374,6 +374,42 @@
     30%           { transform: translateY(0)    scale(1); }
   }
 
+  /* ====== 卡片 12: Words preview（词卡机：emoji+词 错时接力 pop）====== */
+  .preview.words {
+    background: linear-gradient(160deg, #ffd9e0 0%, #ffb6c8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .preview.words .wc {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 11vmin;
+    line-height: 1;
+    opacity: 0;
+    animation: word-pop 6s ease-in-out infinite;
+  }
+  .preview.words .wc::after {
+    content: attr(data-w);
+    font-size: 4.2vmin;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: rgba(50, 30, 18, 0.8);
+  }
+  .preview.words .wc:nth-child(1) { animation-delay: 0s; }
+  .preview.words .wc:nth-child(2) { animation-delay: 2s; }
+  .preview.words .wc:nth-child(3) { animation-delay: 4s; }
+  @keyframes word-pop {
+    0%, 100% { transform: scale(0)   translateY(18%);  opacity: 0; }
+    8%       { transform: scale(1.1) translateY(0);    opacity: 1; }
+    25%      { transform: scale(1)   translateY(0);    opacity: 1; }
+    33%      { transform: scale(0.6) translateY(-18%); opacity: 0; }
+  }
+
   .footer {
     position: fixed;
     bottom: 8px;
@@ -509,6 +545,16 @@
       <div class="car-em c3">🚜</div>
     </div>
     <div class="label"><span class="name">车车</span><span class="num">11</span></div>
+  </a>
+
+  <!-- 12. words (hero, 横跨满列) -->
+  <a class="tile hero" href="games/words/" data-num="12">
+    <div class="preview words">
+      <div class="wc" data-w="苹果">🍎</div>
+      <div class="wc" data-w="宝宝">👶</div>
+      <div class="wc" data-w="月亮">🌙</div>
+    </div>
+    <div class="label"><span class="name">学说话</span><span class="num">12</span></div>
   </a>
 </div>
 
