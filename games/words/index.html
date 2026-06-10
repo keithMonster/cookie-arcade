@@ -361,6 +361,9 @@ document.addEventListener('keydown', (e) => {
 
 // 进入：静默展示第一张，等 Cookie 戳
 paint(0);
+
+// 空闲预载全部 29 词 mp3（共 ~250KB）——首戳出声不等网络（2026-06-10）
+setTimeout(() => DECK.forEach(w => getAudio(w.key)), 400);
 </script>
 </body>
 </html>

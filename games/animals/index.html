@@ -234,6 +234,12 @@ const ANIMALS = [
   { emoji: '🐦', name: '小鸟',    cry: '啾啾',     key: 'bird' },
 ];
 
+// 每次进入洗牌：开局 4 只 + 后续出场顺序都随机（2026-06-10，同 words「每次进去都一样」反馈精神）
+for (let i = ANIMALS.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [ANIMALS[i], ANIMALS[j]] = [ANIMALS[j], ANIMALS[i]];
+}
+
 // ===== 音频（预录 mp3，避开 iOS SpeechSynthesis 整段——Keith iPad 实证 SpeechSynthesis 静默） =====
 // audio/<key>.mp3 是 macOS say -v Tingting 婷婷音色离线生成的「name，cry」组合语音
 const audioCache = {};
@@ -247,6 +253,17 @@ function playAudio(key) {
   a.currentTime = 0;
   a.play().catch(() => {});  // play() 是 promise；用户手势链外 / 加载失败都 silently 吃掉
 }
+
+// 进入后空闲预载全部叫声 mp3——首戳出声不等网络（2026-06-10）
+setTimeout(() => {
+  ANIMALS.forEach(({ key }) => {
+    if (!audioCache[key]) {
+      const a = new Audio(`audio/${key}.mp3`);
+      a.preload = 'auto';
+      audioCache[key] = a;
+    }
+  });
+}, 400);
 
 // ===== 游戏状态 =====
 // 4 面板，每个独立维护"已点几次 / 这一轮触发阈值（3~5 随机）"

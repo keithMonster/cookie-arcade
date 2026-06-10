@@ -239,10 +239,34 @@ function playAudio(key) {
   a.play().catch(() => {});
 }
 
+// 进入后空闲预载全部车声 mp3——首戳出声不等网络（2026-06-10）
+setTimeout(() => {
+  VEHICLES.forEach(({ key }) => {
+    if (!audioCache[key]) {
+      const a = new Audio(`audio/${key}.mp3`);
+      a.preload = 'auto';
+      audioCache[key] = a;
+    }
+  });
+}, 400);
+
 // ===== 工具 =====
 const stage = document.getElementById('stage');
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+// 洗牌队列：一轮 9 辆全亮相再重洗——纯随机短期重复感强（连戳老出同一辆，2026-06-10）
+let vehicleBag = [];
+function nextVehicle() {
+  if (!vehicleBag.length) {
+    vehicleBag = VEHICLES.slice();
+    for (let i = vehicleBag.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [vehicleBag[i], vehicleBag[j]] = [vehicleBag[j], vehicleBag[i]];
+    }
+  }
+  return vehicleBag.pop();
+}
 
 // ===== 召唤一辆车 =====
 const MAX_VEHICLES = 12;   // baby 狂戳上限：超限删最老，防 DOM 节点 + setInterval 无限堆积
@@ -258,9 +282,9 @@ function removeVehicle(rec) {
   rec.el.remove();
 }
 
-// v 不传 = 随机；传了 = 指定那辆
+// v 不传 = 洗牌队列取下一辆；传了 = 指定那辆
 function spawn(x, y, v) {
-  if (!v) v = pick(VEHICLES);
+  if (!v) v = nextVehicle();
   while (liveVehicles.length >= MAX_VEHICLES) removeVehicle(liveVehicles[0]);  // 删最老
   const W = window.innerWidth;
   const H = window.innerHeight;

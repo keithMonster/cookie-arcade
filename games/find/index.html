@@ -271,6 +271,8 @@ function paintRound() {
   });
   askWordEl.textContent = target.word + '在哪里呀？';
   document.body.style.backgroundColor = THEMES[target.theme];
+  // 本轮表扬音频提前挂上——答对瞬间 play() 不等加载（src 同值重赋会触发重载，只在换题时设）
+  yEl.src = 'audio/y_' + target.key + '.mp3';
 }
 
 function playQuestion() {
@@ -312,8 +314,7 @@ function answer(i) {
     picks[i].classList.add('win');
     picks[1 - i].className = 'pick lose';
     burstSparks(picks[i]);
-    yEl.src = 'audio/y_' + target.key + '.mp3';
-    yEl.currentTime = 0;
+    yEl.currentTime = 0;   // src 已在 paintRound 提前挂载
     // 表扬音频万一加载失败也要能进入下一轮（catch → 定时兜底）
     yEl.play().catch(() => setTimeout(nextRound, 1400));
   } else {
@@ -330,6 +331,8 @@ function answer(i) {
   }
 }
 yEl.addEventListener('ended', () => setTimeout(nextRound, 500));
+// 表扬音频资源出错（404/解码失败）卡在 celebrate 的兜底——nextRound 有 dealing guard，与 play().catch 不会双进
+yEl.addEventListener('error', () => { if (phase === 'celebrate') setTimeout(nextRound, 800); });
 
 function nextRound() {
   if (phase === 'dealing') return;
@@ -417,6 +420,14 @@ document.addEventListener('keydown', (e) => {
 // 进入：摆好第一轮，静候首戳（iOS 音频需手势）
 pickRound();
 paintRound();
+
+// 空闲预载全部 58 个 mp3 进 HTTP 缓存（~580KB）——后续换 src 即播不等网络（2026-06-10）
+setTimeout(() => {
+  WORDS.forEach(({ key }) => {
+    fetch(`audio/q_${key}.mp3`).catch(() => {});
+    fetch(`audio/y_${key}.mp3`).catch(() => {});
+  });
+}, 600);
 </script>
 </body>
 </html>

@@ -72,7 +72,8 @@
     color: rgba(255, 255, 255, 0.18);
     text-decoration: none;
     transition: color 250ms, background 250ms;
-    mix-blend-mode: difference;
+    /* 亮色背景上靠暗影保可读（mix-blend-mode: difference 在黄/橙底会变诡异色，2026-06-10 去掉） */
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
   }
   #back:hover {
     color: rgba(255, 255, 255, 0.85);
@@ -98,7 +99,7 @@
 <body>
 <div id="stage"></div>
 <a id="back" href="../../">←</a>
-<div id="hint">按 任意键 让屏幕变色 · Esc 返回</div>
+<div id="hint">戳一戳，换个颜色</div>
 
 <script>
   // 9 色——比另几款更柔和/降饱和

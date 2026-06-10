@@ -147,7 +147,7 @@
 <body>
 <div id="stage"></div>
 <a id="back" href="../../">←</a>
-<div id="hint">按 任意键 开始 · F 全屏 · Space 烟花 · Esc 返回</div>
+<div id="hint">拍一拍键盘，戳一戳屏幕</div>
 
 <script>
   // ========= 配置 =========
@@ -401,14 +401,37 @@
     spawnShape('click_' + Date.now(), e.clientX, e.clientY);
   });
   // iPad 触摸：每个手指都触发一次（多指齐戳很爽）
+  const touchLast = {};   // identifier → 上次出形状的位置（拖动节流用）
   document.addEventListener('touchstart', (e) => {
     if (e.target.closest('#back')) return;
     handleFirstKey();
     for (const t of e.changedTouches) {
+      touchLast[t.identifier] = { x: t.clientX, y: t.clientY };
       spawnShape('touch_' + Date.now() + '_' + t.identifier, t.clientX, t.clientY);
     }
     e.preventDefault();
   }, { passive: false });
+  // 按住拖动 = 沿途撒形状（幼儿常见手势，2026-06-10）；按移动距离节流防形状/钢琴音轰炸
+  const DRAG_STEP = 72;   // px，拖过这个距离才再出一个
+  document.addEventListener('touchmove', (e) => {
+    if (e.target.closest('#back')) return;
+    for (const t of e.touches) {
+      const last = touchLast[t.identifier];
+      if (!last) continue;
+      const dx = t.clientX - last.x, dy = t.clientY - last.y;
+      if (dx * dx + dy * dy >= DRAG_STEP * DRAG_STEP) {
+        touchLast[t.identifier] = { x: t.clientX, y: t.clientY };
+        spawnShape('drag_' + Date.now() + '_' + t.identifier, t.clientX, t.clientY);
+      }
+    }
+    e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchend', (e) => {
+    for (const t of e.changedTouches) delete touchLast[t.identifier];
+  }, { passive: true });
+  document.addEventListener('touchcancel', (e) => {
+    for (const t of e.changedTouches) delete touchLast[t.identifier];
+  }, { passive: true });
 
   // 窗口尺寸变化——清场免得形状错位
   window.addEventListener('resize', () => {
