@@ -1,39 +1,37 @@
 # Cookie's Arcade
 
-A toddler-friendly mini-game collection for a 1-year-old who loves smashing the keyboard. Single-file HTML per game, zero dependencies, zero network.
+A toddler-friendly mini-game collection for a (now almost 2-year-old) who started out smashing the keyboard. Single-file HTML per game, zero network, deployed on GitHub Pages.
 
 ## Live
 
 https://keithmonster.github.io/cookie-arcade/
 
-## Games
+## Games (13)
 
-| # | Name | Input | What it does |
-|---|---|---|---|
-| 1 | **Keyboard Smash** | Keyboard | Each keypress spawns a colored shape (drift / spin / fall) + piano note + particle burst. Space = full-screen firework. 1% rare oversized shape. |
-| 2 | **Pop Bubbles** | Mouse / touch | Colorful soap bubbles drift up the screen. Move the cursor over a bubble to pop it with a satisfying "blip". |
-| 3 | **Drum Pad** | Keyboard | Top row = drums, middle row = cymbals, bottom row = chimes (pentatonic bells). Each key plays its synth voice and spawns a matching visual. |
-| 4 | **Color Cascade** | Keyboard | Each key fades the entire screen to a new color over ~1s, with a soft sustained note. Calming / hypnotic. |
+| # | Name | What it does |
+|---|---|---|
+| 1 | **找一找 Find It** | Listen-and-point: a voice asks "X 在哪里呀?", tap the right one of two big cards. Wrong taps wobble + replay; after 2 misses the right card glows. Always ends in success. |
+| 2 | **学说话 First Words** | Word-card machine: 29 Chinese words across 5 themes (family / fruit / food / body / nature). Tap = the card says its word twice with a pause for imitation, then auto-flips. Deck shuffles every visit. |
+| 3 | **车车 Cars** | Tap anywhere — a vehicle appears and drives off-screen with dust trails, name + sound. Emergency vehicles flash. |
+| 4 | **动物园 Zoo** | 2×2 animal panels. Tap an animal to hear its name + cry; panels rotate through 17 animals. |
+| 5-9 | **Twirlywoos × 5** | Summon birds / falling bubbles / four-bird chorus / mood colors / more-more-more ball pile — starring BigHoo, Toodloo, Chickedy & Chick on their red-boat stage. |
+| 10 | **键盘小子 Keyboard Smash** | Each keypress spawns a shape + piano note + particles. Space = firework. |
+| 11 | **戳泡泡 Pop Bubbles** | Bubbles drift up; hover / touch to pop. |
+| 12 | **小鼓机 Drum Pad** | Keyboard rows = drums / cymbals / chimes. |
+| 13 | **变色屏 Color Cascade** | Each key fades the screen to a new color with a soft note. Calming. |
 
 ## Navigation
 
-- Click / tap a tile, press `1` / `2` / `3` / `4` for an exact game, or any other key for a random game
-- Inside a game: `Esc` (twice if in fullscreen — first exits fullscreen) or tap the top-right corner returns to home
-- `F` toggles fullscreen
-- `Cmd+Q` quits the browser
+- Tap a tile, press `1`–`9` for an exact game, or any other key for a random one
+- Inside a game: `Esc` or the top-right corner returns home; `F` toggles fullscreen
 
 ## On iPad
 
-Open the live URL in Safari → tap **Share → Add to Home Screen**. The arcade installs as a standalone full-screen "app" with no Safari UI. All four games respond to touch:
+Open the live URL in Safari → **Share → Add to Home Screen** for a full-screen standalone app. Everything responds to touch.
 
-- **Keyboard Smash** — tap anywhere, shape spawns at your finger
-- **Pop Bubbles** — drag your finger across bubbles to pop them
-- **Drum Pad** — tap the top third for drums, middle for cymbals, bottom for chimes
-- **Color Cascade** — tap anywhere; multi-touch triggers multiple colors
+## Audio
 
-## Local
-
-Double-click `index.html` to play offline. Everything is generated in code — no audio files, no network, no dependencies.
+Speech audio is pre-rendered mp3 (macOS `say -v Tingting`, mono 22.05kHz 32kbps) because iOS WebKit blocks SpeechSynthesis entirely. Regenerate with the scripts in `tools/`.
 
 ## Inspirations
 
@@ -46,11 +44,18 @@ Double-click `index.html` to play offline. Everything is generated in code — n
 ```
 .
 ├── index.html              # arcade home (game picker)
-└── games/
-    ├── keyboard/index.html
-    ├── bubbles/index.html
-    ├── drums/index.html
-    └── cascade/index.html
+├── games/
+│   ├── _lib/               # Twirlywoos characters + stage (shared by tw-*)
+│   ├── find/               # listen-and-point (audio/ = 58 pre-rendered mp3)
+│   ├── words/              # word cards (audio/ = 29 pre-rendered mp3)
+│   ├── cars/  animals/     # tap-to-spawn games (audio/ = pre-rendered mp3)
+│   ├── tw-summon/ tw-bubbles/ tw-chorus/ tw-mood/ tw-more/
+│   └── keyboard/ bubbles/ drums/ cascade/   # the original four, fully self-contained
+└── tools/                  # offline audio generation scripts (say + lame)
 ```
 
-Each game is self-contained — no shared CSS / JS. Easy to fork a game off into its own toy.
+v1 games are self-contained single files; the Twirlywoos five share `_lib/`. `.nojekyll` keeps GitHub Pages from eating the `_lib` directory.
+
+## The story
+
+See [STORY.md](STORY.md) — written for Cookie to read someday.

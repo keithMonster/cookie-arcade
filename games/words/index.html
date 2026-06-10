@@ -77,9 +77,9 @@
     will-change: transform, opacity;
   }
 
-  /* 切换动画：旧词上飞淡出，新词从下方蹦上来（复用 animals 已验证曲线） */
-  .swap-out { animation: card-swap-out 360ms ease-in forwards; }
-  .swap-in  { animation: card-swap-in  520ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+  /* 切换动画：旧词上飞淡出，新词从下方蹦上来（复用 animals 已验证曲线；2026-06-11 提速） */
+  .swap-out { animation: card-swap-out 260ms ease-in forwards; }
+  .swap-in  { animation: card-swap-in  400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
   @keyframes card-swap-out {
     0%   { transform: translateY(0)    scale(1)   rotate(0); opacity: 1; }
     100% { transform: translateY(-26%) scale(0.4) rotate(-16deg); opacity: 0; }
@@ -192,6 +192,19 @@ const WORDS = [
   { emoji: '🌧️', word: '下雨', key: 'rain',    theme: 4 },
 ];
 
+// 每次进入洗牌：主题组顺序随机 + 组内随机（2026-06-11 Keith 反馈「每次进去都先是爸爸妈妈」）
+// ——开局第一张每次不同，同时保留「同主题连续出现」的背景色语义聚类
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+const groups = [];
+WORDS.forEach(w => (groups[w.theme] = groups[w.theme] || []).push(w));
+const DECK = shuffle(groups.filter(Boolean).map(g => shuffle(g))).flat();
+
 // 主题主色（柔和糖果色，互相区分）——走 background-color 以便 600ms 平滑过渡
 const THEMES = ['#ffc4d2', '#ffae86', '#ffd86b', '#a8dcc0', '#9ec8f0'];
 
@@ -204,8 +217,8 @@ function getAudio(key) {
     a = new Audio(`audio/${key}.mp3`);
     a.preload = 'auto';
     audioCache[key] = a;
-    // 念完（两遍 + 留白都结束）后排一个延时，到点自动翻下一张
-    a.addEventListener('ended', scheduleAdvance);
+    // 念完（两遍 + 留白都结束）→ 进入停留窗口，到点自动翻下一张
+    a.addEventListener('ended', onSpoken);
   }
   return a;
 }
@@ -216,14 +229,16 @@ const emojiEl = document.getElementById('emoji');
 const wordEl = document.getElementById('word');
 const ringEl = document.getElementById('ring');
 
-const DWELL_MS = 1800;   // 念完后停留多久再自动翻（给 Cookie 跟读 + 反应的呼吸窗口）
+const DWELL_MS = 900;   // 念完后停留多久再自动翻（2026-06-11 1800→900：留跟读窗口但不拖节奏）
 
 let idx = 0;
 let swapping = false;
+let speaking = false;   // 当前卡正在念
+let spoken = false;     // 当前卡已念完（停留窗口内）
 let dwellTimer = null;
 
 function paint(i) {
-  const w = WORDS[i];
+  const w = DECK[i];
   emojiEl.textContent = w.emoji;
   wordEl.textContent = w.word;
   document.body.style.backgroundColor = THEMES[w.theme];
@@ -241,20 +256,40 @@ function bounce() {
   emojiEl.classList.add('bounce');
 }
 
-// 戳 / 任意键 = 念「当前」这张词，画面不翻；念完由 ended → scheduleAdvance 自动翻下一张。
-// 念的途中再戳 = 从头重念当前（clearTimeout 取消已排的自动翻，停手后重新计时）——保「每按必反馈」。
-function speak() {
+// 戳 / 任意键的分层语义（2026-06-11 节奏调优——连戳要能往前走，不再原地重念卡死）：
+// · 静默卡（还没念过）→ 念这张（保「戳 = 念眼前这张」心智，2026-06-03 校准）
+// · 念的途中再戳 → 只弹跳 + 闪圈反馈，不重念不重置计时（保「每按必反馈」）
+// · 念完后的停留窗口再戳 → 立即翻下一张（跳过等待）
+function tap() {
   if (swapping) return;
   hideHint();
+  if (speaking) { bounce(); pulseRing(); return; }
+  if (spoken) { clearTimeout(dwellTimer); advance(); return; }
+  speakCurrent();
+}
+
+function speakCurrent() {
   clearTimeout(dwellTimer);
-  const a = getAudio(WORDS[idx].key);
+  speaking = true;
+  const a = getAudio(DECK[idx].key);
   a.currentTime = 0;
-  a.play().catch(() => {});  // 用户手势链外 / 加载失败都 silently 吃掉
+  a.play().catch(() => {
+    // 音频失败（加载失败/手势链外）不能卡死在 speaking：当作念完，照常停留→自动翻
+    speaking = false;
+    spoken = true;
+    scheduleAdvance();
+  });
   bounce();
   pulseRing();
 }
 
-// 念完后延时 DWELL_MS 自动翻；途中又戳会 clearTimeout 重排
+// 念完 → 标记进入停留窗口，延时 DWELL_MS 自动翻
+function onSpoken() {
+  speaking = false;
+  spoken = true;
+  scheduleAdvance();
+}
+
 function scheduleAdvance() {
   clearTimeout(dwellTimer);
   dwellTimer = setTimeout(advance, DWELL_MS);
@@ -263,7 +298,10 @@ function scheduleAdvance() {
 function advance() {
   if (swapping) return;
   swapping = true;
-  const next = (idx + 1) % WORDS.length;
+  speaking = false;
+  spoken = false;
+  clearTimeout(dwellTimer);
+  const next = (idx + 1) % DECK.length;
 
   emojiEl.classList.add('swap-out');
   wordEl.classList.add('swap-out');
@@ -282,8 +320,8 @@ function advance() {
       emojiEl.classList.remove('swap-in');
       wordEl.classList.remove('swap-in');
       swapping = false;
-    }, 540);
-  }, 360);
+    }, 410);
+  }, 260);
 }
 
 let hintGone = false;
@@ -298,9 +336,9 @@ function hideHint() {
 }
 
 // ===== 输入：整屏任意位置戳 / 任意键 =====
-stage.addEventListener('click', speak, { passive: true });
+stage.addEventListener('click', tap, { passive: true });
 stage.addEventListener('touchstart', (e) => {
-  speak();
+  tap();
   e.preventDefault();   // 抑制 iOS 合成 click，避免一戳触发两次
 }, { passive: false });
 
@@ -318,7 +356,7 @@ document.addEventListener('keydown', (e) => {
     return;
   }
   e.preventDefault();
-  speak();
+  tap();
 });
 
 // 进入：静默展示第一张，等 Cookie 戳
