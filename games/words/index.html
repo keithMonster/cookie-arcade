@@ -77,7 +77,7 @@
     will-change: transform, opacity;
   }
 
-  /* 切换动画：旧词上飞淡出，新词从下方蹦上来（复用 animals 已验证曲线；2026-06-11 提速） */
+  /* 切换动画：旧词上飞淡出，新词从下方蹦上来（复用 animals 已验证曲线；2026-06-10 提速） */
   .swap-out { animation: card-swap-out 260ms ease-in forwards; }
   .swap-in  { animation: card-swap-in  400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
   @keyframes card-swap-out {
@@ -192,7 +192,7 @@ const WORDS = [
   { emoji: '🌧️', word: '下雨', key: 'rain',    theme: 4 },
 ];
 
-// 每次进入洗牌：主题组顺序随机 + 组内随机（2026-06-11 Keith 反馈「每次进去都先是爸爸妈妈」）
+// 每次进入洗牌：主题组顺序随机 + 组内随机（2026-06-10 Keith 反馈「每次进去都先是爸爸妈妈」）
 // ——开局第一张每次不同，同时保留「同主题连续出现」的背景色语义聚类
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -229,7 +229,7 @@ const emojiEl = document.getElementById('emoji');
 const wordEl = document.getElementById('word');
 const ringEl = document.getElementById('ring');
 
-const DWELL_MS = 900;   // 念完后停留多久再自动翻（2026-06-11 1800→900：留跟读窗口但不拖节奏）
+const DWELL_MS = 900;   // 念完后停留多久再自动翻（2026-06-10 1800→900：留跟读窗口但不拖节奏）
 
 let idx = 0;
 let swapping = false;
@@ -256,7 +256,7 @@ function bounce() {
   emojiEl.classList.add('bounce');
 }
 
-// 戳 / 任意键的分层语义（2026-06-11 节奏调优——连戳要能往前走，不再原地重念卡死）：
+// 戳 / 任意键的分层语义（2026-06-10 节奏调优——连戳要能往前走，不再原地重念卡死）：
 // · 静默卡（还没念过）→ 念这张（保「戳 = 念眼前这张」心智，2026-06-03 校准）
 // · 念的途中再戳 → 只弹跳 + 闪圈反馈，不重念不重置计时（保「每按必反馈」）
 // · 念完后的停留窗口再戳 → 立即翻下一张（跳过等待）
