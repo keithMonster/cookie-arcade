@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>躲猫猫 · Cookie's Arcade</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", sans-serif;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    /* 暖木台底，4 张被子盖在上面 */
+    background: radial-gradient(120% 90% at 50% 0%, #4a3526 0%, #2a1c12 100%);
+  }
+
+  .grid {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  /* 每个格子 = 一个「藏着朋友」的窝 */
+  .nest {
+    position: relative;
+    border-radius: 30px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #1c130c;
+    box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.10), 0 10px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  /* 窝底：一圈柔和糖果色光，朋友藏在这后面 */
+  .floor {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nest.f0 .floor { background: radial-gradient(70% 70% at 50% 55%, #ffe1e6 0%, #ffc2cf 100%); }
+  .nest.f1 .floor { background: radial-gradient(70% 70% at 50% 55%, #dff3d8 0%, #b6e0ac 100%); }
+  .nest.f2 .floor { background: radial-gradient(70% 70% at 50% 55%, #fff0c2 0%, #ffdd86 100%); }
+  .nest.f3 .floor { background: radial-gradient(70% 70% at 50% 55%, #d9eafb 0%, #abccf0 100%); }
+
+  /* 藏在被子下的朋友 */
+  .char {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1vmin;
+  }
+  .emoji {
+    font-size: 34vmin;
+    line-height: 1;
+    filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.10));
+    transform: scale(0.4);
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+  .emoji.reveal { animation: emoji-reveal 620ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+  @keyframes emoji-reveal {
+    0%   { transform: translateY(18%) scale(0.3) rotate(-12deg); opacity: 0; }
+    55%  { transform: translateY(-6%) scale(1.18) rotate(5deg);  opacity: 1; }
+    100% { transform: translateY(0)   scale(1)    rotate(0);     opacity: 1; }
+  }
+  .emoji.again { animation: emoji-again 520ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes emoji-again {
+    0%   { transform: scale(1)    rotate(0); }
+    25%  { transform: scale(1.25) rotate(-6deg); }
+    55%  { transform: scale(0.95) rotate(4deg); }
+    100% { transform: scale(1)    rotate(0); }
+  }
+  .name {
+    font-size: clamp(24px, 5.5vmin, 60px);
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: rgba(50, 30, 18, 0.85);
+    text-shadow: 0 2px 0 rgba(255, 255, 255, 0.6);
+    opacity: 0;
+    transition: opacity 240ms;
+  }
+  .name.show { opacity: 1; }
+
+  /* 盖在朋友上的「被子」——掀开 = 揭晓 */
+  .cover {
+    position: absolute;
+    inset: 0;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(0);
+    transition: transform 460ms cubic-bezier(0.5, 0, 0.3, 1), opacity 460ms ease-out;
+    will-change: transform, opacity;
+  }
+  /* 4 床被子各自花色（圆点布纹） */
+  .nest.f0 .cover { background: #ff8fa3; }
+  .nest.f1 .cover { background: #7cc472; }
+  .nest.f2 .cover { background: #ffce5c; }
+  .nest.f3 .cover { background: #6fa8e6; }
+  .cover::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 30px;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.45) 14%, transparent 16%);
+    background-size: 12% 12%;
+    background-position: 6% 6%;
+    opacity: 0.85;
+  }
+  /* 被角上一只小手柄，暗示「能掀」 */
+  .cover .knob {
+    position: relative;
+    z-index: 1;
+    font-size: 12vmin;
+    line-height: 1;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+    animation: knob-breathe 2.6s ease-in-out infinite;
+  }
+  @keyframes knob-breathe {
+    0%, 100% { transform: scale(1) translateY(0); }
+    50%      { transform: scale(1.08) translateY(-3%); }
+  }
+  /* 偷看：被子轻轻掀一下又盖回，提示「下面有东西」 */
+  .cover.peek { animation: cover-peek 1100ms ease-in-out; }
+  @keyframes cover-peek {
+    0%, 100% { transform: translateY(0); }
+    35%      { transform: translateY(-16%) rotate(-2deg); }
+    70%      { transform: translateY(0); }
+  }
+  /* 掀开：被子向上飞出 + 淡出 */
+  .cover.lifted {
+    transform: translateY(-118%) rotate(-6deg) scale(0.92);
+    opacity: 0;
+  }
+
+  /* 闪光圈 */
+  .ring {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 30%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 6px solid rgba(255, 255, 255, 0.7);
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .ring.pulse { animation: ring-pulse 620ms ease-out forwards; }
+  @keyframes ring-pulse {
+    0%   { transform: translate(-50%, -50%) scale(0.2); opacity: 0.85; }
+    100% { transform: translate(-50%, -50%) scale(2.0); opacity: 0; }
+  }
+
+  /* 庆祝彩屑 */
+  .confetti {
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    font-size: 5vmin;
+    line-height: 1;
+    pointer-events: none;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+  .confetti.go { animation: confetti-fly 760ms ease-out forwards; }
+  @keyframes confetti-fly {
+    0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(1.1) rotate(var(--rot)); opacity: 0; }
+  }
+
+  /* 返回按钮 */
+  #back {
+    position: fixed; top: 0; right: 0;
+    width: 70px; height: 70px;
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: none;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  }
+  #back:active { color: #fff; }
+
+  #hint {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    letter-spacing: 0.3em;
+    color: rgba(255, 255, 255, 0.6);
+    pointer-events: none;
+    transition: opacity 600ms;
+    z-index: 100;
+  }
+  #hint.gone { opacity: 0; }
+</style>
+</head>
+<body>
+
+<div class="grid" id="grid">
+  <div class="nest f0" data-idx="0">
+    <div class="floor"><div class="char"><div class="emoji"></div><div class="name"></div></div></div>
+    <div class="ring"></div>
+    <div class="cover"><span class="knob">🫶</span></div>
+  </div>
+  <div class="nest f1" data-idx="1">
+    <div class="floor"><div class="char"><div class="emoji"></div><div class="name"></div></div></div>
+    <div class="ring"></div>
+    <div class="cover"><span class="knob">🫶</span></div>
+  </div>
+  <div class="nest f2" data-idx="2">
+    <div class="floor"><div class="char"><div class="emoji"></div><div class="name"></div></div></div>
+    <div class="ring"></div>
+    <div class="cover"><span class="knob">🫶</span></div>
+  </div>
+  <div class="nest f3" data-idx="3">
+    <div class="floor"><div class="char"><div class="emoji"></div><div class="name"></div></div></div>
+    <div class="ring"></div>
+    <div class="cover"><span class="knob">🫶</span></div>
+  </div>
+</div>
+
+<a id="back" href="../../">←</a>
+<div id="hint">掀开被子，看看是谁</div>
+
+<script>
+// ===== 角色池 =====
+// emoji + 中文名 + audio key（对应 audio/<key>.mp3，内容「哇！是<名字>！」）
+const CHARS = [
+  { emoji: '🐱', name: '小猫',   key: 'cat' },
+  { emoji: '🐶', name: '小狗',   key: 'dog' },
+  { emoji: '🐰', name: '小兔子', key: 'rabbit' },
+  { emoji: '🐮', name: '奶牛',   key: 'cow' },
+  { emoji: '🐸', name: '青蛙',   key: 'frog' },
+  { emoji: '🐯', name: '老虎',   key: 'tiger' },
+  { emoji: '🐵', name: '猴子',   key: 'monkey' },
+  { emoji: '🐧', name: '企鹅',   key: 'penguin' },
+  { emoji: '🐥', name: '小鸡',   key: 'chick' },
+  { emoji: '🦊', name: '狐狸',   key: 'fox' },
+  { emoji: '🐼', name: '熊猫',   key: 'panda' },
+  { emoji: '🐻', name: '小熊',   key: 'bear' },
+];
+const CONFETTI = ['⭐️', '✨', '💛', '💚', '💙', '🧡', '🎉'];
+
+// 每次进入洗牌——每次玩到的朋友顺序都不一样（同 animals/words 随机化精神）
+for (let i = CHARS.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [CHARS[i], CHARS[j]] = [CHARS[j], CHARS[i]];
+}
+
+// ===== 音频（预录 mp3，避开 iOS SpeechSynthesis 整段被屏蔽——见 thread v0.9 换刀） =====
+const audioCache = {};
+function playAudio(key) {
+  let a = audioCache[key];
+  if (!a) {
+    a = new Audio(`audio/${key}.mp3`);
+    a.preload = 'auto';
+    audioCache[key] = a;
+  }
+  a.currentTime = 0;
+  a.play().catch(() => {});  // 手势链外 / 加载失败静默吃掉
+}
+// 空闲预载全部揭晓音——首次掀开就出声不等网络
+setTimeout(() => {
+  CHARS.forEach(({ key }) => {
+    if (!audioCache[key]) {
+      const a = new Audio(`audio/${key}.mp3`);
+      a.preload = 'auto';
+      audioCache[key] = a;
+    }
+  });
+}, 400);
+
+// ===== 游戏状态 =====
+const DWELL_MS = 1700;          // 揭晓后停留多久再盖回
+const nests = [];
+let poolPointer = 4;            // 下一个待分配角色索引（0-3 初始占用）
+
+function init() {
+  document.querySelectorAll('.nest').forEach((el, i) => {
+    const state = {
+      el, idx: i,
+      charIdx: i,
+      open: false,               // 被子是否掀开（朋友是否露出）
+      busy: false,               // 掀/盖动画进行中，锁住避免抖
+      reHideTimer: null,
+      emoji: el.querySelector('.emoji'),
+      name: el.querySelector('.name'),
+      cover: el.querySelector('.cover'),
+      ring: el.querySelector('.ring'),
+    };
+    nests.push(state);
+    paintChar(state);
+    el.addEventListener('click', () => tap(state), { passive: true });
+    el.addEventListener('touchstart', (e) => { tap(state); e.preventDefault(); }, { passive: false });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.metaKey || e.ctrlKey) return;
+    if (e.key === 'Escape') {
+      if (!document.fullscreenElement) location.href = '../../';
+      return;
+    }
+    if (e.key === 'f' || e.key === 'F') {
+      const el = document.documentElement;
+      if (!document.fullscreenElement && el.requestFullscreen) el.requestFullscreen().catch(() => {});
+      return;
+    }
+    const idx = parseInt(e.key, 10);
+    if (idx >= 1 && idx <= 4) { e.preventDefault(); tap(nests[idx - 1]); return; }
+    // 其它任意键 = 随机掀一个还盖着的窝（乱拍键盘也玩得下去）
+    if (e.key.length === 1 || e.key === 'Enter') {
+      e.preventDefault();
+      const hiddenOnes = nests.filter(n => !n.open && !n.busy);
+      const pick = hiddenOnes.length ? hiddenOnes : nests;
+      tap(pick[Math.floor(Math.random() * pick.length)]);
+    }
+  });
+
+  // 偷看循环：每隔一会儿让一个还盖着的窝轻轻掀一下，提示「下面有朋友」
+  setInterval(() => {
+    const hiddenOnes = nests.filter(n => !n.open && !n.busy);
+    if (!hiddenOnes.length) return;
+    const n = hiddenOnes[Math.floor(Math.random() * hiddenOnes.length)];
+    n.cover.classList.remove('peek');
+    void n.cover.offsetWidth;
+    n.cover.classList.add('peek');
+  }, 2600);
+
+  // 提示淡出
+  let hintGone = false;
+  function hideHint() {
+    if (hintGone) return;
+    hintGone = true;
+    const h = document.getElementById('hint');
+    if (h) { h.classList.add('gone'); setTimeout(() => h.remove(), 800); }
+  }
+  document.addEventListener('pointerdown', hideHint, { once: true });
+  document.addEventListener('keydown', hideHint, { once: true });
+}
+
+function paintChar(n) {
+  const c = CHARS[n.charIdx];
+  n.emoji.textContent = c.emoji;
+  n.name.textContent = c.name;
+}
+
+function tap(n) {
+  if (n.busy) return;
+  if (n.open) { again(n); return; }   // 已露出 → 再拍一下蹦一下 + 再念一次
+  reveal(n);
+}
+
+// 掀开被子，揭晓朋友
+function reveal(n) {
+  const c = CHARS[n.charIdx];
+  n.busy = true;
+
+  n.cover.classList.remove('peek');
+  n.cover.classList.add('lifted');
+
+  // 闪光圈
+  n.ring.classList.remove('pulse');
+  void n.ring.offsetWidth;
+  n.ring.classList.add('pulse');
+
+  // 朋友蹦出来
+  n.emoji.classList.remove('reveal', 'again');
+  void n.emoji.offsetWidth;
+  n.emoji.classList.add('reveal');
+  n.name.classList.add('show');
+
+  spawnConfetti(n);
+  playAudio(c.key);
+
+  // 掀开动画结束 → 进入「露出」状态，定时盖回
+  setTimeout(() => {
+    n.busy = false;
+    n.open = true;
+    clearTimeout(n.reHideTimer);
+    n.reHideTimer = setTimeout(() => reHide(n), DWELL_MS);
+  }, 460);
+}
+
+// 露出状态下再拍 → 蹦一下 + 再念一次，并把盖回计时往后推（每拍必有反馈）
+function again(n) {
+  const c = CHARS[n.charIdx];
+  n.emoji.classList.remove('again');
+  void n.emoji.offsetWidth;
+  n.emoji.classList.add('again');
+  n.ring.classList.remove('pulse');
+  void n.ring.offsetWidth;
+  n.ring.classList.add('pulse');
+  playAudio(c.key);
+  clearTimeout(n.reHideTimer);
+  n.reHideTimer = setTimeout(() => reHide(n), DWELL_MS);
+}
+
+// 盖回被子，换一个新朋友藏进去
+function reHide(n) {
+  n.busy = true;
+  n.name.classList.remove('show');
+  n.cover.classList.remove('lifted');   // 被子落下
+
+  setTimeout(() => {
+    // 盖严后换朋友（避免同屏重复 + 自己刚露过的那只）
+    n.charIdx = nextCharForNest(n);
+    paintChar(n);
+    n.emoji.classList.remove('reveal', 'again');
+    n.open = false;
+    n.busy = false;
+  }, 480);
+}
+
+function nextCharForNest(n) {
+  const occupied = new Set(nests.filter(o => o !== n).map(o => o.charIdx));
+  for (let i = 0; i < CHARS.length; i++) {
+    const cand = (poolPointer + i) % CHARS.length;
+    if (!occupied.has(cand) && cand !== n.charIdx) {
+      poolPointer = (cand + 1) % CHARS.length;
+      return cand;
+    }
+  }
+  return (n.charIdx + 1) % CHARS.length;
+}
+
+function spawnConfetti(n) {
+  const floor = n.el.querySelector('.floor');
+  for (let i = 0; i < 7; i++) {
+    const s = document.createElement('div');
+    s.className = 'confetti';
+    s.textContent = CONFETTI[Math.floor(Math.random() * CONFETTI.length)];
+    const ang = (Math.PI * 2 * i) / 7 + Math.random() * 0.5;
+    const dist = 60 + Math.random() * 60;
+    s.style.setProperty('--dx', `calc(-50% + ${Math.cos(ang) * dist}px)`);
+    s.style.setProperty('--dy', `calc(-50% + ${Math.sin(ang) * dist - 40}px)`);
+    s.style.setProperty('--rot', `${(Math.random() * 2 - 1) * 180}deg`);
+    floor.appendChild(s);
+    void s.offsetWidth;
+    s.classList.add('go');
+    setTimeout(() => s.remove(), 800);
+  }
+}
+
+init();
+</script>
+</body>
+</html>

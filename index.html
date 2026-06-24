@@ -37,7 +37,9 @@
     font-weight: 400;
     z-index: 10;
   }
-  /* 13 块：6 列 × 5 行；顶部 2 行 = 4 张半宽 hero（语言对 + 车车动物园），下方 9 小格 3×3；底部留 idle 角色台面 */
+  /* 14 块：6 列 × 5 行。顶行 = 2 张半宽 hero（span 3）featured 最新两款（躲猫猫 + 找一找）；
+     下方 12 小格（span 2）4×3。14 = 2 hero + 12 small 是 6 列网格下唯一无残行的排布。
+     底部留 idle 角色台面。*/
   .grid {
     position: fixed;
     top: 52px;
@@ -100,283 +102,71 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* ====== 卡片 1: Keyboard preview ====== */
-  .preview.keyboard {
-    background: #0a0e27;
+  /* ====== Peekaboo preview（躲猫猫：两床被子轮流掀开露出朋友）====== */
+  .preview.peekaboo {
+    background: linear-gradient(160deg, #ffe1e6 0%, #ffc2cf 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7%;
   }
-  .preview.keyboard .kb-shape {
-    position: absolute;
-    width: 22%;
+  .preview.peekaboo .pk-nest {
+    position: relative;
+    width: 30%;
     aspect-ratio: 1;
-    animation: kb-pop 2s ease-in-out infinite;
-  }
-  .preview.keyboard .kb-shape:nth-child(1) { left: 18%; top: 22%; animation-delay: 0s;   }
-  .preview.keyboard .kb-shape:nth-child(2) { left: 58%; top: 18%; animation-delay: 0.5s; }
-  .preview.keyboard .kb-shape:nth-child(3) { left: 22%; top: 56%; animation-delay: 1s;   }
-  .preview.keyboard .kb-shape:nth-child(4) { left: 60%; top: 60%; animation-delay: 1.5s; }
-  @keyframes kb-pop {
-    0%, 90%, 100% { transform: scale(0); opacity: 0; }
-    15%           { transform: scale(1.15); opacity: 1; }
-    75%           { transform: scale(1);    opacity: 1; }
-  }
-
-  /* ====== 卡片 2: Bubbles preview ====== */
-  .preview.bubbles {
-    background: linear-gradient(180deg, #0c1530 0%, #0a1028 100%);
-  }
-  .preview.bubbles .bubble {
-    position: absolute;
-    border-radius: 50%;
-    animation: pv-rise 5s linear infinite;
-    box-shadow:
-      inset -4px -5px 10px rgba(0, 0, 0, 0.15),
-      inset 4px 5px 10px rgba(255, 255, 255, 0.5);
-  }
-  .preview.bubbles .bubble:nth-child(1) { left: 15%; width: 22%; aspect-ratio: 1; animation-delay: 0s;   background: radial-gradient(circle at 30% 30%, #8be0e855, #8be0e81a); }
-  .preview.bubbles .bubble:nth-child(2) { left: 50%; width: 18%; aspect-ratio: 1; animation-delay: 1.2s; background: radial-gradient(circle at 30% 30%, #ffafd155, #ffafd11a); }
-  .preview.bubbles .bubble:nth-child(3) { left: 75%; width: 26%; aspect-ratio: 1; animation-delay: 2.4s; background: radial-gradient(circle at 30% 30%, #fff48a55, #fff48a1a); }
-  .preview.bubbles .bubble:nth-child(4) { left: 30%; width: 16%; aspect-ratio: 1; animation-delay: 3.6s; background: radial-gradient(circle at 30% 30%, #a5e8a355, #a5e8a31a); }
-  @keyframes pv-rise {
-    0%   { bottom: -30%; opacity: 0; }
-    20%  { opacity: 1; }
-    80%  { opacity: 1; }
-    100% { bottom: 110%; opacity: 0; }
-  }
-
-  /* ====== 卡片 3: Drums preview ====== */
-  .preview.drums {
-    background: #0a0e27;
+    border-radius: 24%;
+    overflow: hidden;
+    background: radial-gradient(70% 70% at 50% 55%, #ffffff 0%, #ffe6ea 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8%;
+    box-shadow: 0 4px 10px rgba(60, 40, 20, 0.12);
   }
-  .preview.drums .pad {
-    width: 14%;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    animation: pad-beat 1.6s ease-in-out infinite;
+  .preview.peekaboo .pk-emo {
+    font-size: 9vmin;
+    line-height: 1;
+    animation: pk-bounce 3.6s ease-in-out infinite;
   }
-  .preview.drums .pad:nth-child(1) { background: #ff5252; animation-delay: 0s;   }
-  .preview.drums .pad:nth-child(2) { background: #ffeb3b; animation-delay: 0.4s; }
-  .preview.drums .pad:nth-child(3) { background: #5c9eff; animation-delay: 0.8s; }
-  .preview.drums .pad:nth-child(4) { background: #ba68c8; animation-delay: 1.2s; }
-  @keyframes pad-beat {
-    0%, 100% { transform: scale(0.7); opacity: 0.3; box-shadow: 0 0 0 0 currentColor; }
-    20%      { transform: scale(1.2); opacity: 1;   box-shadow: 0 0 20px 6px currentColor; }
-  }
-
-  /* ====== 卡片 4: Cascade preview ====== */
-  .preview.cascade {
-    animation: cascade-cycle 10s linear infinite;
-  }
-  @keyframes cascade-cycle {
-    0%   { background: #d65a5a; }
-    14%  { background: #d68a52; }
-    28%  { background: #d4be4d; }
-    42%  { background: #5fa86c; }
-    56%  { background: #4eaab4; }
-    70%  { background: #5d83c4; }
-    84%  { background: #9968b3; }
-    100% { background: #d18ab2; }
-  }
-
-  /* ====== Twirlywoos 主题预览（共享）====== */
-  .preview.tw {
-    background: linear-gradient(180deg, #fff5e8 0%, #ffe9c8 100%);
-    overflow: hidden;
-  }
-  .tw-bird {
+  .preview.peekaboo .pk-cover {
     position: absolute;
-    pointer-events: none;
-    will-change: transform;
-  }
-  .tw-bird svg { width: 100%; height: 100%; display: block; }
-
-  /* 5. 召唤鸟鸟 */
-  .preview.tw-summon .tw-bird {
-    width: 38%; aspect-ratio: 200/270;
-    animation: summon-pop 3s ease-in-out infinite;
-  }
-  .preview.tw-summon .tw-bird:nth-child(1) { left: 15%; top: 20%; animation-delay: 0s; }
-  .preview.tw-summon .tw-bird:nth-child(2) { left: 50%; top: 30%; animation-delay: 1.5s; }
-  @keyframes summon-pop {
-    0%, 60%, 100% { transform: scale(0); opacity: 0; }
-    10%           { transform: scale(1.15); opacity: 1; }
-    50%           { transform: scale(1);    opacity: 1; }
-  }
-
-  /* 6. 戳泡泡 (鸟) */
-  .preview.tw-bubbles {
-    background: linear-gradient(180deg, #fff8ec 0%, #ffe9c8 60%, #ffd9a8 100%);
-  }
-  .preview.tw-bubbles .tw-bird {
-    width: 28%; aspect-ratio: 200/270;
-    bottom: 0;
-  }
-  .preview.tw-bubbles .tw-bird:nth-child(1) { left: 10%; width: 14%; }
-  .preview.tw-bubbles .tw-bird:nth-child(2) { left: 26%; width: 18%; }
-  .preview.tw-bubbles .tw-bird:nth-child(3) { left: 48%; width: 22%; }
-  .preview.tw-bubbles .tw-bird:nth-child(4) { left: 72%; width: 26%; }
-  .preview.tw-bubbles .pv-bubble {
-    position: absolute;
-    border-radius: 50%;
-    animation: pv-bub-fall 4s linear infinite;
-    box-shadow:
-      inset -3px -4px 8px rgba(0, 0, 0, 0.1),
-      inset 3px 4px 8px rgba(255, 255, 255, 0.55);
-  }
-  .preview.tw-bubbles .pv-bubble:nth-child(5) { left: 30%; width: 18%; aspect-ratio: 1; animation-delay: 0s;   background: radial-gradient(circle at 30% 30%, #8be0e855, #8be0e81a); }
-  .preview.tw-bubbles .pv-bubble:nth-child(6) { left: 60%; width: 14%; aspect-ratio: 1; animation-delay: 2s; background: radial-gradient(circle at 30% 30%, #ffafd155, #ffafd11a); }
-  @keyframes pv-bub-fall {
-    0%   { top: -25%; opacity: 0; }
-    20%  { opacity: 1; }
-    80%  { opacity: 1; }
-    100% { top: 75%; opacity: 0; }
-  }
-
-  /* 7. 四鸟合唱 */
-  .preview.tw-chorus {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    gap: 4px;
-    background: #fff5e0;
-  }
-  .preview.tw-chorus .chorus-cell {
+    inset: 0;
+    border-radius: 24%;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    animation: pk-lift 3.6s ease-in-out infinite;
   }
-  .preview.tw-chorus .chorus-cell:nth-child(1) { background: #cfe2fd; }
-  .preview.tw-chorus .chorus-cell:nth-child(2) { background: #fbd0c8; }
-  .preview.tw-chorus .chorus-cell:nth-child(3) { background: #fde8b0; }
-  .preview.tw-chorus .chorus-cell:nth-child(4) { background: #fff3b0; }
-  .preview.tw-chorus .chorus-cell .tw-bird {
-    width: 70%; aspect-ratio: 200/270;
-    position: relative;
-    animation: chorus-bounce 2.4s ease-in-out infinite;
-  }
-  .preview.tw-chorus .chorus-cell:nth-child(1) .tw-bird { animation-delay: 0s; }
-  .preview.tw-chorus .chorus-cell:nth-child(2) .tw-bird { animation-delay: 0.6s; }
-  .preview.tw-chorus .chorus-cell:nth-child(3) .tw-bird { animation-delay: 1.2s; }
-  .preview.tw-chorus .chorus-cell:nth-child(4) .tw-bird { animation-delay: 1.8s; }
-  @keyframes chorus-bounce {
-    0%, 70%, 100% { transform: translateY(0) scale(1); }
-    15%           { transform: translateY(-12%) scale(1.06); }
-    30%           { transform: translateY(0)    scale(1); }
-  }
-
-  /* 8. 彩色心情 */
-  .preview.tw-mood {
-    animation: mood-cycle 8s linear infinite;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .preview.tw-mood .tw-bird {
-    position: relative;
-    width: 56%; aspect-ratio: 200/270;
-    animation: mood-pulse 2s ease-in-out infinite;
-  }
-  @keyframes mood-cycle {
-    0%   { background: #bedffd; }
-    25%  { background: #fdc4b8; }
-    50%  { background: #fde29a; }
-    75%  { background: #fff39c; }
-    100% { background: #bedffd; }
-  }
-  @keyframes mood-pulse {
-    0%, 100% { transform: scale(0.96); }
-    50%      { transform: scale(1.06); }
-  }
-
-  /* 9. More More More */
-  .preview.tw-more {
-    background: linear-gradient(180deg, #fff5e8 0%, #ffe8c8 100%);
-  }
-  .preview.tw-more .tw-bird {
-    bottom: 0;
-    width: 22%; aspect-ratio: 200/270;
-  }
-  .preview.tw-more .tw-bird:nth-child(1) { left: 6%;  width: 13%; }
-  .preview.tw-more .tw-bird:nth-child(2) { left: 20%; width: 17%; }
-  .preview.tw-more .tw-bird:nth-child(3) { left: 36%; width: 21%; }
-  .preview.tw-more .tw-bird:nth-child(4) { left: 56%; width: 25%; }
-  .preview.tw-more .pv-ball {
+  .preview.peekaboo .pk-cover::before {
+    content: "";
     position: absolute;
-    border-radius: 50%;
-    box-shadow: inset -3px -4px 8px rgba(0,0,0,0.2), inset 3px 4px 8px rgba(255,255,255,0.3);
-    animation: pv-ball-drop 3s ease-in infinite;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.5) 14%, transparent 16%);
+    background-size: 26% 26%;
+    background-position: 10% 10%;
   }
-  .preview.tw-more .pv-ball:nth-child(5) { left: 30%; width: 18%; aspect-ratio: 1; background: radial-gradient(circle at 30% 30%, #ef4444, #b91c1c); animation-delay: 0s; }
-  .preview.tw-more .pv-ball:nth-child(6) { left: 55%; width: 16%; aspect-ratio: 1; background: radial-gradient(circle at 30% 30%, #3b82f6, #1e40af); animation-delay: 1s; }
-  .preview.tw-more .pv-ball:nth-child(7) { left: 72%; width: 14%; aspect-ratio: 1; background: radial-gradient(circle at 30% 30%, #fbbf24, #b45309); animation-delay: 2s; }
-  @keyframes pv-ball-drop {
-    0%   { top: -25%; opacity: 0; }
-    15%  { opacity: 1; }
-    100% { top: 65%; opacity: 1; }
-  }
-
-  /* ====== 卡片 11: Cars preview ====== */
-  .preview.cars {
-    background: linear-gradient(180deg, #bfe0ff 0%, #e2f0fc 55%, #98d086 55%, #6cba5f 100%);
-    overflow: hidden;
+  .preview.peekaboo .pk-cover .knob {
     position: relative;
-  }
-  .preview.cars .car-em {
-    position: absolute;
-    font-size: 14vmin;
+    z-index: 1;
+    font-size: 5vmin;
     line-height: 1;
-    bottom: 5%;
-    left: -20%;
-    will-change: transform;
-    animation: car-cross 6s linear infinite;
-    filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.15));
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
   }
-  .preview.cars .car-em.c1 { animation-delay: 0s;    bottom: 8%;  font-size: 10vmin; }
-  .preview.cars .car-em.c2 { animation-delay: 2s;    bottom: 4%;  font-size: 12vmin; }
-  .preview.cars .car-em.c3 { animation-delay: 4s;    bottom: 12%; font-size: 8vmin; }
-  @keyframes car-cross {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(200%); }
+  .preview.peekaboo .pk-nest:nth-child(1) .pk-cover { background: #ff8fa3; }
+  .preview.peekaboo .pk-nest:nth-child(2) .pk-cover { background: #6fa8e6; animation-delay: 1.8s; }
+  .preview.peekaboo .pk-nest:nth-child(2) .pk-emo  { animation-delay: 1.8s; }
+  @keyframes pk-lift {
+    0%, 18%   { transform: translateY(0)     rotate(0);     opacity: 1; }
+    34%, 66%  { transform: translateY(-112%) rotate(-6deg); opacity: 0; }
+    82%, 100% { transform: translateY(0)     rotate(0);     opacity: 1; }
   }
-  .preview.cars .sun-em {
-    position: absolute;
-    top: 8%; right: 8%;
-    font-size: 7vmin;
-    line-height: 1;
-    animation: sun-spin 8s linear infinite;
-  }
-  @keyframes sun-spin {
-    0%, 100% { transform: scale(1); }
-    50%      { transform: scale(1.15); }
+  @keyframes pk-bounce {
+    0%, 28%   { transform: scale(0.4) translateY(8%); opacity: 0; }
+    42%       { transform: scale(1.15);               opacity: 1; }
+    62%       { transform: scale(1);                  opacity: 1; }
+    74%, 100% { transform: scale(0.4) translateY(8%); opacity: 0; }
   }
 
-  /* ====== 卡片 10: Animals preview ====== */
-  .preview.animals {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    overflow: hidden;
-  }
-  .preview.animals .quad {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 8vmin;
-    line-height: 1;
-    animation: ani-bounce 2.4s ease-in-out infinite;
-  }
-  .preview.animals .quad:nth-child(1) { background: linear-gradient(160deg, #ffd2d8, #ffb3c1); animation-delay: 0s; }
-  .preview.animals .quad:nth-child(2) { background: linear-gradient(160deg, #cfeec9, #a8dca0); animation-delay: 0.4s; }
-  .preview.animals .quad:nth-child(3) { background: linear-gradient(160deg, #ffeaa8, #ffd06b); animation-delay: 0.8s; }
-  .preview.animals .quad:nth-child(4) { background: linear-gradient(160deg, #c8def5, #9ec5ee); animation-delay: 1.2s; }
-  @keyframes ani-bounce {
-    0%, 70%, 100% { transform: translateY(0) scale(1); }
-    15%           { transform: translateY(-10%) scale(1.15); }
-    30%           { transform: translateY(0)    scale(1); }
-  }
-
-  /* ====== 卡片 1: Find preview（找一找：喇叭提问 + 两张小卡其一脉冲）====== */
+  /* ====== Find preview（找一找：喇叭提问 + 两张小卡其一脉冲）====== */
   .preview.find {
     background: linear-gradient(160deg, #c5ecd6 0%, #93d8b3 100%);
     display: flex;
@@ -414,7 +204,7 @@
     55%                { transform: scale(1.14); box-shadow: 0 0 0 1.2vmin rgba(255, 255, 255, 0.65); }
   }
 
-  /* ====== 卡片 12: Words preview（词卡机：emoji+词 错时接力 pop）====== */
+  /* ====== Words preview（词卡机：emoji+词 错时接力 pop）====== */
   .preview.words {
     background: linear-gradient(160deg, #ffd9e0 0%, #ffb6c8 100%);
     display: flex;
@@ -450,6 +240,282 @@
     33%      { transform: scale(0.6) translateY(-18%); opacity: 0; }
   }
 
+  /* ====== Cars preview ====== */
+  .preview.cars {
+    background: linear-gradient(180deg, #bfe0ff 0%, #e2f0fc 55%, #98d086 55%, #6cba5f 100%);
+    overflow: hidden;
+    position: relative;
+  }
+  .preview.cars .car-em {
+    position: absolute;
+    font-size: 14vmin;
+    line-height: 1;
+    bottom: 5%;
+    left: -20%;
+    will-change: transform;
+    animation: car-cross 6s linear infinite;
+    filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.15));
+  }
+  .preview.cars .car-em.c1 { animation-delay: 0s;    bottom: 8%;  font-size: 10vmin; }
+  .preview.cars .car-em.c2 { animation-delay: 2s;    bottom: 4%;  font-size: 12vmin; }
+  .preview.cars .car-em.c3 { animation-delay: 4s;    bottom: 12%; font-size: 8vmin; }
+  @keyframes car-cross {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(200%); }
+  }
+  .preview.cars .sun-em {
+    position: absolute;
+    top: 8%; right: 8%;
+    font-size: 7vmin;
+    line-height: 1;
+    animation: sun-spin 8s linear infinite;
+  }
+  @keyframes sun-spin {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.15); }
+  }
+
+  /* ====== Animals preview ====== */
+  .preview.animals {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    overflow: hidden;
+  }
+  .preview.animals .quad {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8vmin;
+    line-height: 1;
+    animation: ani-bounce 2.4s ease-in-out infinite;
+  }
+  .preview.animals .quad:nth-child(1) { background: linear-gradient(160deg, #ffd2d8, #ffb3c1); animation-delay: 0s; }
+  .preview.animals .quad:nth-child(2) { background: linear-gradient(160deg, #cfeec9, #a8dca0); animation-delay: 0.4s; }
+  .preview.animals .quad:nth-child(3) { background: linear-gradient(160deg, #ffeaa8, #ffd06b); animation-delay: 0.8s; }
+  .preview.animals .quad:nth-child(4) { background: linear-gradient(160deg, #c8def5, #9ec5ee); animation-delay: 1.2s; }
+  @keyframes ani-bounce {
+    0%, 70%, 100% { transform: translateY(0) scale(1); }
+    15%           { transform: translateY(-10%) scale(1.15); }
+    30%           { transform: translateY(0)    scale(1); }
+  }
+
+  /* ====== Twirlywoos 主题预览（共享）====== */
+  .preview.tw {
+    background: linear-gradient(180deg, #fff5e8 0%, #ffe9c8 100%);
+    overflow: hidden;
+  }
+  .tw-bird {
+    position: absolute;
+    pointer-events: none;
+    will-change: transform;
+  }
+  .tw-bird svg { width: 100%; height: 100%; display: block; }
+
+  /* 召唤鸟鸟 */
+  .preview.tw-summon .tw-bird {
+    width: 38%; aspect-ratio: 200/270;
+    animation: summon-pop 3s ease-in-out infinite;
+  }
+  .preview.tw-summon .tw-bird:nth-child(1) { left: 15%; top: 20%; animation-delay: 0s; }
+  .preview.tw-summon .tw-bird:nth-child(2) { left: 50%; top: 30%; animation-delay: 1.5s; }
+  @keyframes summon-pop {
+    0%, 60%, 100% { transform: scale(0); opacity: 0; }
+    10%           { transform: scale(1.15); opacity: 1; }
+    50%           { transform: scale(1);    opacity: 1; }
+  }
+
+  /* 戳泡泡 (鸟) */
+  .preview.tw-bubbles {
+    background: linear-gradient(180deg, #fff8ec 0%, #ffe9c8 60%, #ffd9a8 100%);
+  }
+  .preview.tw-bubbles .tw-bird {
+    width: 28%; aspect-ratio: 200/270;
+    bottom: 0;
+  }
+  .preview.tw-bubbles .tw-bird:nth-child(1) { left: 10%; width: 14%; }
+  .preview.tw-bubbles .tw-bird:nth-child(2) { left: 26%; width: 18%; }
+  .preview.tw-bubbles .tw-bird:nth-child(3) { left: 48%; width: 22%; }
+  .preview.tw-bubbles .tw-bird:nth-child(4) { left: 72%; width: 26%; }
+  .preview.tw-bubbles .pv-bubble {
+    position: absolute;
+    border-radius: 50%;
+    animation: pv-bub-fall 4s linear infinite;
+    box-shadow:
+      inset -3px -4px 8px rgba(0, 0, 0, 0.1),
+      inset 3px 4px 8px rgba(255, 255, 255, 0.55);
+  }
+  .preview.tw-bubbles .pv-bubble:nth-child(5) { left: 30%; width: 18%; aspect-ratio: 1; animation-delay: 0s;   background: radial-gradient(circle at 30% 30%, #8be0e855, #8be0e81a); }
+  .preview.tw-bubbles .pv-bubble:nth-child(6) { left: 60%; width: 14%; aspect-ratio: 1; animation-delay: 2s; background: radial-gradient(circle at 30% 30%, #ffafd155, #ffafd11a); }
+  @keyframes pv-bub-fall {
+    0%   { top: -25%; opacity: 0; }
+    20%  { opacity: 1; }
+    80%  { opacity: 1; }
+    100% { top: 75%; opacity: 0; }
+  }
+
+  /* 四鸟合唱 */
+  .preview.tw-chorus {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 4px;
+    background: #fff5e0;
+  }
+  .preview.tw-chorus .chorus-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .preview.tw-chorus .chorus-cell:nth-child(1) { background: #cfe2fd; }
+  .preview.tw-chorus .chorus-cell:nth-child(2) { background: #fbd0c8; }
+  .preview.tw-chorus .chorus-cell:nth-child(3) { background: #fde8b0; }
+  .preview.tw-chorus .chorus-cell:nth-child(4) { background: #fff3b0; }
+  .preview.tw-chorus .chorus-cell .tw-bird {
+    width: 70%; aspect-ratio: 200/270;
+    position: relative;
+    animation: chorus-bounce 2.4s ease-in-out infinite;
+  }
+  .preview.tw-chorus .chorus-cell:nth-child(1) .tw-bird { animation-delay: 0s; }
+  .preview.tw-chorus .chorus-cell:nth-child(2) .tw-bird { animation-delay: 0.6s; }
+  .preview.tw-chorus .chorus-cell:nth-child(3) .tw-bird { animation-delay: 1.2s; }
+  .preview.tw-chorus .chorus-cell:nth-child(4) .tw-bird { animation-delay: 1.8s; }
+  @keyframes chorus-bounce {
+    0%, 70%, 100% { transform: translateY(0) scale(1); }
+    15%           { transform: translateY(-12%) scale(1.06); }
+    30%           { transform: translateY(0)    scale(1); }
+  }
+
+  /* 彩色心情 */
+  .preview.tw-mood {
+    animation: mood-cycle 8s linear infinite;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .preview.tw-mood .tw-bird {
+    position: relative;
+    width: 56%; aspect-ratio: 200/270;
+    animation: mood-pulse 2s ease-in-out infinite;
+  }
+  @keyframes mood-cycle {
+    0%   { background: #bedffd; }
+    25%  { background: #fdc4b8; }
+    50%  { background: #fde29a; }
+    75%  { background: #fff39c; }
+    100% { background: #bedffd; }
+  }
+  @keyframes mood-pulse {
+    0%, 100% { transform: scale(0.96); }
+    50%      { transform: scale(1.06); }
+  }
+
+  /* More More More */
+  .preview.tw-more {
+    background: linear-gradient(180deg, #fff5e8 0%, #ffe8c8 100%);
+  }
+  .preview.tw-more .tw-bird {
+    bottom: 0;
+    width: 22%; aspect-ratio: 200/270;
+  }
+  .preview.tw-more .tw-bird:nth-child(1) { left: 6%;  width: 13%; }
+  .preview.tw-more .tw-bird:nth-child(2) { left: 20%; width: 17%; }
+  .preview.tw-more .tw-bird:nth-child(3) { left: 36%; width: 21%; }
+  .preview.tw-more .tw-bird:nth-child(4) { left: 56%; width: 25%; }
+  .preview.tw-more .pv-ball {
+    position: absolute;
+    border-radius: 50%;
+    box-shadow: inset -3px -4px 8px rgba(0,0,0,0.2), inset 3px 4px 8px rgba(255,255,255,0.3);
+    animation: pv-ball-drop 3s ease-in infinite;
+  }
+  .preview.tw-more .pv-ball:nth-child(5) { left: 30%; width: 18%; aspect-ratio: 1; background: radial-gradient(circle at 30% 30%, #ef4444, #b91c1c); animation-delay: 0s; }
+  .preview.tw-more .pv-ball:nth-child(6) { left: 55%; width: 16%; aspect-ratio: 1; background: radial-gradient(circle at 30% 30%, #3b82f6, #1e40af); animation-delay: 1s; }
+  .preview.tw-more .pv-ball:nth-child(7) { left: 72%; width: 14%; aspect-ratio: 1; background: radial-gradient(circle at 30% 30%, #fbbf24, #b45309); animation-delay: 2s; }
+  @keyframes pv-ball-drop {
+    0%   { top: -25%; opacity: 0; }
+    15%  { opacity: 1; }
+    100% { top: 65%; opacity: 1; }
+  }
+
+  /* ====== Keyboard preview ====== */
+  .preview.keyboard {
+    background: #0a0e27;
+  }
+  .preview.keyboard .kb-shape {
+    position: absolute;
+    width: 22%;
+    aspect-ratio: 1;
+    animation: kb-pop 2s ease-in-out infinite;
+  }
+  .preview.keyboard .kb-shape:nth-child(1) { left: 18%; top: 22%; animation-delay: 0s;   }
+  .preview.keyboard .kb-shape:nth-child(2) { left: 58%; top: 18%; animation-delay: 0.5s; }
+  .preview.keyboard .kb-shape:nth-child(3) { left: 22%; top: 56%; animation-delay: 1s;   }
+  .preview.keyboard .kb-shape:nth-child(4) { left: 60%; top: 60%; animation-delay: 1.5s; }
+  @keyframes kb-pop {
+    0%, 90%, 100% { transform: scale(0); opacity: 0; }
+    15%           { transform: scale(1.15); opacity: 1; }
+    75%           { transform: scale(1);    opacity: 1; }
+  }
+
+  /* ====== Bubbles preview ====== */
+  .preview.bubbles {
+    background: linear-gradient(180deg, #0c1530 0%, #0a1028 100%);
+  }
+  .preview.bubbles .bubble {
+    position: absolute;
+    border-radius: 50%;
+    animation: pv-rise 5s linear infinite;
+    box-shadow:
+      inset -4px -5px 10px rgba(0, 0, 0, 0.15),
+      inset 4px 5px 10px rgba(255, 255, 255, 0.5);
+  }
+  .preview.bubbles .bubble:nth-child(1) { left: 15%; width: 22%; aspect-ratio: 1; animation-delay: 0s;   background: radial-gradient(circle at 30% 30%, #8be0e855, #8be0e81a); }
+  .preview.bubbles .bubble:nth-child(2) { left: 50%; width: 18%; aspect-ratio: 1; animation-delay: 1.2s; background: radial-gradient(circle at 30% 30%, #ffafd155, #ffafd11a); }
+  .preview.bubbles .bubble:nth-child(3) { left: 75%; width: 26%; aspect-ratio: 1; animation-delay: 2.4s; background: radial-gradient(circle at 30% 30%, #fff48a55, #fff48a1a); }
+  .preview.bubbles .bubble:nth-child(4) { left: 30%; width: 16%; aspect-ratio: 1; animation-delay: 3.6s; background: radial-gradient(circle at 30% 30%, #a5e8a355, #a5e8a31a); }
+  @keyframes pv-rise {
+    0%   { bottom: -30%; opacity: 0; }
+    20%  { opacity: 1; }
+    80%  { opacity: 1; }
+    100% { bottom: 110%; opacity: 0; }
+  }
+
+  /* ====== Drums preview ====== */
+  .preview.drums {
+    background: #0a0e27;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8%;
+  }
+  .preview.drums .pad {
+    width: 14%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    animation: pad-beat 1.6s ease-in-out infinite;
+  }
+  .preview.drums .pad:nth-child(1) { background: #ff5252; animation-delay: 0s;   }
+  .preview.drums .pad:nth-child(2) { background: #ffeb3b; animation-delay: 0.4s; }
+  .preview.drums .pad:nth-child(3) { background: #5c9eff; animation-delay: 0.8s; }
+  .preview.drums .pad:nth-child(4) { background: #ba68c8; animation-delay: 1.2s; }
+  @keyframes pad-beat {
+    0%, 100% { transform: scale(0.7); opacity: 0.3; box-shadow: 0 0 0 0 currentColor; }
+    20%      { transform: scale(1.2); opacity: 1;   box-shadow: 0 0 20px 6px currentColor; }
+  }
+
+  /* ====== Cascade preview ====== */
+  .preview.cascade {
+    animation: cascade-cycle 10s linear infinite;
+  }
+  @keyframes cascade-cycle {
+    0%   { background: #d65a5a; }
+    14%  { background: #d68a52; }
+    28%  { background: #d4be4d; }
+    42%  { background: #5fa86c; }
+    56%  { background: #4eaab4; }
+    70%  { background: #5d83c4; }
+    84%  { background: #9968b3; }
+    100% { background: #d18ab2; }
+  }
+
   .footer {
     position: fixed;
     bottom: 8px;
@@ -467,8 +533,17 @@
 <div class="title">COOKIE'S ARCADE</div>
 
 <div class="grid">
-  <!-- 1. find 找一找（hero, 最新 v0.13 听音指认）-->
-  <a class="tile hero" href="games/find/" data-num="1">
+  <!-- 1. peekaboo 躲猫猫（hero, 最新 v0.15 掀盖找朋友）-->
+  <a class="tile hero" href="games/peekaboo/" data-num="1">
+    <div class="preview peekaboo">
+      <div class="pk-nest"><div class="pk-emo">🐱</div><div class="pk-cover"><span class="knob">🫶</span></div></div>
+      <div class="pk-nest"><div class="pk-emo">🐶</div><div class="pk-cover"><span class="knob">🫶</span></div></div>
+    </div>
+    <div class="label"><span class="name">躲猫猫</span><span class="num">01</span></div>
+  </a>
+
+  <!-- 2. find 找一找（hero, v0.13 听音指认）-->
+  <a class="tile hero" href="games/find/" data-num="2">
     <div class="preview find">
       <div class="horn">📢</div>
       <div class="frow">
@@ -476,52 +551,52 @@
         <div class="mini">🌙</div>
       </div>
     </div>
-    <div class="label"><span class="name">找一找</span><span class="num">01</span></div>
+    <div class="label"><span class="name">找一找</span><span class="num">02</span></div>
   </a>
 
-  <!-- 2. words 学说话（hero, v0.12）-->
-  <a class="tile hero" href="games/words/" data-num="2">
+  <!-- 3. words 学说话（v0.12）-->
+  <a class="tile" href="games/words/" data-num="3">
     <div class="preview words">
       <div class="wc" data-w="苹果">🍎</div>
       <div class="wc" data-w="宝宝">👶</div>
       <div class="wc" data-w="月亮">🌙</div>
     </div>
-    <div class="label"><span class="name">学说话</span><span class="num">02</span></div>
+    <div class="label"><span class="name">学说话</span><span class="num">03</span></div>
   </a>
 
-  <!-- 3. cars 车车（hero, v0.8）-->
-  <a class="tile hero" href="games/cars/" data-num="3">
+  <!-- 4. cars 车车（v0.8）-->
+  <a class="tile" href="games/cars/" data-num="4">
     <div class="preview cars">
       <div class="sun-em">☀️</div>
       <div class="car-em c1">🚌</div>
       <div class="car-em c2">🚒</div>
       <div class="car-em c3">🚜</div>
     </div>
-    <div class="label"><span class="name">车车</span><span class="num">03</span></div>
+    <div class="label"><span class="name">车车</span><span class="num">04</span></div>
   </a>
 
-  <!-- 4. animals 动物园（hero, v0.7）-->
-  <a class="tile hero" href="games/animals/" data-num="4">
+  <!-- 5. animals 动物园（v0.7）-->
+  <a class="tile" href="games/animals/" data-num="5">
     <div class="preview animals">
       <div class="quad">🐱</div>
       <div class="quad">🐮</div>
       <div class="quad">🐯</div>
       <div class="quad">🐸</div>
     </div>
-    <div class="label"><span class="name">动物园</span><span class="num">04</span></div>
+    <div class="label"><span class="name">动物园</span><span class="num">05</span></div>
   </a>
 
-  <!-- 5. tw-summon 召唤鸟鸟（v0.6 Twirlywoos）-->
-  <a class="tile" href="games/tw-summon/" data-num="5">
+  <!-- 6. tw-summon 召唤鸟鸟（v0.6 Twirlywoos）-->
+  <a class="tile" href="games/tw-summon/" data-num="6">
     <div class="preview tw tw-summon">
       <div class="tw-bird" data-char="bighoo"></div>
       <div class="tw-bird" data-char="toodloo"></div>
     </div>
-    <div class="label"><span class="name">召唤鸟鸟</span><span class="num">05</span></div>
+    <div class="label"><span class="name">召唤鸟鸟</span><span class="num">06</span></div>
   </a>
 
-  <!-- 6. tw-bubbles 戳泡泡 (鸟) -->
-  <a class="tile" href="games/tw-bubbles/" data-num="6">
+  <!-- 7. tw-bubbles 戳泡泡 (鸟) -->
+  <a class="tile" href="games/tw-bubbles/" data-num="7">
     <div class="preview tw tw-bubbles">
       <div class="tw-bird" data-char="chick"></div>
       <div class="tw-bird" data-char="chickedy"></div>
@@ -530,30 +605,30 @@
       <div class="pv-bubble"></div>
       <div class="pv-bubble"></div>
     </div>
-    <div class="label"><span class="name">戳泡泡 (鸟)</span><span class="num">06</span></div>
+    <div class="label"><span class="name">戳泡泡 (鸟)</span><span class="num">07</span></div>
   </a>
 
-  <!-- 7. tw-chorus 四鸟合唱 -->
-  <a class="tile" href="games/tw-chorus/" data-num="7">
+  <!-- 8. tw-chorus 四鸟合唱 -->
+  <a class="tile" href="games/tw-chorus/" data-num="8">
     <div class="preview tw tw-chorus">
       <div class="chorus-cell"><div class="tw-bird" data-char="bighoo"></div></div>
       <div class="chorus-cell"><div class="tw-bird" data-char="toodloo"></div></div>
       <div class="chorus-cell"><div class="tw-bird" data-char="chickedy"></div></div>
       <div class="chorus-cell"><div class="tw-bird" data-char="chick"></div></div>
     </div>
-    <div class="label"><span class="name">四鸟合唱</span><span class="num">07</span></div>
+    <div class="label"><span class="name">四鸟合唱</span><span class="num">08</span></div>
   </a>
 
-  <!-- 8. tw-mood 彩色心情 -->
-  <a class="tile" href="games/tw-mood/" data-num="8">
+  <!-- 9. tw-mood 彩色心情 -->
+  <a class="tile" href="games/tw-mood/" data-num="9">
     <div class="preview tw tw-mood">
       <div class="tw-bird" data-char="bighoo"></div>
     </div>
-    <div class="label"><span class="name">彩色心情</span><span class="num">08</span></div>
+    <div class="label"><span class="name">彩色心情</span><span class="num">09</span></div>
   </a>
 
-  <!-- 9. tw-more More More More -->
-  <a class="tile" href="games/tw-more/" data-num="9">
+  <!-- 10. tw-more More More More -->
+  <a class="tile" href="games/tw-more/" data-num="10">
     <div class="preview tw tw-more">
       <div class="tw-bird" data-char="chick"></div>
       <div class="tw-bird" data-char="chickedy"></div>
@@ -563,11 +638,11 @@
       <div class="pv-ball"></div>
       <div class="pv-ball"></div>
     </div>
-    <div class="label"><span class="name">More More More</span><span class="num">09</span></div>
+    <div class="label"><span class="name">More More More</span><span class="num">10</span></div>
   </a>
 
-  <!-- 10. keyboard 键盘小子（v0.1 经典）-->
-  <a class="tile" href="games/keyboard/" data-num="10">
+  <!-- 11. keyboard 键盘小子（v0.1 经典）-->
+  <a class="tile" href="games/keyboard/" data-num="11">
     <div class="preview keyboard">
       <svg class="kb-shape" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <path d="M50,5 A45,45 0 1,1 49.99,5 Z" fill="#ff5252"/>
@@ -582,31 +657,31 @@
         <path d="M50,85 C20,65 5,45 5,28 C5,15 15,5 28,5 C38,5 45,12 50,22 C55,12 62,5 72,5 C85,5 95,15 95,28 C95,45 80,65 50,85 Z" fill="#ba68c8"/>
       </svg>
     </div>
-    <div class="label"><span class="name">键盘小子</span><span class="num">10</span></div>
+    <div class="label"><span class="name">键盘小子</span><span class="num">11</span></div>
   </a>
 
-  <!-- 11. bubbles 戳泡泡 -->
-  <a class="tile" href="games/bubbles/" data-num="11">
+  <!-- 12. bubbles 戳泡泡 -->
+  <a class="tile" href="games/bubbles/" data-num="12">
     <div class="preview bubbles">
       <div class="bubble"></div><div class="bubble"></div>
       <div class="bubble"></div><div class="bubble"></div>
     </div>
-    <div class="label"><span class="name">戳泡泡</span><span class="num">11</span></div>
+    <div class="label"><span class="name">戳泡泡</span><span class="num">12</span></div>
   </a>
 
-  <!-- 12. drums 小鼓机 -->
-  <a class="tile" href="games/drums/" data-num="12">
+  <!-- 13. drums 小鼓机 -->
+  <a class="tile" href="games/drums/" data-num="13">
     <div class="preview drums">
       <div class="pad"></div><div class="pad"></div>
       <div class="pad"></div><div class="pad"></div>
     </div>
-    <div class="label"><span class="name">小鼓机</span><span class="num">12</span></div>
+    <div class="label"><span class="name">小鼓机</span><span class="num">13</span></div>
   </a>
 
-  <!-- 13. cascade 变色屏 -->
-  <a class="tile" href="games/cascade/" data-num="13">
+  <!-- 14. cascade 变色屏 -->
+  <a class="tile" href="games/cascade/" data-num="14">
     <div class="preview cascade"></div>
-    <div class="label"><span class="name">变色屏</span><span class="num">13</span></div>
+    <div class="label"><span class="name">变色屏</span><span class="num">14</span></div>
   </a>
 </div>
 

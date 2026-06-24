@@ -6,19 +6,20 @@ A toddler-friendly mini-game collection for a (now almost 2-year-old) who starte
 
 https://keithmonster.github.io/cookie-arcade/
 
-## Games (13)
+## Games (14)
 
 | # | Name | What it does |
 |---|---|---|
-| 1 | **找一找 Find It** | Listen-and-point: a voice asks "X 在哪里呀?", tap the right one of two big cards. Wrong taps wobble + replay; after 2 misses the right card glows. Always ends in success. |
-| 2 | **学说话 First Words** | Word-card machine: 29 Chinese words across 5 themes (family / fruit / food / body / nature). Tap = the card says its word twice with a pause for imitation, then auto-flips. Deck shuffles every visit. |
-| 3 | **车车 Cars** | Tap anywhere — a vehicle appears and drives off-screen with dust trails, name + sound. Emergency vehicles flash. |
-| 4 | **动物园 Zoo** | 2×2 animal panels. Tap an animal to hear its name + cry; panels rotate through 17 animals. |
-| 5-9 | **Twirlywoos × 5** | Summon birds / falling bubbles / four-bird chorus / mood colors / more-more-more ball pile — starring BigHoo, Toodloo, Chickedy & Chick on their red-boat stage. |
-| 10 | **键盘小子 Keyboard Smash** | Each keypress spawns a shape + piano note + particles. Space = firework. |
-| 11 | **戳泡泡 Pop Bubbles** | Bubbles drift up; hover / touch to pop. |
-| 12 | **小鼓机 Drum Pad** | Keyboard rows = drums / cymbals / chimes. |
-| 13 | **变色屏 Color Cascade** | Each key fades the screen to a new color with a soft note. Calming. |
+| 1 | **躲猫猫 Peekaboo** | Four candy blankets, a friend hiding under each. Lift a blanket and a friend pops out with confetti + "哇！是小猫！". After a beat the blanket drops back over a new friend. Blankets peek by themselves to say "someone's here!" — built for the object-permanence age. |
+| 2 | **找一找 Find It** | Listen-and-point: a voice asks "X 在哪里呀?", tap the right one of two big cards. Wrong taps wobble + replay; after 2 misses the right card glows. Always ends in success. |
+| 3 | **学说话 First Words** | Word-card machine: 29 Chinese words across 5 themes (family / fruit / food / body / nature). Tap = the card says its word twice with a pause for imitation, then auto-flips. Deck shuffles every visit. |
+| 4 | **车车 Cars** | Tap anywhere — a vehicle appears and drives off-screen with dust trails, name + sound. Emergency vehicles flash. |
+| 5 | **动物园 Zoo** | 2×2 animal panels. Tap an animal to hear its name + cry; panels rotate through 17 animals. |
+| 6-10 | **Twirlywoos × 5** | Summon birds / falling bubbles / four-bird chorus / mood colors / more-more-more ball pile — starring BigHoo, Toodloo, Chickedy & Chick on their red-boat stage. |
+| 11 | **键盘小子 Keyboard Smash** | Each keypress spawns a shape + piano note + particles. Space = firework. |
+| 12 | **戳泡泡 Pop Bubbles** | Bubbles drift up; hover / touch to pop. |
+| 13 | **小鼓机 Drum Pad** | Keyboard rows = drums / cymbals / chimes. |
+| 14 | **变色屏 Color Cascade** | Each key fades the screen to a new color with a soft note. Calming. |
 
 ## Navigation
 
