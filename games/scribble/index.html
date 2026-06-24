@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>画彩虹 · Cookie's Arcade</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: #fff8f0;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: -apple-system, "PingFang SC", sans-serif;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* 触屏设备：返回按钮始终半可见（无 hover） */
+  @media (hover: none) {
+    #back { color: rgba(120, 80, 50, 0.4) !important; }
+  }
+  #back {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 70px;
+    height: 70px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: rgba(120, 80, 50, 0.12);
+    text-decoration: none;
+    transition: color 250ms, background 250ms;
+  }
+  #back:hover {
+    color: rgba(120, 80, 50, 0.7);
+    background: rgba(120, 80, 50, 0.06);
+  }
+  #board {
+    position: fixed;
+    inset: 0;
+    display: block;
+  }
+  /* 沿途撒的星星粒子（DOM，短生命周期自动移除） */
+  .spark {
+    position: fixed;
+    pointer-events: none;
+    z-index: 5;
+    font-size: 36px;
+    line-height: 1;
+    will-change: transform, opacity;
+    animation: spark-fly 900ms cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
+  }
+  @keyframes spark-fly {
+    0%   { transform: translate(-50%, -50%) scale(0.3) rotate(0deg);   opacity: 0; }
+    30%  { transform: translate(-50%, -50%) scale(1.1) rotate(20deg);  opacity: 1; }
+    100% { transform: translate(-50%, calc(-50% - 60px)) scale(0.4) rotate(-30deg); opacity: 0; }
+  }
+  /* 启动提示——首次画即消失 */
+  #hint {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(120, 80, 50, 0.4);
+    font-size: 24px;
+    letter-spacing: 0.1em;
+    pointer-events: none;
+    z-index: 8;
+    transition: opacity 600ms;
+  }
+  #hint.gone { opacity: 0; }
+</style>
+</head>
+<body>
+<canvas id="board"></canvas>
+<a id="back" href="../../">←</a>
+<div id="hint">用手指画一画 🌈</div>
+
+<script>
+  // ========= 画布 + DPR 适配 =========
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+  const hint = document.getElementById('hint');
+  let W = 0, H = 0, dpr = 1;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);   // 限 2x，iPad 上够清晰又不爆显存
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width  = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);   // 之后用 CSS 像素坐标作画
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // ========= 拖尾渐隐：每帧叠一层极淡底色，轨迹约 1.5s 自然淡掉 =========
+  // 永远画不满 → 零目标、流动不停（信条「零关卡零进度」）
+  function fadeLoop() {
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'rgba(255, 248, 240, 0.045)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+    requestAnimationFrame(fadeLoop);
+  }
+  requestAnimationFrame(fadeLoop);
+
+  // ========= 音：hue → 五声音阶（pentatonic，无不和谐音，适合 baby）=========
+  // C 大调五声 C D E G A 跨两个八度
+  const PENTA_HZ = [261.63, 293.66, 329.63, 392.00, 440.00,
+                    523.25, 587.33, 659.25, 783.99, 880.00];
+  let audioCtx = null;
+  function ensureAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  function playTone(hue) {
+    ensureAudio();
+    const idx = Math.floor((hue % 360) / 360 * PENTA_HZ.length) % PENTA_HZ.length;
+    const freq = PENTA_HZ[idx];
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.16, now + 0.02);   // 轻柔，远低于 keyboard 0.3
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.5);
+  }
+
+  // ========= 全屏 =========
+  function tryFullscreen() {
+    const el = document.documentElement;
+    if (!document.fullscreenElement && el.requestFullscreen) {
+      el.requestFullscreen().catch(() => {});
+    }
+  }
+
+  // ========= 星星粒子 =========
+  const SPARKS = ['✨', '⭐', '🌟', '💫', '🌈', '💛', '💖', '🦋', '🌸', '🍭'];
+  function spawnSpark(x, y) {
+    const s = document.createElement('div');
+    s.className = 'spark';
+    s.textContent = SPARKS[Math.floor(Math.random() * SPARKS.length)];
+    s.style.left = x + 'px';
+    s.style.top  = y + 'px';
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 950);
+  }
+
+  // ========= 画一段：上一点 → 当前点，hue 随轨迹流动 =========
+  const LINE_W = Math.max(20, Math.min(W, H) * 0.05);   // 粗笔触，按屏幕缩放
+  function stroke(x0, y0, x1, y1, hue) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';   // 叠加发光，颜色相交处更亮更梦幻
+    ctx.strokeStyle = `hsl(${hue}, 95%, 62%)`;
+    ctx.lineWidth = LINE_W;
+    ctx.shadowColor = `hsl(${hue}, 95%, 62%)`;
+    ctx.shadowBlur = 14;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // ========= 输入处理 =========
+  let started = false;
+  function handleFirst() {
+    if (started) return;
+    started = true;
+    hint.classList.add('gone');
+    setTimeout(() => hint.remove(), 800);
+    tryFullscreen();
+  }
+
+  // 每个 pointer（手指/鼠标）独立维护轨迹状态
+  const pointers = {};          // id → { x, y, hue, sinceTone, sinceSpark }
+  const SPARK_STEP = 90;        // px，拖过这个距离撒一颗星
+  const TONE_STEP  = 55;        // px，拖过这个距离响一声（防音效轰炸）
+
+  function pointerDown(id, x, y) {
+    handleFirst();
+    pointers[id] = { x, y, hue: Math.random() * 360, sinceTone: 999, sinceSpark: 0 };
+    spawnSpark(x, y);
+    playTone(pointers[id].hue);
+  }
+  function pointerMove(id, x, y) {
+    const p = pointers[id];
+    if (!p) return;
+    const dx = x - p.x, dy = y - p.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 1) return;
+    p.hue = (p.hue + dist * 0.5) % 360;   // 走得越远颜色流动越多 → 彩虹渐变
+    stroke(p.x, p.y, x, y, p.hue);
+    p.sinceTone  += dist;
+    p.sinceSpark += dist;
+    if (p.sinceTone >= TONE_STEP)  { playTone(p.hue);  p.sinceTone  = 0; }
+    if (p.sinceSpark >= SPARK_STEP) { spawnSpark(x, y); p.sinceSpark = 0; }
+    p.x = x; p.y = y;
+  }
+  function pointerUp(id) { delete pointers[id]; }
+
+  // —— 触屏（主力，多指各自画）——
+  document.addEventListener('touchstart', (e) => {
+    if (e.target.closest('#back')) return;
+    for (const t of e.changedTouches) pointerDown('t' + t.identifier, t.clientX, t.clientY);
+    e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchmove', (e) => {
+    if (e.target.closest('#back')) return;
+    for (const t of e.changedTouches) pointerMove('t' + t.identifier, t.clientX, t.clientY);
+    e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchend',    (e) => { for (const t of e.changedTouches) pointerUp('t' + t.identifier); }, { passive: true });
+  document.addEventListener('touchcancel', (e) => { for (const t of e.changedTouches) pointerUp('t' + t.identifier); }, { passive: true });
+
+  // —— 鼠标（桌面）——
+  let mouseDown = false;
+  document.addEventListener('mousedown', (e) => {
+    if (e.target.closest('#back')) return;
+    mouseDown = true;
+    pointerDown('mouse', e.clientX, e.clientY);
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!mouseDown) return;
+    pointerMove('mouse', e.clientX, e.clientY);
+  });
+  document.addEventListener('mouseup', () => { mouseDown = false; pointerUp('mouse'); });
+
+  // —— 键盘：任意键在随机位置画一道短彩虹弧 + 撒星 + 一声 ——
+  document.addEventListener('keydown', (e) => {
+    if (e.metaKey || e.ctrlKey) return;
+    if (e.key === 'Escape') {
+      if (!document.fullscreenElement) location.href = '../../';
+      return;
+    }
+    e.preventDefault();
+    handleFirst();
+    if (e.key === 'f' || e.key === 'F') { tryFullscreen(); return; }
+    // 画一道随机弧：从随机起点，几段连续短线，hue 递增
+    let x = 80 + Math.random() * (W - 160);
+    let y = 80 + Math.random() * (H - 160);
+    let hue = Math.random() * 360;
+    const ang = Math.random() * Math.PI * 2;
+    const seg = 40 + Math.random() * 30;
+    for (let i = 0; i < 6; i++) {
+      const a = ang + (i - 2.5) * 0.4;
+      const nx = x + Math.cos(a) * seg;
+      const ny = y + Math.sin(a) * seg;
+      hue = (hue + 28) % 360;
+      stroke(x, y, nx, ny, hue);
+      x = nx; y = ny;
+    }
+    spawnSpark(x, y);
+    playTone(hue);
+  });
+</script>
+</body>
+</html>
