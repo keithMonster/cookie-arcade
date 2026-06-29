@@ -37,8 +37,8 @@
     font-weight: 400;
     z-index: 10;
   }
-  /* 15 块：6 列 × 5 行，每块 span 2（占 2 列）= 每行 3 块 × 5 行整满，无残行。
-     15 在 6 列网格下唯一无残行解（small 数须为 3 的倍数，2hero+small 凑不出 15），故全等 small 排布。
+  /* 16 块：6 列 × 6 行。前 4 块 hero（span 3，每行 2 个 → 2 行），后 12 块 small（span 2，每行 3 个 → 4 行），整满无残行。
+     16 在 6 列网格下的无残行解：4 hero(span3)=2 行 + 12 small(span2)=4 行（small 数 12 为 3 的倍数）。
      底部留 idle 角色台面。*/
   .grid {
     position: fixed;
@@ -48,10 +48,11 @@
     bottom: 10vh;
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    grid-template-rows: repeat(5, 1fr);
+    grid-template-rows: repeat(6, 1fr);
     gap: 10px;
   }
   .tile { grid-column: span 2; }
+  .tile.hero { grid-column: span 3; }
   .tile {
     position: relative;
     border-radius: 18px;
@@ -99,6 +100,46 @@
     color: rgba(255, 255, 255, 0.4);
     letter-spacing: 0.2em;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* ====== Storybook preview（绘本：一扇门周期开合，门后角色探出）====== */
+  .preview.storybook {
+    background: radial-gradient(circle at 50% 38%, #6dd5ed, #2193b0);
+    display: flex; align-items: flex-end; justify-content: center;
+    overflow: hidden; perspective: 600px;
+  }
+  .preview.storybook .sb-peek {
+    position: absolute; bottom: 14%; left: 50%;
+    width: 26%; height: 40%; border-radius: 50% 50% 46% 46%;
+    background: radial-gradient(circle at 38% 32%, #6fb0e8, #4a90d9);
+    transform: translateX(-50%) translateY(62%);
+    animation: sb-peek 3.4s ease-in-out infinite; z-index: 1;
+  }
+  .preview.storybook .sb-peek::before,
+  .preview.storybook .sb-peek::after {
+    content: ''; position: absolute; top: 28%; width: 20%; height: 20%;
+    border-radius: 50%; background: #fff;
+  }
+  .preview.storybook .sb-peek::before { left: 24%; }
+  .preview.storybook .sb-peek::after  { right: 24%; }
+  @keyframes sb-peek {
+    0%,42%   { transform: translateX(-50%) translateY(62%); }
+    64%,86%  { transform: translateX(-50%) translateY(0); }
+    100%     { transform: translateX(-50%) translateY(62%); }
+  }
+  .preview.storybook .sb-door {
+    display: block; position: relative; width: 44%; height: 80%;
+    background: linear-gradient(160deg, #c8814f, #a8693c);
+    border: 0.5vmin solid #6e4630;
+    border-radius: 46% 46% 6% 6% / 36% 36% 5% 5%;
+    transform-origin: left center;
+    box-shadow: inset -0.6vmin 0 1vmin rgba(0,0,0,0.2);
+    animation: sb-door 3.4s ease-in-out infinite; z-index: 2;
+  }
+  @keyframes sb-door {
+    0%,38%   { transform: rotateY(0); }
+    60%,88%  { transform: rotateY(-68deg); }
+    100%     { transform: rotateY(0); }
   }
 
   /* ====== Scribble preview（画彩虹：一条彩虹波浪线被循环画出再擦掉）====== */
@@ -571,8 +612,17 @@
 <div class="title">COOKIE'S ARCADE</div>
 
 <div class="grid">
-  <!-- 1. scribble 画彩虹（最新 v0.16 手指拖拽留彩虹轨迹）-->
-  <a class="tile" href="games/scribble/" data-num="1">
+  <!-- 1. storybook 谁在门后面（v0.17 敲门躲猫猫交互绘本）-->
+  <a class="tile hero" href="games/storybook/" data-num="1">
+    <div class="preview storybook">
+      <span class="sb-peek"></span>
+      <span class="sb-door"></span>
+    </div>
+    <div class="label"><span class="name">谁在门后面</span><span class="num">01</span></div>
+  </a>
+
+  <!-- 2. scribble 画彩虹（最新 v0.16 手指拖拽留彩虹轨迹）-->
+  <a class="tile hero" href="games/scribble/" data-num="2">
     <div class="preview scribble">
       <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -589,20 +639,20 @@
       </svg>
       <span class="sc-hand">🖐️</span>
     </div>
-    <div class="label"><span class="name">画彩虹</span><span class="num">01</span></div>
+    <div class="label"><span class="name">画彩虹</span><span class="num">02</span></div>
   </a>
 
-  <!-- 2. peekaboo 躲猫猫（v0.15 掀盖找朋友）-->
-  <a class="tile" href="games/peekaboo/" data-num="2">
+  <!-- 3. peekaboo 躲猫猫（v0.15 掀盖找朋友）-->
+  <a class="tile hero" href="games/peekaboo/" data-num="3">
     <div class="preview peekaboo">
       <div class="pk-nest"><div class="pk-emo">🐱</div><div class="pk-cover"><span class="knob">🫶</span></div></div>
       <div class="pk-nest"><div class="pk-emo">🐶</div><div class="pk-cover"><span class="knob">🫶</span></div></div>
     </div>
-    <div class="label"><span class="name">躲猫猫</span><span class="num">02</span></div>
+    <div class="label"><span class="name">躲猫猫</span><span class="num">03</span></div>
   </a>
 
-  <!-- 3. find 找一找（v0.13 听音指认）-->
-  <a class="tile" href="games/find/" data-num="3">
+  <!-- 4. find 找一找（v0.13 听音指认）-->
+  <a class="tile hero" href="games/find/" data-num="4">
     <div class="preview find">
       <div class="horn">📢</div>
       <div class="frow">
@@ -610,52 +660,52 @@
         <div class="mini">🌙</div>
       </div>
     </div>
-    <div class="label"><span class="name">找一找</span><span class="num">03</span></div>
+    <div class="label"><span class="name">找一找</span><span class="num">04</span></div>
   </a>
 
-  <!-- 4. words 学说话（v0.12）-->
-  <a class="tile" href="games/words/" data-num="4">
+  <!-- 5. words 学说话（v0.12）-->
+  <a class="tile" href="games/words/" data-num="5">
     <div class="preview words">
       <div class="wc" data-w="苹果">🍎</div>
       <div class="wc" data-w="宝宝">👶</div>
       <div class="wc" data-w="月亮">🌙</div>
     </div>
-    <div class="label"><span class="name">学说话</span><span class="num">04</span></div>
+    <div class="label"><span class="name">学说话</span><span class="num">05</span></div>
   </a>
 
-  <!-- 5. cars 车车（v0.8）-->
-  <a class="tile" href="games/cars/" data-num="5">
+  <!-- 6. cars 车车（v0.8）-->
+  <a class="tile" href="games/cars/" data-num="6">
     <div class="preview cars">
       <div class="sun-em">☀️</div>
       <div class="car-em c1">🚌</div>
       <div class="car-em c2">🚒</div>
       <div class="car-em c3">🚜</div>
     </div>
-    <div class="label"><span class="name">车车</span><span class="num">05</span></div>
+    <div class="label"><span class="name">车车</span><span class="num">06</span></div>
   </a>
 
-  <!-- 6. animals 动物园（v0.7）-->
-  <a class="tile" href="games/animals/" data-num="6">
+  <!-- 7. animals 动物园（v0.7）-->
+  <a class="tile" href="games/animals/" data-num="7">
     <div class="preview animals">
       <div class="quad">🐱</div>
       <div class="quad">🐮</div>
       <div class="quad">🐯</div>
       <div class="quad">🐸</div>
     </div>
-    <div class="label"><span class="name">动物园</span><span class="num">06</span></div>
+    <div class="label"><span class="name">动物园</span><span class="num">07</span></div>
   </a>
 
-  <!-- 7. tw-summon 召唤鸟鸟（v0.6 Twirlywoos）-->
-  <a class="tile" href="games/tw-summon/" data-num="7">
+  <!-- 8. tw-summon 召唤鸟鸟（v0.6 Twirlywoos）-->
+  <a class="tile" href="games/tw-summon/" data-num="8">
     <div class="preview tw tw-summon">
       <div class="tw-bird" data-char="bighoo"></div>
       <div class="tw-bird" data-char="toodloo"></div>
     </div>
-    <div class="label"><span class="name">召唤鸟鸟</span><span class="num">07</span></div>
+    <div class="label"><span class="name">召唤鸟鸟</span><span class="num">08</span></div>
   </a>
 
-  <!-- 8. tw-bubbles 戳泡泡 (鸟) -->
-  <a class="tile" href="games/tw-bubbles/" data-num="8">
+  <!-- 9. tw-bubbles 戳泡泡 (鸟) -->
+  <a class="tile" href="games/tw-bubbles/" data-num="9">
     <div class="preview tw tw-bubbles">
       <div class="tw-bird" data-char="chick"></div>
       <div class="tw-bird" data-char="chickedy"></div>
@@ -664,30 +714,30 @@
       <div class="pv-bubble"></div>
       <div class="pv-bubble"></div>
     </div>
-    <div class="label"><span class="name">戳泡泡 (鸟)</span><span class="num">08</span></div>
+    <div class="label"><span class="name">戳泡泡 (鸟)</span><span class="num">09</span></div>
   </a>
 
-  <!-- 9. tw-chorus 四鸟合唱 -->
-  <a class="tile" href="games/tw-chorus/" data-num="9">
+  <!-- 10. tw-chorus 四鸟合唱 -->
+  <a class="tile" href="games/tw-chorus/" data-num="10">
     <div class="preview tw tw-chorus">
       <div class="chorus-cell"><div class="tw-bird" data-char="bighoo"></div></div>
       <div class="chorus-cell"><div class="tw-bird" data-char="toodloo"></div></div>
       <div class="chorus-cell"><div class="tw-bird" data-char="chickedy"></div></div>
       <div class="chorus-cell"><div class="tw-bird" data-char="chick"></div></div>
     </div>
-    <div class="label"><span class="name">四鸟合唱</span><span class="num">09</span></div>
+    <div class="label"><span class="name">四鸟合唱</span><span class="num">10</span></div>
   </a>
 
-  <!-- 10. tw-mood 彩色心情 -->
-  <a class="tile" href="games/tw-mood/" data-num="10">
+  <!-- 11. tw-mood 彩色心情 -->
+  <a class="tile" href="games/tw-mood/" data-num="11">
     <div class="preview tw tw-mood">
       <div class="tw-bird" data-char="bighoo"></div>
     </div>
-    <div class="label"><span class="name">彩色心情</span><span class="num">10</span></div>
+    <div class="label"><span class="name">彩色心情</span><span class="num">11</span></div>
   </a>
 
-  <!-- 11. tw-more More More More -->
-  <a class="tile" href="games/tw-more/" data-num="11">
+  <!-- 12. tw-more More More More -->
+  <a class="tile" href="games/tw-more/" data-num="12">
     <div class="preview tw tw-more">
       <div class="tw-bird" data-char="chick"></div>
       <div class="tw-bird" data-char="chickedy"></div>
@@ -697,11 +747,11 @@
       <div class="pv-ball"></div>
       <div class="pv-ball"></div>
     </div>
-    <div class="label"><span class="name">More More More</span><span class="num">11</span></div>
+    <div class="label"><span class="name">More More More</span><span class="num">12</span></div>
   </a>
 
-  <!-- 12. keyboard 键盘小子（v0.1 经典）-->
-  <a class="tile" href="games/keyboard/" data-num="12">
+  <!-- 13. keyboard 键盘小子（v0.1 经典）-->
+  <a class="tile" href="games/keyboard/" data-num="13">
     <div class="preview keyboard">
       <svg class="kb-shape" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <path d="M50,5 A45,45 0 1,1 49.99,5 Z" fill="#ff5252"/>
@@ -716,31 +766,31 @@
         <path d="M50,85 C20,65 5,45 5,28 C5,15 15,5 28,5 C38,5 45,12 50,22 C55,12 62,5 72,5 C85,5 95,15 95,28 C95,45 80,65 50,85 Z" fill="#ba68c8"/>
       </svg>
     </div>
-    <div class="label"><span class="name">键盘小子</span><span class="num">12</span></div>
+    <div class="label"><span class="name">键盘小子</span><span class="num">13</span></div>
   </a>
 
-  <!-- 13. bubbles 戳泡泡 -->
-  <a class="tile" href="games/bubbles/" data-num="13">
+  <!-- 14. bubbles 戳泡泡 -->
+  <a class="tile" href="games/bubbles/" data-num="14">
     <div class="preview bubbles">
       <div class="bubble"></div><div class="bubble"></div>
       <div class="bubble"></div><div class="bubble"></div>
     </div>
-    <div class="label"><span class="name">戳泡泡</span><span class="num">13</span></div>
+    <div class="label"><span class="name">戳泡泡</span><span class="num">14</span></div>
   </a>
 
-  <!-- 14. drums 小鼓机 -->
-  <a class="tile" href="games/drums/" data-num="14">
+  <!-- 15. drums 小鼓机 -->
+  <a class="tile" href="games/drums/" data-num="15">
     <div class="preview drums">
       <div class="pad"></div><div class="pad"></div>
       <div class="pad"></div><div class="pad"></div>
     </div>
-    <div class="label"><span class="name">小鼓机</span><span class="num">14</span></div>
+    <div class="label"><span class="name">小鼓机</span><span class="num">15</span></div>
   </a>
 
-  <!-- 15. cascade 变色屏 -->
-  <a class="tile" href="games/cascade/" data-num="15">
+  <!-- 16. cascade 变色屏 -->
+  <a class="tile" href="games/cascade/" data-num="16">
     <div class="preview cascade"></div>
-    <div class="label"><span class="name">变色屏</span><span class="num">15</span></div>
+    <div class="label"><span class="name">变色屏</span><span class="num">16</span></div>
   </a>
 </div>
 

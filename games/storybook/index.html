@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>谁在门后面？</title>
+<style>
+  /* ===== 基础：零滚动、零选中、满屏 ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+  html, body { width: 100%; height: 100%; overflow: hidden; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #2b2b3a;
+    touch-action: manipulation;
+  }
+  #stage {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 1.2s ease;
+    overflow: hidden;
+  }
+
+  /* ===== 返回入口（右上角 hot zone，沿用全台约定）===== */
+  #back {
+    position: fixed; top: 0; right: 0; width: 18vw; height: 12vh; z-index: 200;
+    cursor: pointer; opacity: 0;
+  }
+
+  /* ===== 起始页 ===== */
+  #cover {
+    position: absolute; inset: 0; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 40%, #6dd5ed, #2193b0);
+    cursor: pointer; gap: 6vh;
+    transition: opacity 0.6s ease;
+  }
+  #cover h1 { color: #fff; font-size: 9vh; font-weight: 800; text-shadow: 0 4px 0 rgba(0,0,0,0.12); letter-spacing: 0.05em; }
+  #cover .hint { color: #fff; font-size: 3.4vh; opacity: 0.92; animation: breathe 1.8s ease-in-out infinite; }
+  @keyframes breathe { 0%,100%{ transform: scale(1); opacity:0.7;} 50%{ transform: scale(1.08); opacity:1;} }
+  .cover-door { font-size: 16vh; animation: knock 1.4s ease-in-out infinite; }
+  @keyframes knock { 0%,100%{ transform: rotate(-4deg);} 50%{ transform: rotate(4deg);} }
+
+  /* ===== 门 ===== */
+  #scene { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .door-wrap { position: relative; width: 46vh; height: 64vh; perspective: 1400px; }
+  .door-frame {
+    position: absolute; inset: -3vh;
+    background: #8a5a3b; border-radius: 24vh 24vh 4vh 4vh;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.25), inset 0 0 0 1.4vh #6e4630;
+  }
+  .door {
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg, #c8814f, #a8693c);
+    border-radius: 22vh 22vh 2vh 2vh;
+    transform-origin: left center;
+    transition: transform 0.9s cubic-bezier(.36,.07,.19,.97);
+    box-shadow: inset -1.5vh 0 3vh rgba(0,0,0,0.2), inset 0 0 0 1vh rgba(255,255,255,0.08);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: flex-end; padding-right: 3vh;
+    backface-visibility: hidden;
+  }
+  .door::before { /* 门板装饰 */
+    content: ''; position: absolute; top: 14%; left: 12%; right: 12%; bottom: 14%;
+    border: 0.8vh solid rgba(255,255,255,0.1); border-radius: 16vh 16vh 1vh 1vh;
+  }
+  .knob { width: 3.2vh; height: 3.2vh; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ffe7a3, #d4a017); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+  .door.knocking { animation: doorKnock 0.5s ease-in-out infinite; }
+  @keyframes doorKnock { 0%,100%{ transform: rotateY(0);} 25%{ transform: rotateY(-3deg);} 75%{ transform: rotateY(3deg);} }
+  .door.open { transform: rotateY(-105deg); }
+
+  /* 门后的"黑洞"与角色 */
+  .doorway { position: absolute; inset: 0; border-radius: 22vh 22vh 2vh 2vh; background: radial-gradient(circle at 50% 60%, #4a3326, #2a1c14); overflow: hidden; z-index: -1; }
+
+  /* ===== Twirlywoos 角色（正式版：复用 _lib/twirlywoos.js 的 TW.svg 真角色）===== */
+  .woo {
+    position: absolute; left: 50%; bottom: -46vh;
+    transform: translateX(-50%);
+    transition: bottom 0.7s cubic-bezier(.34,1.56,.64,1);
+    z-index: 5;
+    width: 34vh; height: 46vh;
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .woo.pop { bottom: 4vh; }
+  .woo svg { width: 100%; height: 100%; display: block; }
+  .woo.bounce { animation: wooBounce 0.6s ease-in-out infinite; }
+  @keyframes wooBounce { 0%,100%{ transform: translateX(-50%) translateY(0);} 50%{ transform: translateX(-50%) translateY(-2vh);} }
+
+  /* ===== 旁白字幕（给陪读家长，可长按隐藏） ===== */
+  #narration {
+    position: absolute; bottom: 4vh; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.85); color: #333; padding: 1.6vh 4vh; border-radius: 5vh;
+    font-size: 3.2vh; font-weight: 600; z-index: 50; max-width: 86vw; text-align: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12); transition: opacity 0.4s; pointer-events: none;
+  }
+
+  /* ===== 结尾彩带 ===== */
+  .confetti { position: absolute; top: -5vh; width: 1.4vh; height: 2.4vh; opacity: 0.9; z-index: 80; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity: 0.3; } }
+
+  .finale { display: flex; gap: 1.5vh; align-items: flex-end; }
+  .finale .woo { position: relative; left: auto; bottom: auto; transform: none; width: 20vh; height: 28vh; }
+  .finale .woo.bounce { animation: finaleBounce 0.6s ease-in-out infinite; }
+  @keyframes finaleBounce { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-1.6vh);} }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <!-- 返回入口 -->
+  <div id="back"></div>
+
+  <!-- 起始页 -->
+  <div id="cover">
+    <div class="cover-door">🚪</div>
+    <h1>谁在门后面？</h1>
+    <div class="hint">点一下，开始玩躲猫猫 👆</div>
+  </div>
+
+  <!-- 故事场景 -->
+  <div id="scene" class="hidden"></div>
+
+  <!-- 旁白字幕 -->
+  <div id="narration"></div>
+</div>
+
+<script src="../_lib/twirlywoos.js"></script>
+<script>
+/* ===========================================================
+   交互绘本《谁在门后面？》—— 正式版（v0.17 并入 cookie-arcade）
+   敲门躲猫猫：旁白问「谁在门后面」→ 戳门 → 门开角色蹦出念名 → 自动翻页。
+   正式版三处升级（相对 MVP）：
+   ① 角色：CSS 简化版 → TW.svg 真 Twirlywoos SVG（蓝呼呼/红涂涂/唧唧/啾啾）
+   ② 旁白：SpeechSynthesis（iOS 屏蔽中文，v0.9 实证）→ 预录 mp3
+   ③ iOS 音频：单 Audio 元素 src-swap（find/v0.13 已验证的手势链外自动播范式）
+   =========================================================== */
+
+// ---- 角色中文名（与 _lib/twirlywoos.js CHARS 同 key）----
+const NAMES = { bighoo: '蓝呼呼', toodloo: '红涂涂', chickedy: '唧唧', chick: '啾啾' };
+
+// ---- 故事数据（askKey/reveal 对应 audio/<key>.mp3，askText 给陪读家长看字幕）----
+const STORY = {
+  bg: ['linear-gradient(180deg,#bce3f5,#7ec8a8)',  // 天空+草地
+       'linear-gradient(180deg,#ffd6a5,#ffb88c)',
+       'linear-gradient(180deg,#c3aed6,#9b7ede)',
+       'linear-gradient(180deg,#a8e6cf,#56c596)'],
+  pages: [
+    { who: 'bighoo',   askKey: 'ask_1', askText: '咚咚咚，谁在门后面呀？' },
+    { who: 'toodloo',  askKey: 'ask_2', askText: '这扇门后面，又是谁呢？' },
+    { who: 'chickedy', askKey: 'ask_3', askText: '听，里面有声音！谁呀？' },
+    { who: 'chick',    askKey: 'ask_4', askText: '最后一扇门，敲一敲！' },
+  ],
+};
+
+// ---- 音频：单 Audio 元素 src-swap（首戳手势内解锁后，后续非手势 play 在 iOS 才可靠）----
+const narrAudio = new Audio();
+function playAudio(key, { done } = {}) {
+  let finished = false;
+  const finish = () => { if (finished) return; finished = true; done && done(); };
+  narrAudio.onended = finish;
+  narrAudio.onerror = finish;   // 加载失败也照常推进，不卡死
+  try {
+    narrAudio.src = `audio/${key}.mp3`;
+    const p = narrAudio.play();
+    if (p && p.catch) p.catch(finish);  // play 被拒（无手势）也往下走
+  } catch (e) { finish(); }
+  // 超时兜底：onended 不触发时（揭晓句最长 ~3s）也推进
+  setTimeout(finish, 3600);
+}
+
+// ---- DOM ----
+const stage = document.getElementById('stage');
+const cover = document.getElementById('cover');
+const scene = document.getElementById('scene');
+const narr  = document.getElementById('narration');
+
+let pageIdx = 0;
+let opened = false;        // 当前页门是否已开
+let knockTimer = null;
+
+function showNarration(text) { narr.textContent = text; narr.style.opacity = 1; }
+
+// 构建一只角色（TW.svg 真 Twirlywoos）
+function buildWoo(key, expr = 'surprised') {
+  const woo = document.createElement('div');
+  woo.className = 'woo';
+  woo.innerHTML = TW.svg(key, { expression: expr });
+  return woo;
+}
+
+// 渲染一页（一扇门）
+function renderPage() {
+  opened = false;
+  clearTimeout(knockTimer);
+  const page = STORY.pages[pageIdx];
+  stage.style.background = STORY.bg[pageIdx % STORY.bg.length];
+
+  scene.innerHTML = `
+    <div class="door-wrap">
+      <div class="doorway"></div>
+      <div class="door-frame"></div>
+      <div class="door"><span class="knob"></span></div>
+    </div>`;
+  const door = scene.querySelector('.door');
+  const doorway = scene.querySelector('.doorway');
+
+  // 旁白：问"谁在门后面"，念完后门开始晃动提示可戳
+  showNarration(page.askText);
+  playAudio(page.askKey, { done: () => {
+    if (opened) return;
+    door.classList.add('knocking');
+    // 防卡兜底：6s 还没戳，门自己开
+    knockTimer = setTimeout(() => { if (!opened) openDoor(door, doorway, page); }, 6000);
+  }});
+
+  door.onclick = () => openDoor(door, doorway, page);
+}
+
+function openDoor(door, doorway, page) {
+  if (opened) return;
+  opened = true;
+  clearTimeout(knockTimer);
+  door.classList.remove('knocking');
+  door.classList.add('open');
+
+  const woo = buildWoo(page.who, 'surprised');
+  doorway.appendChild(woo);
+  // 角色蹦出来
+  requestAnimationFrame(() => requestAnimationFrame(() => woo.classList.add('pop')));
+  setTimeout(() => woo.classList.add('bounce'), 700);
+
+  // 旁白念角色名（哇！是X！），念完停一下自动翻页
+  showNarration(`是${NAMES[page.who]}！`);
+  setTimeout(() => playAudio(`reveal_${page.who}`, { done: () => {
+    setTimeout(nextPage, 1500);  // 念完停 1.5s 自动翻
+  }}), 450);
+}
+
+function nextPage() {
+  pageIdx++;
+  if (pageIdx >= STORY.pages.length) { renderFinale(); return; }
+  // 平滑过渡
+  scene.style.transition = 'opacity 0.4s'; scene.style.opacity = 0;
+  setTimeout(() => { renderPage(); scene.style.opacity = 1; }, 400);
+}
+
+// 结尾：四角色齐聚 + 彩带
+function renderFinale() {
+  stage.style.background = 'linear-gradient(180deg,#fff3b0,#ffd6a5)';
+  scene.innerHTML = '<div class="finale"></div>';
+  const finale = scene.querySelector('.finale');
+  Object.keys(NAMES).forEach((k, i) => {
+    const woo = buildWoo(k, 'cheer');
+    finale.appendChild(woo);
+    setTimeout(() => woo.classList.add('bounce'), i * 150);
+  });
+  scene.style.opacity = 1;
+  showNarration('找到所有的呼呼啦！🎉');
+  playAudio('finale');
+  burstConfetti();
+  // 戳屏幕重新开始
+  scene.onclick = () => restart();
+  stage.onclick = () => restart();
+}
+
+function burstConfetti() {
+  const colors = ['#4a90d9','#e8505b','#f4c430','#ffd966','#56c596','#fff'];
+  for (let i=0;i<60;i++){
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random()*100 + 'vw';
+    c.style.background = colors[i%colors.length];
+    c.style.animationDuration = (1.8 + Math.random()*1.6) + 's';
+    c.style.animationDelay = Math.random()*0.6 + 's';
+    stage.appendChild(c);
+    setTimeout(() => c.remove(), 4000);
+  }
+}
+
+function restart() {
+  scene.onclick = null; stage.onclick = null;
+  pageIdx = 0; scene.style.opacity = 1;
+  renderPage();
+}
+
+// ---- 启动（用户手势内首次 play 解锁 narrAudio，iOS 必需）----
+cover.addEventListener('click', () => {
+  cover.style.opacity = 0;
+  setTimeout(() => {
+    cover.classList.add('hidden');
+    scene.classList.remove('hidden');
+    showNarration('我们来玩躲猫猫吧！');
+    playAudio('intro', { done: () => renderPage() });
+  }, 600);
+}, { once: true });
+
+// 返回入口
+document.getElementById('back').addEventListener('click', (e) => {
+  e.stopPropagation();
+  location.href = '../../';
+});
+
+// 长按字幕区切换显隐（家长想纯看图时）
+let pressTimer = null;
+document.addEventListener('touchstart', () => {
+  pressTimer = setTimeout(() => { narr.classList.toggle('hidden'); }, 800);
+});
+document.addEventListener('touchend', () => clearTimeout(pressTimer));
+</script>
+</body>
+</html>
