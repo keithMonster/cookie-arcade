@@ -51,7 +51,7 @@
     box-shadow: 0 12px 40px rgba(0,0,0,0.25), inset 0 0 0 1.4vh #6e4630;
   }
   .door {
-    position: absolute; inset: 0;
+    position: absolute; inset: 0; z-index: 2;  /* 关门时盖住门洞+角色；开门翻走(backface hidden)后露出 */
     background: linear-gradient(160deg, #c8814f, #a8693c);
     border-radius: 22vh 22vh 2vh 2vh;
     transform-origin: left center;
@@ -71,7 +71,8 @@
   .door.open { transform: rotateY(-105deg); }
 
   /* 门后的"黑洞"与角色 */
-  .doorway { position: absolute; inset: 0; border-radius: 22vh 22vh 2vh 2vh; background: radial-gradient(circle at 50% 60%, #4a3326, #2a1c14); overflow: hidden; z-index: -1; }
+  /* z-index:1 让门洞+角色盖在实心 door-frame(auto) 之上——否则角色被棕色门框糊住(2026-06-29 真机 bug) */
+  .doorway { position: absolute; inset: 0; border-radius: 22vh 22vh 2vh 2vh; background: radial-gradient(circle at 50% 60%, #4a3326, #2a1c14); overflow: hidden; z-index: 1; }
 
   /* ===== Twirlywoos 角色（正式版：复用 _lib/twirlywoos.js 的 TW.svg 真角色）===== */
   .woo {
