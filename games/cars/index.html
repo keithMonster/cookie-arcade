@@ -228,7 +228,13 @@ const VEHICLES = [
 // ===== 音频（预录 mp3，避开 iOS SpeechSynthesis 整段——Keith iPad 实证 SpeechSynthesis 静默） =====
 // audio/<key>.mp3 是 macOS say -v Tingting 婷婷音色离线生成
 const audioCache = {};
+// 人声 300ms 最小间隔——手掌拍屏 3-5 触点各 spawn 一辆是好的（视觉并行），
+// 但 3-5 段「名字+拟声」同时开播只会混成噪音，音频单独节流
+let lastVoiceAt = 0;
 function playAudio(key) {
+  const now = Date.now();
+  if (now - lastVoiceAt < 300) return;
+  lastVoiceAt = now;
   let a = audioCache[key];
   if (!a) {
     a = new Audio(`audio/${key}.mp3`);
@@ -240,6 +246,7 @@ function playAudio(key) {
 }
 
 // 进入后空闲预载全部车声 mp3——首戳出声不等网络（2026-06-10）
+// fetch 暖 HTTP 缓存 + Audio 元素双轨（iOS Safari 对媒体 preload='auto' 消极，fetch 兜底真下载）
 setTimeout(() => {
   VEHICLES.forEach(({ key }) => {
     if (!audioCache[key]) {
@@ -247,12 +254,12 @@ setTimeout(() => {
       a.preload = 'auto';
       audioCache[key] = a;
     }
+    fetch(`audio/${key}.mp3`).catch(() => {});
   });
 }, 400);
 
 // ===== 工具 =====
 const stage = document.getElementById('stage');
-function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 
 // 洗牌队列：一轮 9 辆全亮相再重洗——纯随机短期重复感强（连戳老出同一辆，2026-06-10）
@@ -327,6 +334,9 @@ function spawn(x, y, v) {
   }
 
   stage.appendChild(el);
+  // 强制 reflow 落定初始样式——新插入元素首次样式计算无 before-change style，
+  // 单 rAF 内同帧设 transition+终点可能不触发过渡（车瞬移出屏）
+  void el.offsetWidth;
 
   // 出现处弹尘土
   spawnDust(x, yClamped + 30);
@@ -403,6 +413,7 @@ document.addEventListener('touchstart', (e) => {
 
 // 键盘：随机位置召唤；数字键 1-9 精确召唤对应车
 document.addEventListener('keydown', (e) => {
+  if (e.repeat) return;   // 按住键 OS 自动重复不是真实按键
   if (e.metaKey || e.ctrlKey) return;
   if (e.key === 'Escape') {
     if (!document.fullscreenElement) location.href = '../../';

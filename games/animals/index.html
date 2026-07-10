@@ -255,6 +255,7 @@ function playAudio(key) {
 }
 
 // 进入后空闲预载全部叫声 mp3——首戳出声不等网络（2026-06-10）
+// fetch 暖 HTTP 缓存 + Audio 元素双轨（iOS Safari 对媒体 preload='auto' 消极，fetch 兜底真下载）
 setTimeout(() => {
   ANIMALS.forEach(({ key }) => {
     if (!audioCache[key]) {
@@ -262,6 +263,7 @@ setTimeout(() => {
       a.preload = 'auto';
       audioCache[key] = a;
     }
+    fetch(`audio/${key}.mp3`).catch(() => {});
   });
 }, 400);
 
@@ -276,7 +278,7 @@ function init() {
     const state = {
       el,
       idx: i,
-      animalIdx: i,                 // 0-15 in ANIMALS
+      animalIdx: i,                 // 0-16 in ANIMALS（17 只）
       clicks: 0,
       threshold: randInt(3, 5),     // 这一轮换之前要点几次（3~5）
       emoji: el.querySelector('.emoji'),
@@ -284,6 +286,7 @@ function init() {
       ring: el.querySelector('.ring'),
       cryBurst: el.querySelector('.cry-burst'),
       swapping: false,
+      pendingSwap: null,   // 已排队的换动物 timer 句柄——防连拍在 1400ms 窗口内重复排队
     };
     panels.push(state);
     paintPanel(state);
@@ -308,10 +311,17 @@ function init() {
       }
       return;
     }
+    if (e.repeat) return;   // 按住键 OS 自动重复不是真实按键
     const idx = parseInt(e.key, 10);
     if (idx >= 1 && idx <= 4) {
       e.preventDefault();
       tap(panels[idx - 1]);
+      return;
+    }
+    // 其他任意键（键盘乱拍）：随机戳一个面板——与 cars/find/words 的乱拍友好哲学对齐
+    if (e.key.length === 1 || e.key === 'Enter' || e.key.startsWith('Arrow')) {
+      e.preventDefault();
+      tap(panels[Math.floor(Math.random() * panels.length)]);
     }
   });
 
@@ -367,15 +377,17 @@ function tap(p) {
 
   // 累点
   p.clicks++;
-  if (p.clicks >= p.threshold) {
+  if (p.clicks >= p.threshold && !p.pendingSwap) {
     p.clicks = 0;
     p.threshold = randInt(3, 5);
-    // 切换到下一只
-    setTimeout(() => swapAnimal(p), 1400);
+    // 切换到下一只（句柄入 pendingSwap——1400ms 窗口内连拍再次命中阈值不重复排队）
+    p.pendingSwap = setTimeout(() => swapAnimal(p), 1400);
   }
 }
 
 function swapAnimal(p) {
+  p.pendingSwap = null;
+  if (p.swapping) return;   // 双保险：换场动画中不叠加第二次换场
   p.swapping = true;
   const nextIdx = nextAnimalForPanel(p);
 
