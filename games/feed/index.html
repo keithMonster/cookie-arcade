@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>喂一喂 · Cookie's Arcade</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", sans-serif;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    background-color: #ffe3c9;
+    transition: background-color 600ms ease;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(120% 90% at 50% 18%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 60%),
+      radial-gradient(120% 90% at 50% 110%, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0) 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .stage {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2vmin;
+  }
+
+  /* ===== 动物区 ===== */
+  .pet-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1vmin;
+    min-height: 44vmin;
+    justify-content: flex-end;
+  }
+  .pet {
+    font-size: 30vmin;
+    line-height: 1.1;
+    filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.08));
+    will-change: transform;
+    cursor: pointer;
+  }
+  /* 待喂：轻轻呼吸浮动，像在眼巴巴等饭 */
+  .pet.waiting { animation: pet-breathe 2.2s ease-in-out infinite; }
+  @keyframes pet-breathe {
+    0%, 100% { transform: translateY(0)    scale(1); }
+    50%      { transform: translateY(-2%)  scale(1.03); }
+  }
+  /* 咀嚼：快节奏左右歪头嚼两拍 */
+  .pet.chomp { animation: pet-chomp 900ms ease-in-out; }
+  @keyframes pet-chomp {
+    0%   { transform: scale(1); }
+    18%  { transform: scale(1.12) rotate(-4deg); }
+    36%  { transform: scale(0.96) rotate(3deg); }
+    54%  { transform: scale(1.1)  rotate(-3deg); }
+    72%  { transform: scale(0.98) rotate(2deg); }
+    100% { transform: scale(1); }
+  }
+  /* 吃饱：大弹跳转圈庆祝 */
+  .pet.full { animation: pet-full 1.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes pet-full {
+    0%   { transform: scale(1)    rotate(0); }
+    25%  { transform: scale(1.22) rotate(-8deg) translateY(-6%); }
+    50%  { transform: scale(1.05) rotate(8deg); }
+    75%  { transform: scale(1.18) rotate(-4deg) translateY(-4%); }
+    100% { transform: scale(1)    rotate(0); }
+  }
+  /* 换动物进出场 */
+  .pet.deal-out { animation: pet-deal-out 300ms ease-in forwards; }
+  .pet.deal-in  { animation: pet-deal-in  460ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+  @keyframes pet-deal-out {
+    100% { transform: translateX(-40vw) scale(0.5); opacity: 0; }
+  }
+  @keyframes pet-deal-in {
+    0%   { transform: translateX(40vw) scale(0.5); opacity: 0; }
+    60%  { transform: translateX(-2vw) scale(1.06); opacity: 1; }
+    100% { transform: translateX(0)    scale(1);    opacity: 1; }
+  }
+  .pet-name {
+    font-size: clamp(24px, 5.5vmin, 52px);
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: rgba(50, 30, 18, 0.85);
+    text-shadow: 0 3px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  /* ===== 食物托盘 ===== */
+  .tray {
+    display: flex;
+    gap: 4vmin;
+  }
+  .food {
+    width: min(24vw, 22vh);
+    aspect-ratio: 1;
+    border-radius: 5vmin;
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow:
+      0 10px 24px rgba(60, 40, 20, 0.16),
+      0 2px 4px rgba(60, 40, 20, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8vmin;
+    cursor: pointer;
+    will-change: transform;
+  }
+  .food .em {
+    font-size: 12vmin;
+    line-height: 1.15;
+    filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.08));
+  }
+  .food .wd {
+    font-size: clamp(16px, 3.4vmin, 34px);
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: rgba(50, 30, 18, 0.75);
+  }
+  .food:active { transform: scale(0.94); }
+  /* 被选中喂出去：卡片按一下弹回 */
+  .food.served { animation: food-served 500ms ease-out; }
+  @keyframes food-served {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(0.86); }
+    70%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+  /* 托盘换场 */
+  .food.deal-out { animation: food-deal-out 300ms ease-in forwards; }
+  .food.deal-in  { animation: food-deal-in  430ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+  @keyframes food-deal-out {
+    100% { transform: translateY(24%) scale(0.4); opacity: 0; }
+  }
+  @keyframes food-deal-in {
+    0%   { transform: translateY(30%) scale(0.3); opacity: 0; }
+    60%  { transform: translateY(-4%) scale(1.08); opacity: 1; }
+    100% { transform: translateY(0)   scale(1);    opacity: 1; }
+  }
+
+  /* 飞向动物嘴边的食物克隆 */
+  .flyer {
+    position: fixed;
+    z-index: 500;
+    pointer-events: none;
+    font-size: 12vmin;
+    line-height: 1;
+    transition: transform 520ms cubic-bezier(0.5, 0, 0.4, 1), opacity 160ms ease 420ms;
+    will-change: transform;
+  }
+
+  /* 爱心/星星粒子 */
+  .spark {
+    position: fixed;
+    font-size: 7vmin;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 600;
+    animation: spark-fly 900ms ease-out forwards;
+  }
+  @keyframes spark-fly {
+    0%   { transform: translate(0, 0)                                    scale(0.4); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(1.2); opacity: 0; }
+  }
+
+  #back {
+    position: fixed; top: 0; right: 0;
+    width: 70px; height: 70px;
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    color: rgba(80, 50, 30, 0.5);
+    text-decoration: none;
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.4);
+  }
+  #back:active { color: rgba(80, 50, 30, 0.9); }
+
+  #hint {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 15px;
+    letter-spacing: 0.3em;
+    color: rgba(80, 50, 30, 0.5);
+    pointer-events: none;
+    transition: opacity 600ms;
+    z-index: 100;
+    white-space: nowrap;
+  }
+  #hint.gone { opacity: 0; }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="pet-zone">
+    <div class="pet waiting" id="pet"></div>
+    <div class="pet-name" id="petName"></div>
+  </div>
+  <div class="tray">
+    <div class="food" id="food0"><div class="em"></div><div class="wd"></div></div>
+    <div class="food" id="food1"><div class="em"></div><div class="wd"></div></div>
+    <div class="food" id="food2"><div class="em"></div><div class="wd"></div></div>
+  </div>
+</div>
+
+<a id="back" href="../../">←</a>
+<div id="hint">戳一戳好吃的，喂给小动物</div>
+
+<script>
+// ===== 动物 & 最爱食物：假装游戏（pretend play）+「谁爱吃什么」常识配对 =====
+const PETS = [
+  { key: 'cat',      emoji: '🐱', name: '小猫', fav: 'fish' },
+  { key: 'dog',      emoji: '🐶', name: '小狗', fav: 'bone' },
+  { key: 'rabbit',   emoji: '🐰', name: '兔子', fav: 'carrot' },
+  { key: 'monkey',   emoji: '🐵', name: '猴子', fav: 'banana' },
+  { key: 'panda',    emoji: '🐼', name: '熊猫', fav: 'bamboo' },
+  { key: 'cow',      emoji: '🐮', name: '奶牛', fav: 'grass' },
+  { key: 'chicken',  emoji: '🐔', name: '母鸡', fav: 'corn' },
+  { key: 'elephant', emoji: '🐘', name: '大象', fav: 'apple' },
+];
+const FOODS = {
+  fish:   { emoji: '🐟', name: '小鱼' },
+  bone:   { emoji: '🦴', name: '骨头' },
+  carrot: { emoji: '🥕', name: '胡萝卜' },
+  banana: { emoji: '🍌', name: '香蕉' },
+  bamboo: { emoji: '🎋', name: '竹子' },
+  grass:  { emoji: '🌿', name: '青草' },
+  corn:   { emoji: '🌽', name: '玉米' },
+  apple:  { emoji: '🍎', name: '苹果' },
+};
+const BITES_TO_FULL = 3;   // 喂满 3 口吃饱换下一只（无进度 UI，纯内部状态）
+// 背景色跟动物轮换
+const THEMES = ['#ffe3c9', '#ffd9dd', '#e3edc9', '#fdeaad', '#d9e8d2', '#e0dcf5', '#ffe8b8', '#d2e6f0'];
+
+// ===== 音频 =====
+// fxEl：手势内即时反馈（yum/fav），每次戳都在手势链内，换 src 即播
+// sysEl：吃饱音在 chomp 动画结束后播 = 手势链外，必须走首戳解锁过的元素
+const fxEl = new Audio();
+const sysEl = new Audio();
+fxEl.preload = 'auto';
+sysEl.preload = 'auto';
+
+// ===== DOM =====
+const petEl = document.getElementById('pet');
+const petNameEl = document.getElementById('petName');
+const foods = [document.getElementById('food0'), document.getElementById('food1'), document.getElementById('food2')];
+
+// ===== 状态机 =====
+// idle = 静候首戳解锁音频；feed = 等喂；eating = 咀嚼中；full = 吃饱庆祝中；dealing = 换动物中
+let phase = 'idle';
+let pet = null;
+let tray = [];          // 3 个 food key
+let bites = 0;
+let petIdx = 0;
+let petOrder = [];
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// 洗牌队列：一轮 8 只全亮相再重洗（同 cars nextVehicle，根治纯随机短期重复）
+function nextPet() {
+  if (petIdx >= petOrder.length) {
+    const last = petOrder.length ? petOrder[petOrder.length - 1] : null;
+    do { petOrder = shuffle(PETS); } while (petOrder.length > 1 && petOrder[0] === last);
+    petIdx = 0;
+  }
+  return petOrder[petIdx++];
+}
+
+function pickTray() {
+  // 托盘 = 最爱 1 + 其他动物的最爱随机 2，位置洗牌
+  const others = shuffle(Object.keys(FOODS).filter(k => k !== pet.fav)).slice(0, 2);
+  tray = shuffle([pet.fav, ...others]);
+}
+
+function paintPet() {
+  petEl.textContent = pet.emoji;
+  petNameEl.textContent = pet.name;
+  document.body.style.backgroundColor = THEMES[PETS.indexOf(pet)];
+  // 吃饱音提前挂载——第 3 口 chomp 结束就播，不等加载
+  sysEl.src = 'audio/full_' + pet.key + '.mp3';
+}
+
+function paintTray() {
+  tray.forEach((k, i) => {
+    foods[i].querySelector('.em').textContent = FOODS[k].emoji;
+    foods[i].querySelector('.wd').textContent = FOODS[k].name;
+    foods[i].className = 'food';
+  });
+}
+
+function burstSparks(fromEl, emojis) {
+  const r = fromEl.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  for (let i = 0; i < 8; i++) {
+    const s = document.createElement('div');
+    s.className = 'spark';
+    s.textContent = emojis[i % emojis.length];
+    const ang = (Math.PI * 2 * i) / 8 + Math.random() * 0.6;
+    const dist = 18 + Math.random() * 16;
+    s.style.left = cx + 'px';
+    s.style.top = cy + 'px';
+    s.style.setProperty('--dx', Math.cos(ang) * dist + 'vmin');
+    s.style.setProperty('--dy', Math.sin(ang) * dist + 'vmin');
+    s.style.setProperty('--rot', (Math.random() * 90 - 45) + 'deg');
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 950);
+  }
+}
+
+// 食物克隆飞向动物嘴边（动物中心偏下），缩小淡出
+function flyFood(fromEl, emoji) {
+  const a = fromEl.getBoundingClientRect();
+  const b = petEl.getBoundingClientRect();
+  const fl = document.createElement('div');
+  fl.className = 'flyer';
+  fl.textContent = emoji;
+  fl.style.left = (a.left + a.width / 2) + 'px';
+  fl.style.top = (a.top + a.height * 0.28) + 'px';
+  document.body.appendChild(fl);
+  void fl.offsetWidth;
+  const dx = (b.left + b.width / 2) - (a.left + a.width / 2);
+  const dy = (b.top + b.height * 0.68) - (a.top + a.height * 0.28);
+  fl.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(0.25)';
+  fl.style.opacity = '0';
+  setTimeout(() => fl.remove(), 700);
+}
+
+const YUM_KEYS = ['yum_1', 'yum_2', 'yum_3'];
+
+function serve(i) {
+  const foodKey = tray[i];
+  const isFav = foodKey === pet.fav;
+  phase = 'eating';
+  bites++;
+
+  foods[i].classList.remove('served');
+  void foods[i].offsetWidth;
+  foods[i].classList.add('served');
+  flyFood(foods[i], FOODS[foodKey].emoji);
+
+  // 即时反馈音（手势链内）：最爱 = 专属惊喜音；普通 = 三条「真好吃」轮换
+  fxEl.src = 'audio/' + (isFav ? 'fav_' + pet.key : YUM_KEYS[Math.floor(Math.random() * 3)]) + '.mp3';
+  fxEl.currentTime = 0;
+  fxEl.play().catch(() => {});
+
+  // 食物飞到嘴边后开始咀嚼
+  setTimeout(() => {
+    petEl.classList.remove('waiting', 'chomp');
+    void petEl.offsetWidth;
+    petEl.classList.add('chomp');
+    if (isFav) burstSparks(petEl, ['💛', '❤️', '💕', '💖', '⭐']);
+  }, 380);
+
+  // 咀嚼完：吃饱了庆祝换场；没饱回到等喂
+  setTimeout(() => {
+    if (bites >= BITES_TO_FULL) {
+      phase = 'full';
+      petEl.classList.remove('chomp');
+      void petEl.offsetWidth;
+      petEl.classList.add('full');
+      burstSparks(petEl, ['🎉', '⭐', '✨', '🌟', '💛']);
+      sysEl.currentTime = 0;   // src 已在 paintPet 提前挂载（首戳解锁过，链外可播）
+      sysEl.play().catch(() => setTimeout(nextPetRound, 1600));
+    } else {
+      phase = 'feed';
+      petEl.classList.remove('chomp');
+      petEl.classList.add('waiting');
+    }
+  }, 1300);
+}
+// 吃饱音念完再停 400ms 进换场
+sysEl.addEventListener('ended', () => setTimeout(nextPetRound, 400));
+sysEl.addEventListener('error', () => { if (phase === 'full') setTimeout(nextPetRound, 1400); });
+
+function nextPetRound() {
+  if (phase === 'dealing') return;
+  phase = 'dealing';
+  petEl.className = 'pet deal-out';
+  foods.forEach(f => { f.className = 'food deal-out'; });
+  setTimeout(() => {
+    pet = nextPet();
+    bites = 0;
+    pickTray();
+    paintPet();
+    paintTray();
+    petEl.className = 'pet deal-in';
+    foods.forEach(f => { f.classList.add('deal-in'); });
+    setTimeout(() => {
+      petEl.className = 'pet waiting';
+      foods.forEach(f => { f.classList.remove('deal-in'); });
+      phase = 'feed';
+    }, 470);
+  }, 310);
+}
+
+let hintGone = false;
+function hideHint() {
+  if (hintGone) return;
+  hintGone = true;
+  const h = document.getElementById('hint');
+  if (h) {
+    h.classList.add('gone');
+    setTimeout(() => h.remove(), 800);
+  }
+}
+
+// ===== 输入 =====
+function tapFood(i) {
+  hideHint();
+  if (phase === 'idle') {
+    // 首戳：手势内解锁两个音频元素（sysEl 静音空放一次），然后直接喂——首戳也要有真反馈
+    sysEl.muted = true;
+    sysEl.play().then(() => { sysEl.pause(); sysEl.muted = false; }).catch(() => { sysEl.muted = false; });
+    phase = 'feed';
+    serve(i);
+    return;
+  }
+  if (phase !== 'feed') return;
+  serve(i);
+}
+
+foods.forEach((f, i) => {
+  f.addEventListener('click', () => tapFood(i), { passive: true });
+  f.addEventListener('touchstart', (e) => {
+    tapFood(i);
+    e.preventDefault();   // 抑制 iOS 合成 click，避免一戳触发两次
+  }, { passive: false });
+});
+
+// 戳动物本体：它开心跳一下（每按必反馈；不消耗喂食口数）
+function tapPet() {
+  hideHint();
+  if (phase === 'idle') {
+    sysEl.muted = true;
+    sysEl.play().then(() => { sysEl.pause(); sysEl.muted = false; }).catch(() => { sysEl.muted = false; });
+    phase = 'feed';
+  }
+  if (phase !== 'feed') return;
+  petEl.classList.remove('waiting', 'chomp');
+  void petEl.offsetWidth;
+  petEl.classList.add('chomp');
+  setTimeout(() => {
+    if (phase === 'feed') {
+      petEl.classList.remove('chomp');
+      petEl.classList.add('waiting');
+    }
+  }, 920);
+}
+petEl.addEventListener('click', () => tapPet(), { passive: true });
+petEl.addEventListener('touchstart', (e) => {
+  tapPet();
+  e.preventDefault();
+}, { passive: false });
+
+document.addEventListener('keydown', (e) => {
+  if (e.metaKey || e.ctrlKey) return;
+  if (e.key === 'Escape') {
+    if (!document.fullscreenElement) location.href = '../../';
+    return;
+  }
+  if (e.key === 'f' || e.key === 'F') {
+    const el = document.documentElement;
+    if (!document.fullscreenElement && el.requestFullscreen) {
+      el.requestFullscreen().catch(() => {});
+    }
+    return;
+  }
+  e.preventDefault();
+  // 1/2/3 = 对应食物卡；其他任意键（键盘乱拍）= 随机喂一个
+  const n = parseInt(e.key, 10);
+  if (n >= 1 && n <= 3) { tapFood(n - 1); return; }
+  tapFood(Math.floor(Math.random() * 3));
+});
+
+// 进入：摆好第一只动物，静候首戳
+pet = nextPet();
+pickTray();
+paintPet();
+paintTray();
+
+// 空闲预载全部 19 个 mp3 进 HTTP 缓存
+setTimeout(() => {
+  PETS.forEach(({ key }) => {
+    fetch(`audio/fav_${key}.mp3`).catch(() => {});
+    fetch(`audio/full_${key}.mp3`).catch(() => {});
+  });
+  YUM_KEYS.forEach(k => fetch(`audio/${k}.mp3`).catch(() => {}));
+}, 600);
+</script>
+</body>
+</html>

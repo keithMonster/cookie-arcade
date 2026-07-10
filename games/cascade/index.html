@@ -198,6 +198,8 @@
   }
 
   document.addEventListener('keydown', (e) => {
+    // 按住不放时 OS 自动重复触发 keydown，过滤掉避免振荡器堆叠削波
+    if (e.repeat) return;
     if (e.metaKey || e.ctrlKey) return;
     if (e.key === 'Escape') {
       if (!document.fullscreenElement) location.href = '../../';
@@ -205,9 +207,10 @@
     }
     e.preventDefault();
     start();
-    if (e.key === 'f' || e.key === 'F') {
+    // F 触发全屏；已在全屏时放行，让 F 落回正常游戏反馈（每按必反馈）
+    if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
       const el = document.documentElement;
-      if (!document.fullscreenElement && el.requestFullscreen) {
+      if (el.requestFullscreen) {
         el.requestFullscreen().catch(() => {});
       }
       return;

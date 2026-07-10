@@ -70,11 +70,11 @@
 
   .cards {
     display: flex;
-    gap: 5vmin;
+    gap: 3.5vmin;
   }
 
   .pick {
-    width: min(40vw, 44vh);
+    width: min(28vw, 36vh);
     aspect-ratio: 1;
     border-radius: 6vmin;
     background: rgba(255, 255, 255, 0.82);
@@ -90,7 +90,7 @@
     will-change: transform;
   }
   .pick .em {
-    font-size: 22vmin;
+    font-size: 15vmin;
     line-height: 1.15;
     filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.08));
   }
@@ -101,8 +101,8 @@
     color: rgba(50, 30, 18, 0.75);
   }
 
-  /* 答对：胜利卡放大弹跳 */
-  .pick.win { animation: pick-win 760ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+  /* 答对：胜利卡放大弹跳（forwards 停在 1.08 定格，不瞬跳回） */
+  .pick.win { animation: pick-win 760ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
   @keyframes pick-win {
     0%   { transform: scale(1); }
     35%  { transform: scale(1.16) rotate(-3deg); }
@@ -190,46 +190,18 @@
   <div class="cards">
     <div class="pick" id="pick0"><div class="em"></div><div class="wd"></div></div>
     <div class="pick" id="pick1"><div class="em"></div><div class="wd"></div></div>
+    <div class="pick" id="pick2"><div class="em"></div><div class="wd"></div></div>
   </div>
 </div>
 
 <a id="back" href="../../">←</a>
 <div id="hint">听一听，戳对的那张</div>
 
+<script src="../_lib/words-data.js"></script>
 <script>
-// ===== 词库（与 words 同源 29 词；theme 决定背景色）=====
-const WORDS = [
-  { emoji: '👨', word: '爸爸', key: 'baba',   theme: 0 },
-  { emoji: '👩', word: '妈妈', key: 'mama',   theme: 0 },
-  { emoji: '👶', word: '宝宝', key: 'baobao', theme: 0 },
-  { emoji: '👴', word: '爷爷', key: 'yeye',   theme: 0 },
-  { emoji: '👵', word: '奶奶', key: 'nainai', theme: 0 },
-  { emoji: '🍎', word: '苹果', key: 'apple',      theme: 1 },
-  { emoji: '🍌', word: '香蕉', key: 'banana',     theme: 1 },
-  { emoji: '🍓', word: '草莓', key: 'strawberry', theme: 1 },
-  { emoji: '🍇', word: '葡萄', key: 'grape',      theme: 1 },
-  { emoji: '🍊', word: '橘子', key: 'orange',     theme: 1 },
-  { emoji: '🍉', word: '西瓜', key: 'watermelon', theme: 1 },
-  { emoji: '🍚', word: '米饭', key: 'rice',    theme: 2 },
-  { emoji: '🥚', word: '鸡蛋', key: 'egg',     theme: 2 },
-  { emoji: '🥛', word: '牛奶', key: 'milk',    theme: 2 },
-  { emoji: '🍞', word: '面包', key: 'bread',   theme: 2 },
-  { emoji: '🍜', word: '面条', key: 'noodle',  theme: 2 },
-  { emoji: '🍪', word: '饼干', key: 'biscuit', theme: 2 },
-  { emoji: '👀', word: '眼睛', key: 'eye',   theme: 3 },
-  { emoji: '👂', word: '耳朵', key: 'ear',   theme: 3 },
-  { emoji: '👃', word: '鼻子', key: 'nose',  theme: 3 },
-  { emoji: '👄', word: '嘴巴', key: 'mouth', theme: 3 },
-  { emoji: '✋', word: '小手', key: 'hand',  theme: 3 },
-  { emoji: '🦶', word: '小脚', key: 'foot',  theme: 3 },
-  { emoji: '☀️', word: '太阳', key: 'sun',     theme: 4 },
-  { emoji: '🌙', word: '月亮', key: 'moon',    theme: 4 },
-  { emoji: '⭐', word: '星星', key: 'star',    theme: 4 },
-  { emoji: '🌈', word: '彩虹', key: 'rainbow', theme: 4 },
-  { emoji: '🌸', word: '花',   key: 'flower',  theme: 4 },
-  { emoji: '🌧️', word: '下雨', key: 'rain',    theme: 4 },
-];
-const THEMES = ['#ffc4d2', '#ffae86', '#ffd86b', '#a8dcc0', '#9ec8f0'];
+// ===== 词库：_lib/words-data.js 单一数据源（与 words 共享，50 词 8 主题）=====
+const WORDS = WORDS_DATA;
+const THEMES = WORDS_THEMES;
 
 // ===== 音频：单元素 + 换 src（iOS 解锁元素后，后续非手势链 play 才可靠）=====
 // qEl 播问题（轮次开始自动播 = 手势链外，必须复用首戳解锁过的元素）
@@ -242,24 +214,47 @@ yEl.preload = 'auto';
 // ===== DOM =====
 const askEl = document.getElementById('ask');
 const askWordEl = document.getElementById('askWord');
-const picks = [document.getElementById('pick0'), document.getElementById('pick1')];
+const picks = [document.getElementById('pick0'), document.getElementById('pick1'), document.getElementById('pick2')];
 
 // ===== 状态机 =====
 // idle = 进入后静候首戳（iOS 音频要手势解锁）；ask = 等答题；celebrate = 表扬中；dealing = 换题动画中
 let phase = 'idle';
 let target = null;        // 本轮正确词
-let options = [];         // 两张卡的词
+let options = [];         // 三张卡的词
 let wrongCount = 0;
 let lastTargetKey = null;
 
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// target 走全词库洗牌队列（bag）：一轮 50 词全亮相再重洗——纯随机短期重复感强（cars 同款结论）
+let bag = [];
+function drawTarget() {
+  if (!bag.length) {
+    do { bag = shuffle(WORDS); } while (lastTargetKey && bag[0].key === lastTargetKey);
+  }
+  return bag.shift();
+}
+
 function pickRound() {
-  // 随机抽 2 个不同词，target 随机其一；避免连续两轮同一个 target
-  let a, b;
-  do { a = WORDS[Math.floor(Math.random() * WORDS.length)]; } while (a.key === lastTargetKey);
-  do { b = WORDS[Math.floor(Math.random() * WORDS.length)]; } while (b.key === a.key);
-  target = a;
-  lastTargetKey = a.key;
-  options = Math.random() < 0.5 ? [a, b] : [b, a];
+  target = drawTarget();
+  lastTargetKey = target.key;
+  // 干扰项 2 个：每个约 50% 概率从 target 同主题抽（「苹果 vs 香蕉」语义级分辨，比跨主题难一档）
+  const sameTheme = WORDS.filter(w => w.theme === target.theme && w.key !== target.key);
+  const pool = WORDS.filter(w => w.key !== target.key);
+  const distractors = [];
+  while (distractors.length < 2) {
+    const src = (Math.random() < 0.5 && sameTheme.length >= 2) ? sameTheme : pool;
+    const c = src[Math.floor(Math.random() * src.length)];
+    if (!distractors.some(d => d.key === c.key)) distractors.push(c);
+  }
+  options = shuffle([target, ...distractors]);
   wrongCount = 0;
 }
 
@@ -275,8 +270,13 @@ function paintRound() {
   yEl.src = 'audio/y_' + target.key + '.mp3';
 }
 
+// 同 key 只回卷不重赋 src——src 同值重赋会触发媒体重载，连拍答错时问题音频永远念不完
+let qKey = null;
 function playQuestion() {
-  qEl.src = 'audio/q_' + target.key + '.mp3';
+  if (qKey !== target.key) {
+    qEl.src = 'audio/q_' + target.key + '.mp3';
+    qKey = target.key;
+  }
   qEl.currentTime = 0;
   askEl.classList.add('talking');
   qEl.play().catch(() => {});
@@ -311,12 +311,14 @@ function answer(i) {
     phase = 'celebrate';
     askEl.classList.remove('talking');
     qEl.pause();
-    picks[i].classList.add('win');
-    picks[1 - i].className = 'pick lose';
+    picks[i].className = 'pick win';   // className 整体重设——清掉 guide 残留，否则 guide 动画压制 win 弹跳
+    picks.forEach((p, j) => { if (j !== i) p.className = 'pick lose'; });
     burstSparks(picks[i]);
     yEl.currentTime = 0;   // src 已在 paintRound 提前挂载
     // 表扬音频万一加载失败也要能进入下一轮（catch → 定时兜底）
     yEl.play().catch(() => setTimeout(nextRound, 1400));
+    // 看门狗：iOS 中断（Siri/锁屏）时 ended/error 都不来，6s 兜底（nextRound 有 dealing guard，双进安全）
+    setTimeout(() => { if (phase === 'celebrate') nextRound(); }, 6000);
   } else {
     // 答错：摇头 + 重播问题；错 2 次起正确卡呼吸发光引导——永远以成功收尾
     wrongCount++;
@@ -412,16 +414,31 @@ document.addEventListener('keydown', (e) => {
   }
   e.preventDefault();
   if (e.key === 'ArrowLeft') { tapCard(0); return; }
-  if (e.key === 'ArrowRight') { tapCard(1); return; }
-  // 其他任意键（键盘乱拍）：随机选一张——50% 答对率也玩得下去，错了有引导
-  tapCard(Math.floor(Math.random() * 2));
+  if (e.key === 'ArrowDown') { tapCard(1); return; }
+  if (e.key === 'ArrowRight') { tapCard(2); return; }
+  const n = parseInt(e.key, 10);
+  if (n >= 1 && n <= 3) { tapCard(n - 1); return; }
+  // 其他任意键（键盘乱拍）：随机选一张——33% 答对率也玩得下去，错了有引导
+  tapCard(Math.floor(Math.random() * 3));
 });
+
+// 背景区兜底（输入死区消除）：戳卡片/喇叭之外的空白 = 重听问题（idle 时同首戳解锁）
+const stageEl = document.getElementById('stage');
+stageEl.addEventListener('click', (e) => {
+  if (e.target.closest('.pick') || e.target.closest('.ask')) return;
+  tapHorn();
+}, { passive: true });
+stageEl.addEventListener('touchstart', (e) => {
+  if (e.target.closest('.pick') || e.target.closest('.ask')) return;
+  tapHorn();
+  e.preventDefault();
+}, { passive: false });
 
 // 进入：摆好第一轮，静候首戳（iOS 音频需手势）
 pickRound();
 paintRound();
 
-// 空闲预载全部 58 个 mp3 进 HTTP 缓存（~580KB）——后续换 src 即播不等网络（2026-06-10）
+// 空闲预载全部 100 个 mp3 进 HTTP 缓存（~1MB）——后续换 src 即播不等网络（2026-06-10）
 setTimeout(() => {
   WORDS.forEach(({ key }) => {
     fetch(`audio/q_${key}.mp3`).catch(() => {});

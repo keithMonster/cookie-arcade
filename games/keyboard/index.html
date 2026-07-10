@@ -289,8 +289,10 @@
 
   // ========= 形状 spawn =========
   function spawnShape(key, atX, atY) {
-    const color = pick(COLORS);
-    const shape = pick(SHAPES);
+    // key → 颜色/形状确定性映射（同键永远同形同色，因果可学习；音符已是 hash 确定性，对齐）
+    // 触摸/点击路径的 key 带时间戳，天然随机不受影响
+    const color = COLORS[hash(key) % COLORS.length];
+    const shape = SHAPES[hash(key) % SHAPES.length];
     const isRare = Math.random() < RARE_PROB;
 
     let sizeVw = rand(18, 28);
@@ -366,6 +368,8 @@
   }
 
   document.addEventListener('keydown', (e) => {
+    // 按住不放时 OS 自动重复触发 keydown，过滤掉避免振荡器堆叠削波
+    if (e.repeat) return;
     // Cmd / Ctrl 组合键放过去（让 Keith 还能 Cmd+Q）
     if (e.metaKey || e.ctrlKey) return;
 
@@ -380,8 +384,8 @@
     e.preventDefault();
     handleFirstKey();
 
-    // F 单独触发全屏
-    if (e.key === 'f' || e.key === 'F') {
+    // F 单独触发全屏；已在全屏时放行，让 F 落回正常游戏反馈（每按必反馈）
+    if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
       tryFullscreen();
       return;
     }

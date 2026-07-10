@@ -9,7 +9,7 @@ cd "$(dirname "$0")/.."
 OUT=games/find/audio
 mkdir -p "$OUT"
 
-# key|中文词——与 games/words 词库同源
+# key|中文词——与 games/_lib/words-data.js 同源（50 词），改词表两处一起改
 WORDS=(
   # 家人
   "baba|爸爸"      "mama|妈妈"      "baobao|宝宝"    "yeye|爷爷"      "nainai|奶奶"
@@ -21,6 +21,13 @@ WORDS=(
   "eye|眼睛"       "ear|耳朵"       "nose|鼻子"      "mouth|嘴巴"     "hand|小手"     "foot|小脚"
   # 自然
   "sun|太阳"       "moon|月亮"      "star|星星"      "rainbow|彩虹"   "flower|花"     "rain|下雨"
+  "cloud|云朵"     "snowman|雪人"   "tree|大树"
+  # 动作（2026-07-10 扩容，24 月龄词汇爆发期）
+  "hug|抱抱"       "clap|拍手"      "sleep|睡觉"     "bath|洗澡"      "laugh|笑笑"    "cry|哭哭"
+  # 日用
+  "hat|帽子"       "shoe|鞋子"      "sock|袜子"      "spoon|勺子"     "ball|皮球"     "book|书本"     "umbrella|雨伞" "lamp|灯"
+  # 交通
+  "car|汽车"       "plane|飞机"     "boat|小船"      "train|火车"
 )
 
 tmp=$(mktemp -t find_gen).aiff

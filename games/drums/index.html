@@ -102,6 +102,7 @@
   const stage = document.getElementById('stage');
   const hint = document.getElementById('hint');
   let audioCtx = null;
+  let masterGain = null;   // 共享总线：所有音色汇到这里，压缩器兜底防多指齐拍削波
   let started = false;
 
   function rand(a, b) { return a + Math.random() * (b - a); }
@@ -112,7 +113,15 @@
   const BOT_ROW = ['z','x','c','v','b','n','m'];
 
   function ensureAudio() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      // master 总线：总增益压到 0.6 + 动态压缩器，多指齐拍时振幅叠加也不削波
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = 0.6;
+      const compressor = audioCtx.createDynamicsCompressor();
+      masterGain.connect(compressor);
+      compressor.connect(audioCtx.destination);
+    }
     if (audioCtx.state === 'suspended') audioCtx.resume();
   }
 
@@ -132,7 +141,7 @@
     gain.gain.setValueAtTime(0, now);
     gain.gain.linearRampToValueAtTime(0.5, now + 0.005);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-    osc.connect(gain).connect(audioCtx.destination);
+    osc.connect(gain).connect(masterGain);
     osc.start(now);
     osc.stop(now + 0.42);
     // 噪声 attack 增加击打感
@@ -156,7 +165,7 @@
     const gain = audioCtx.createGain();
     gain.gain.setValueAtTime(0.18, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2 + variantIdx * 0.02);
-    src.connect(filter).connect(gain).connect(audioCtx.destination);
+    src.connect(filter).connect(gain).connect(masterGain);
     src.start(now);
     src.stop(now + 0.35);
   }
@@ -175,7 +184,7 @@
     gain.gain.setValueAtTime(0, now);
     gain.gain.linearRampToValueAtTime(0.3, now + 0.005);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
-    osc.connect(gain).connect(audioCtx.destination);
+    osc.connect(gain).connect(masterGain);
     osc.start(now);
     osc.stop(now + 1.6);
     // 第二谐波（更亮）
@@ -186,7 +195,7 @@
     gain2.gain.setValueAtTime(0, now);
     gain2.gain.linearRampToValueAtTime(0.08, now + 0.005);
     gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.0);
-    osc2.connect(gain2).connect(audioCtx.destination);
+    osc2.connect(gain2).connect(masterGain);
     osc2.start(now);
     osc2.stop(now + 1.05);
   }
@@ -199,7 +208,8 @@
     src.buffer = buffer;
     const gain = audioCtx.createGain();
     gain.gain.value = gainPeak;
-    src.connect(gain).connect(audioCtx.destination);
+    // 噪声 attack 是鼓声的一部分，同样汇入 master 总线
+    src.connect(gain).connect(masterGain);
     return src;
   }
 
@@ -350,6 +360,8 @@
   }
 
   document.addEventListener('keydown', (e) => {
+    // 按住不放时 OS 自动重复触发 keydown，过滤掉避免振荡器堆叠削波
+    if (e.repeat) return;
     if (e.metaKey || e.ctrlKey) return;
     if (e.key === 'Escape') {
       if (!document.fullscreenElement) location.href = '../../';
@@ -357,9 +369,10 @@
     }
     e.preventDefault();
     start();
-    if (e.key === 'f' || e.key === 'F') {
+    // F 触发全屏；已在全屏时放行，让 F 落回正常游戏反馈（每按必反馈）
+    if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
       const el = document.documentElement;
-      if (!document.fullscreenElement && el.requestFullscreen) {
+      if (el.requestFullscreen) {
         el.requestFullscreen().catch(() => {});
       }
       return;

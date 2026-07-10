@@ -150,14 +150,15 @@
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
   }
-  // "啵"——短促 sine 配频率下滑
-  function playPop() {
+  // "啵"——短促 sine 配频率下滑；音高随泡泡大小反比（大泡低音、小泡高音，物理直觉映射）
+  function playPop(size = 100) {
     ensureAudio();
     const now = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(rand(680, 1100), now);
+    const base = Math.max(500, Math.min(1400, 1400 - size * 4));
+    osc.frequency.setValueAtTime(rand(base - 60, base + 60), now);
     osc.frequency.exponentialRampToValueAtTime(rand(120, 200), now + 0.18);
     gain.gain.setValueAtTime(0, now);
     gain.gain.linearRampToValueAtTime(0.25, now + 0.01);
@@ -220,9 +221,10 @@
     const t = (now - b.bornAt) / 1000; // s
     const progress = Math.min(t / b.life, 1);
     const yOffset = b.rise * progress;
-    // wobble (sin)
+    // wobble：对齐 CSS @keyframes（0%→50%→100% = 0→amp→0），即 (1-cos)/2 曲线
+    // 旧的 sin*0.5+0.5 在 phase=0 时给 0.5·amp，与实际渲染差 90° 相位
     const phase = (t / b.wobblePeriod) * Math.PI * 2;
-    const xOffset = (Math.sin(phase) * 0.5 + 0.5) * b.wobbleAmp;
+    const xOffset = (1 - Math.cos(phase)) / 2 * b.wobbleAmp;
     const cx = b.startX + b.size / 2 + xOffset;
     // 屏幕坐标 y：bubble 用 bottom 锚定，再加 translateY(yOffset，负值=向上)
     const cy = window.innerHeight - b.startBottom - b.size / 2 + yOffset;
@@ -257,6 +259,7 @@
     for (const b of liveBubbles) {
       if (b.popping) continue;
       const c = bubbleCenter(b, now);
+      if (c.cy < 0) continue; // 已飞出视口顶部的不参选，屏外爆了没人看见
       if (c.cy < highestY) {
         highestY = c.cy;
         target = { b, cx: c.cx, cy: c.cy };
@@ -278,6 +281,14 @@
 
   function popBubble(b, cx, cy) {
     b.popping = true;
+    // 固化当前视觉位置：.popping 的 animation 会整体覆盖 float-up，translateY 失效，
+    // 元素会瞬移回布局位置（bottom:-size 屏外）导致 pop 动画没人看见。
+    // 先把 getBoundingClientRect 拿到的实际渲染位置写死成 left/top，再切动画。
+    const r = b.el.getBoundingClientRect();
+    b.el.style.left = r.left + 'px';
+    b.el.style.top = r.top + 'px';
+    b.el.style.bottom = 'auto';
+    b.el.style.margin = '0';
     b.el.classList.add('popping');
     setTimeout(() => {
       const i = liveBubbles.indexOf(b);
@@ -285,7 +296,7 @@
       b.el.remove();
     }, 360);
     spawnSplash(cx, cy, b.color);
-    playPop();
+    playPop(b.size);
   }
 
   function spawnSplash(cx, cy, color) {
@@ -350,6 +361,7 @@
     e.preventDefault();
   }, { passive: false });
   document.addEventListener('touchmove', (e) => {
+    if (e.target.closest('#back')) return;
     if (!started) start();
     for (const t of e.touches) {
       popAt(t.clientX, t.clientY);
@@ -358,6 +370,8 @@
   }, { passive: false });
 
   document.addEventListener('keydown', (e) => {
+    // 按住不放时 OS 自动重复触发 keydown，过滤掉避免振荡器堆叠削波
+    if (e.repeat) return;
     if (e.metaKey || e.ctrlKey) return;
     if (e.key === 'Escape') {
       if (!document.fullscreenElement) location.href = '../../';
@@ -365,9 +379,10 @@
     }
     e.preventDefault();
     if (!started) start();
-    if (e.key === 'f' || e.key === 'F') {
+    // F 触发全屏；已在全屏时放行，让 F 落回正常游戏反馈（每按必反馈）
+    if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
       const el = document.documentElement;
-      if (!document.fullscreenElement && el.requestFullscreen) {
+      if (el.requestFullscreen) {
         el.requestFullscreen().catch(() => {});
       }
       return;
