@@ -391,6 +391,8 @@ function serve(i) {
       burstSparks(petEl, ['🎉', '⭐', '✨', '🌟', '💛']);
       sysEl.currentTime = 0;   // src 已在 paintPet 提前挂载（首戳解锁过，链外可播）
       sysEl.play().catch(() => setTimeout(nextPetRound, 1600));
+      // 看门狗：iOS 中断（Siri/锁屏）时 ended/error 都不来，6s 兜底防卡死（nextPetRound 有 dealing guard）
+      setTimeout(() => { if (phase === 'full') nextPetRound(); }, 6000);
     } else {
       phase = 'feed';
       petEl.classList.remove('chomp');
@@ -485,16 +487,16 @@ petEl.addEventListener('touchstart', (e) => {
 }, { passive: false });
 
 document.addEventListener('keydown', (e) => {
+  if (e.repeat) return;   // 按住键 OS 自动重复不是真实按键
   if (e.metaKey || e.ctrlKey) return;
   if (e.key === 'Escape') {
     if (!document.fullscreenElement) location.href = '../../';
     return;
   }
-  if (e.key === 'f' || e.key === 'F') {
+  if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
+    // 已全屏时 F 键不再拦截——落回下方正常游戏反馈（每按必反馈）
     const el = document.documentElement;
-    if (!document.fullscreenElement && el.requestFullscreen) {
-      el.requestFullscreen().catch(() => {});
-    }
+    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
     return;
   }
   e.preventDefault();

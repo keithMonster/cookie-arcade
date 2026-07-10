@@ -411,11 +411,13 @@ function answer(i) {
     phase = 'celebrate';
     askEl.classList.remove('talking');
     qEl.pause();
-    picks[i].classList.add('win');
+    picks[i].className = 'pick win';   // className 整体重设——清掉 guide 残留，否则 guide 动画压制 win 弹跳（find 同坑）
     picks[1 - i].className = 'pick lose';
     flyIntoHole(picks[i], colors[i]);
     yEl.currentTime = 0;
     yEl.play().catch(() => setTimeout(nextRound, 1800));
+    // 看门狗：iOS 中断（Siri/锁屏）时 ended/error 都不来，6s 兜底防卡死（nextRound 有 dealing guard）
+    setTimeout(() => { if (phase === 'celebrate') nextRound(); }, 6000);
   } else {
     wrongCount++;
     const el = picks[i];
@@ -498,16 +500,16 @@ function tapHorn() {
 });
 
 document.addEventListener('keydown', (e) => {
+  if (e.repeat) return;   // 按住键 OS 自动重复不是真实按键
   if (e.metaKey || e.ctrlKey) return;
   if (e.key === 'Escape') {
     if (!document.fullscreenElement) location.href = '../../';
     return;
   }
-  if (e.key === 'f' || e.key === 'F') {
+  if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
+    // 已全屏时 F 键不再拦截——落回下方正常游戏反馈（每按必反馈）
     const el = document.documentElement;
-    if (!document.fullscreenElement && el.requestFullscreen) {
-      el.requestFullscreen().catch(() => {});
-    }
+    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
     return;
   }
   e.preventDefault();

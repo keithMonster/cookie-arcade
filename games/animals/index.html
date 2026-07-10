@@ -304,11 +304,10 @@ function init() {
       if (!document.fullscreenElement) location.href = '../../';
       return;
     }
-    if (e.key === 'f' || e.key === 'F') {
+    if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
+      // 已全屏时 F 键不再拦截——落回下方正常游戏反馈（每按必反馈）
       const el = document.documentElement;
-      if (!document.fullscreenElement && el.requestFullscreen) {
-        el.requestFullscreen().catch(() => {});
-      }
+      if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
       return;
     }
     if (e.repeat) return;   // 按住键 OS 自动重复不是真实按键

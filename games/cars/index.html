@@ -419,11 +419,10 @@ document.addEventListener('keydown', (e) => {
     if (!document.fullscreenElement) location.href = '../../';
     return;
   }
-  if (e.key === 'f' || e.key === 'F') {
+  if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
+    // 已全屏时 F 键不再拦截——落回下方正常游戏反馈（每按必反馈）
     const el = document.documentElement;
-    if (!document.fullscreenElement && el.requestFullscreen) {
-      el.requestFullscreen().catch(() => {});
-    }
+    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
     return;
   }
   e.preventDefault();
