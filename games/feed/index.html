@@ -380,7 +380,9 @@ function serve(i) {
   }, 380);
 
   // 咀嚼完：吃饱了庆祝换场；没饱回到等喂
+  // 连喂时每口各排一个 timer，第一个到点定饱；其余被 full/dealing guard 挡住不重复庆祝
   setTimeout(() => {
+    if (phase === 'full' || phase === 'dealing') return;
     if (bites >= BITES_TO_FULL) {
       phase = 'full';
       petEl.classList.remove('chomp');
@@ -443,7 +445,9 @@ function tapFood(i) {
     serve(i);
     return;
   }
-  if (phase !== 'feed') return;
+  // 咀嚼中（eating）也能继续喂——2 岁连戳是常态，1.3s 死区违反「每按必反馈」；
+  // fxEl 单元素换 src 天然打断上一条不叠音。只有吃饱庆祝/换场中不响应
+  if (phase !== 'feed' && phase !== 'eating') return;
   serve(i);
 }
 
