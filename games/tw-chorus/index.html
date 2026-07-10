@@ -149,7 +149,7 @@
   </div>
 </div>
 <a id="back" href="../../">←</a>
-<div id="hint">戳鸟鸟 · 它唱歌</div>
+<div id="hint">戳一戳鸟鸟，它就唱歌</div>
 
 <script>
   const grid = document.getElementById('grid');
@@ -227,17 +227,17 @@
   // 键盘：1/2/3/4 = 4 个 cell；其它键随机
   const CELL_BY_INDEX = ['bighoo', 'toodloo', 'chickedy', 'chick'];
   document.addEventListener('keydown', (e) => {
+    if (e.repeat) return;   // 按住键 OS 自动重复不是真实按键
     if (e.metaKey || e.ctrlKey) return;
     if (e.key === 'Escape') {
       if (!document.fullscreenElement) location.href = '../../';
       return;
     }
     e.preventDefault();
-    if (e.key === 'f' || e.key === 'F') {
+    if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
+      // 已全屏时 F 键不再拦截——落回下方正常唱歌反馈（每按必反馈）
       const el = document.documentElement;
-      if (!document.fullscreenElement && el.requestFullscreen) {
-        el.requestFullscreen().catch(() => {});
-      }
+      if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
       return;
     }
     if (!started) start();

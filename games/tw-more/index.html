@@ -241,7 +241,8 @@
   }
 
   // ===== 落球 =====
-  function dropBall() {
+  // tapX 传了 = 球落在戳的位置（24 月龄「我按哪儿→它在哪儿」空间因果）；不传 = 中间稠密高斯随机（键盘）
+  function dropBall(tapX) {
     if (resetting) return;
     const size = rand(60, 110);
     const color = pick(BALL_COLORS);
@@ -252,7 +253,9 @@
     // 倾向中间：x = 中心 + 高斯偏移
     const center = window.innerWidth / 2;
     const spread = window.innerWidth * 0.32;
-    let x = center + (Math.random() + Math.random() + Math.random() - 1.5) * spread;
+    let x = (tapX !== undefined)
+      ? tapX
+      : center + (Math.random() + Math.random() + Math.random() - 1.5) * spread;
     x = Math.max(padding, Math.min(window.innerWidth - padding, x));
 
     // y 落点：找堆中最上层 +/- 视觉错位
@@ -357,30 +360,32 @@
 
   // ===== 输入 =====
   document.addEventListener('keydown', (e) => {
+    if (e.repeat) return;   // 按住键 OS 自动重复不是真实按键
     if (e.metaKey || e.ctrlKey) return;
     if (e.key === 'Escape') {
       if (!document.fullscreenElement) location.href = '../../';
       return;
     }
     e.preventDefault();
-    if (e.key === 'f' || e.key === 'F') {
+    if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
+      // 已全屏时 F 键不再拦截——落回下方正常落球反馈（每按必反馈）
       const el = document.documentElement;
-      if (!document.fullscreenElement && el.requestFullscreen) {
-        el.requestFullscreen().catch(() => {});
-      }
+      if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
       return;
     }
     trigger();
   });
   document.addEventListener('click', (e) => {
     if (e.target.closest('#back')) return;
-    trigger();
+    if (!started) start();
+    if (resetting) return;
+    dropBall(e.clientX);   // 球落在点的位置（空间因果）
   });
   document.addEventListener('touchstart', (e) => {
     if (e.target.closest('#back')) return;
     if (!started) start();
     if (resetting) { e.preventDefault(); return; }
-    for (const t of e.changedTouches) { dropBall(); }
+    for (const t of e.changedTouches) { dropBall(t.clientX); }   // 球落在戳的位置（空间因果）
     e.preventDefault();
   }, { passive: false });
 

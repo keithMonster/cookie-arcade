@@ -94,6 +94,15 @@
   let W = 0, H = 0, dpr = 1;
 
   function resize() {
+    // 先快照旧画面——resize 重设 canvas.width 即清空，旋转 iPad / 进出全屏时正画的一笔会被抹掉
+    const prevW = canvas.width, prevH = canvas.height;
+    let snapshot = null;
+    if (prevW && prevH) {
+      snapshot = document.createElement('canvas');
+      snapshot.width = prevW;
+      snapshot.height = prevH;
+      snapshot.getContext('2d').drawImage(canvas, 0, 0);
+    }
     dpr = Math.min(window.devicePixelRatio || 1, 2);   // 限 2x，iPad 上够清晰又不爆显存
     W = window.innerWidth;
     H = window.innerHeight;
@@ -104,6 +113,12 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);   // 之后用 CSS 像素坐标作画
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+    if (snapshot) {
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);   // 设备像素空间整幅拉伸画回
+      ctx.drawImage(snapshot, 0, 0, prevW, prevH, 0, 0, canvas.width, canvas.height);
+      ctx.restore();
+    }
   }
   resize();
   window.addEventListener('resize', resize);
@@ -174,7 +189,7 @@
     ctx.strokeStyle = `hsl(${hue}, 95%, 62%)`;
     ctx.lineWidth = LINE_W;
     ctx.shadowColor = `hsl(${hue}, 95%, 62%)`;
-    ctx.shadowBlur = 14;
+    ctx.shadowBlur = 6;   // canvas shadow 在 Safari 走 CPU 光栅化，多指快涂高频调用——降半保辉光减负担（lighter 叠加本身已有光感）
     ctx.beginPath();
     ctx.moveTo(x0, y0);
     ctx.lineTo(x1, y1);
@@ -189,7 +204,8 @@
     started = true;
     hint.classList.add('gone');
     setTimeout(() => hint.remove(), 800);
-    tryFullscreen();
+    // 不再自动进全屏（全台唯一自动全屏已移除）：iPadOS 真进全屏会触发 resize，
+    // Cookie 正画的第一笔画面突变；F 键手动全屏保留，与其余游戏对齐
   }
 
   // 每个 pointer（手指/鼠标）独立维护轨迹状态
@@ -248,6 +264,7 @@
 
   // —— 键盘：任意键在随机位置画一道短彩虹弧 + 撒星 + 一声 ——
   document.addEventListener('keydown', (e) => {
+    if (e.repeat) return;   // 按住键 OS 自动重复不是真实按键
     if (e.metaKey || e.ctrlKey) return;
     if (e.key === 'Escape') {
       if (!document.fullscreenElement) location.href = '../../';
@@ -255,7 +272,7 @@
     }
     e.preventDefault();
     handleFirst();
-    if (e.key === 'f' || e.key === 'F') { tryFullscreen(); return; }
+    if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) { tryFullscreen(); return; }   // 已全屏时 F 落回画弧反馈
     // 画一道随机弧：从随机起点，几段连续短线，hue 递增
     let x = 80 + Math.random() * (W - 160);
     let y = 80 + Math.random() * (H - 160);

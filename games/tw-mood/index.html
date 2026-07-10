@@ -121,11 +121,13 @@
     // 背景渐变
     document.body.style.background = MOOD_BG[ck];
 
-    // 清旧角色（淡出快）
+    // 清旧角色（淡出快）——先取消运行中的 CSS animation，否则 forwards 动画接管
+    // opacity，inline 赋值和 transition 都不生效（实际变成 200ms 后硬切）
     if (activeCharEl) {
-      activeCharEl.style.transition = 'opacity 180ms';
-      activeCharEl.style.opacity = '0';
       const old = activeCharEl;
+      old.getAnimations().forEach(a => a.cancel());
+      old.style.transition = 'opacity 180ms';
+      old.style.opacity = '0';
       setTimeout(() => old.remove(), 200);
     }
 
@@ -217,17 +219,17 @@
   // 键盘：1-4 选角色 / 其它键随机
   const KEY_MAP = ['bighoo', 'toodloo', 'chickedy', 'chick'];
   document.addEventListener('keydown', (e) => {
+    if (e.repeat) return;   // 按住键 OS 自动重复不是真实按键（长延音游戏被连触=噪墙）
     if (e.metaKey || e.ctrlKey) return;
     if (e.key === 'Escape') {
       if (!document.fullscreenElement) location.href = '../../';
       return;
     }
     e.preventDefault();
-    if (e.key === 'f' || e.key === 'F') {
+    if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
+      // 已全屏时 F 键不再拦截——落回下方正常变色反馈（每按必反馈）
       const el = document.documentElement;
-      if (!document.fullscreenElement && el.requestFullscreen) {
-        el.requestFullscreen().catch(() => {});
-      }
+      if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
       return;
     }
     const idx = parseInt(e.key, 10);

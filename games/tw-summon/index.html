@@ -61,12 +61,13 @@
     animation: tag-pop 1800ms ease-out forwards;
     will-change: transform, opacity;
   }
+  /* 每帧都带 translateX(-50%)——CSS 动画会整体接管 transform，inline 写居中会被覆盖（tag 右偏半个字宽） */
   @keyframes tag-pop {
-    0%   { transform: scale(0.4) translateY(0); opacity: 0; }
-    20%  { transform: scale(1.2) translateY(-10px); opacity: 1; }
-    35%  { transform: scale(1)   translateY(0); opacity: 1; }
-    80%  { transform: scale(1)   translateY(0); opacity: 1; }
-    100% { transform: scale(1)   translateY(-30px); opacity: 0; }
+    0%   { transform: translateX(-50%) scale(0.4) translateY(0); opacity: 0; }
+    20%  { transform: translateX(-50%) scale(1.2) translateY(-10px); opacity: 1; }
+    35%  { transform: translateX(-50%) scale(1)   translateY(0); opacity: 1; }
+    80%  { transform: translateX(-50%) scale(1)   translateY(0); opacity: 1; }
+    100% { transform: translateX(-50%) scale(1)   translateY(-30px); opacity: 0; }
   }
 
   /* 闪光圈 */
@@ -160,8 +161,8 @@
     tag.textContent = c.name + '！';
     tag.style.color = c.body;
     tag.style.left = '50%';
-    tag.style.top = (y - height / 2 - 60) + 'px';
-    tag.style.transform = 'translateX(-50%)';
+    // clamp 到屏内——上半屏召唤时 y-height/2-60 会为负，tag 整个飞出视口
+    tag.style.top = Math.max(16, y - height / 2 - 60) + 'px';
     stage.appendChild(tag);
     activeTag = tag;
     setTimeout(() => {
@@ -181,8 +182,25 @@
       if (i >= 0) liveChars.splice(i, 1);
     }, 2500);
 
-    TW.playCall(charKey);
+    // 50% 念中文名（24 月龄命名爆发期，复用 storybook 预录旁白）/ 50% 原角色叫声——二选一防叠音
+    if (Math.random() < 0.5) {
+      nameEl.src = 'audio/reveal_' + charKey + '.mp3';
+      nameEl.currentTime = 0;
+      nameEl.play().catch(() => TW.playCall(charKey));   // 音频失败回退叫声，保每按必反馈
+    } else {
+      TW.playCall(charKey);
+    }
   }
+
+  // 念名单例（召唤全在手势内触发，换 src 直接播即可）
+  const nameEl = new Audio();
+  nameEl.preload = 'auto';
+  // 空闲预载 4 段念名 mp3 暖 HTTP 缓存
+  setTimeout(() => {
+    ['bighoo', 'toodloo', 'chickedy', 'chick'].forEach(k => {
+      fetch(`audio/reveal_${k}.mp3`).catch(() => {});
+    });
+  }, 600);
 
   function trigger(x, y, charKey) {
     if (!started) start();
@@ -207,17 +225,17 @@
   }
 
   document.addEventListener('keydown', (e) => {
+    if (e.repeat) return;   // 按住键 OS 自动重复不是真实按键
     if (e.metaKey || e.ctrlKey) return;
     if (e.key === 'Escape') {
       if (!document.fullscreenElement) location.href = '../../';
       return;
     }
     e.preventDefault();
-    if (e.key === 'f' || e.key === 'F') {
+    if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
+      // 已全屏时 F 键不再拦截——落回下方正常召唤反馈（每按必反馈）
       const el = document.documentElement;
-      if (!document.fullscreenElement && el.requestFullscreen) {
-        el.requestFullscreen().catch(() => {});
-      }
+      if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
       return;
     }
     // 数字键 1-4 精确召唤

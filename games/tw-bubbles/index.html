@@ -215,7 +215,7 @@
     el.animate(
       [
         { transform: `translateX(0)`, top: (-size - 20) + 'px', opacity: 0 },
-        { transform: `translateX(${wobble}px)`, top: ((fallTo - (-size - 20)) * 0.5) + 'px', opacity: 1, offset: 0.5 },
+        { transform: `translateX(${wobble}px)`, top: ((fallTo + (-size - 20)) * 0.5) + 'px', opacity: 1, offset: 0.5 },  // 几何中点=(起+终)/2——此前少个负号偏低 size+20px，JS 线性命中模型在中段对不上视觉位置
         { transform: `translateX(0)`, top: fallTo + 'px', opacity: 1 },
       ],
       { duration: life * 1000, easing: 'linear', fill: 'forwards' }
@@ -232,9 +232,9 @@
     liveBubbles.push(rec);
 
     setTimeout(() => {
-      const i = liveBubbles.indexOf(rec);
-      if (i >= 0) liveBubbles.splice(i, 1);
-      if (!rec.popping) el.remove();
+      if (rec.popping) return;
+      // 落到鸟群前自动破——原先凭空 remove 无反馈，改成「碰到鸟鸟就破」的因果收尾
+      popBubble(rec, rec.startX + rec.size / 2, rec.endTop + rec.size / 2);
     }, life * 1000 + 100);
   }
 
@@ -380,13 +380,18 @@
     if (e.target.closest('#back')) return;
     if (!started) start();
     for (const t of e.changedTouches) popAt(t.clientX, t.clientY);
+    // iPad tap 后 Safari 补发兼容 mousemove/click 会把 mouseX 钉在 tap 点，
+    // popCheck 每帧跑 → 泡泡飘过该点无人碰自己破。触摸后重置为屏外哨兵值
+    mouseX = -1000; mouseY = -1000;
   }, { passive: true });
   document.addEventListener('touchmove', (e) => {
     if (!started) start();
     for (const t of e.touches) popAt(t.clientX, t.clientY);
+    mouseX = -1000; mouseY = -1000;
   }, { passive: true });
 
   document.addEventListener('keydown', (e) => {
+    if (e.repeat) return;   // 按住键 OS 自动重复不是真实按键
     if (e.metaKey || e.ctrlKey) return;
     if (e.key === 'Escape') {
       if (!document.fullscreenElement) location.href = '../../';
@@ -394,11 +399,10 @@
     }
     e.preventDefault();
     if (!started) start();
-    if (e.key === 'f' || e.key === 'F') {
+    if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
+      // 已全屏时 F 键不再拦截——落回下方正常游戏反馈（每按必反馈）
       const el = document.documentElement;
-      if (!document.fullscreenElement && el.requestFullscreen) {
-        el.requestFullscreen().catch(() => {});
-      }
+      if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
       return;
     }
     popHighestAndSpawn();

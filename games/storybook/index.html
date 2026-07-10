@@ -22,11 +22,18 @@
     overflow: hidden;
   }
 
-  /* ===== 返回入口（右上角 hot zone，沿用全台约定）===== */
+  /* ===== 返回入口（全台统一：右上角可见 ← 锚点 70×70）===== */
   #back {
-    position: fixed; top: 0; right: 0; width: 18vw; height: 12vh; z-index: 200;
-    cursor: pointer; opacity: 0;
+    position: fixed; top: 0; right: 0;
+    width: 70px; height: 70px;
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: none;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
   }
+  #back:active { color: rgba(255, 255, 255, 0.95); }
 
   /* ===== 起始页 ===== */
   #cover {
@@ -110,7 +117,7 @@
 <body>
 <div id="stage">
   <!-- 返回入口 -->
-  <div id="back"></div>
+  <a id="back" href="../../">←</a>
 
   <!-- 起始页 -->
   <div id="cover">
@@ -183,10 +190,12 @@ let knockTimer = null;
 function showNarration(text) { narr.textContent = text; narr.style.opacity = 1; }
 
 // 构建一只角色（TW.svg 真 Twirlywoos）
-function buildWoo(key, expr = 'surprised') {
+// noFilter：finale 同屏 4 只 + 无限 bounce + 60 彩带，feTurbulence 叠 4 份会卡 iPad
+// （与 tw-summon 同款策略：单角色焦点位保留 filter，多角色高频位关掉）
+function buildWoo(key, expr = 'surprised', noFilter = false) {
   const woo = document.createElement('div');
   woo.className = 'woo';
-  woo.innerHTML = TW.svg(key, { expression: expr });
+  woo.innerHTML = TW.svg(key, { expression: expr, noFilter });
   return woo;
 }
 
@@ -216,6 +225,8 @@ function renderPage() {
   }});
 
   door.onclick = () => openDoor(door, doorway, page);
+  // 兜底：戳偏（门框/背景/字幕）也开门——2 岁精度戳不准门本体，openDoor 有 opened guard 双触发安全
+  scene.onclick = () => openDoor(door, doorway, page);
 }
 
 function openDoor(door, doorway, page) {
@@ -252,7 +263,7 @@ function renderFinale() {
   scene.innerHTML = '<div class="finale"></div>';
   const finale = scene.querySelector('.finale');
   Object.keys(NAMES).forEach((k, i) => {
-    const woo = buildWoo(k, 'cheer');
+    const woo = buildWoo(k, 'cheer', true);   // noFilter：4 只同屏
     finale.appendChild(woo);
     setTimeout(() => woo.classList.add('bounce'), i * 150);
   });
@@ -302,12 +313,46 @@ document.getElementById('back').addEventListener('click', (e) => {
   location.href = '../../';
 });
 
-// 长按字幕区切换显隐（家长想纯看图时）
-let pressTimer = null;
-document.addEventListener('touchstart', () => {
-  pressTimer = setTimeout(() => { narr.classList.toggle('hidden'); }, 800);
+// 长按底部字幕带切换字幕显隐（家长想纯看图时）
+// 限定屏幕底部 18% + 移动即取消——2 岁按住不放/按住拖是默认姿势，全屏长按会高频误触
+let pressTimer = null, pressX = 0, pressY = 0;
+document.addEventListener('touchstart', (e) => {
+  const t = e.touches[0];
+  if (!t || t.clientY < window.innerHeight * 0.82) return;
+  pressX = t.clientX; pressY = t.clientY;
+  pressTimer = setTimeout(() => { narr.classList.toggle('hidden'); pressTimer = null; }, 800);
 });
-document.addEventListener('touchend', () => clearTimeout(pressTimer));
+document.addEventListener('touchmove', (e) => {
+  if (!pressTimer) return;
+  const t = e.touches[0];
+  if (!t) return;
+  if (Math.abs(t.clientX - pressX) > 12 || Math.abs(t.clientY - pressY) > 12) {
+    clearTimeout(pressTimer);
+    pressTimer = null;
+  }
+});
+document.addEventListener('touchend', () => { clearTimeout(pressTimer); pressTimer = null; });
+
+// 键盘（全台约定补齐）：Escape 返回 / F 全屏 / 任意键 = 当前阶段的主交互
+document.addEventListener('keydown', (e) => {
+  if (e.repeat) return;   // 按住键 OS 自动重复不是真实按键
+  if (e.metaKey || e.ctrlKey) return;
+  if (e.key === 'Escape') {
+    if (!document.fullscreenElement) location.href = '../../';
+    return;
+  }
+  e.preventDefault();
+  if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+    return;
+  }
+  // 任意键：封面 = 翻开 / 问句页 = 开门 / 结尾 = 重新开始
+  if (!cover.classList.contains('hidden')) { cover.click(); return; }
+  const door = scene.querySelector('.door');
+  if (door && !opened) { door.click(); return; }
+  if (scene.querySelector('.finale')) scene.click();
+});
 </script>
 </body>
 </html>

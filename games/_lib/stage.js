@@ -18,7 +18,9 @@
 
 (function () {
   if (!window.TW) {
+    // 直接终止——不 return 的话文件尾 TW.Stage 赋值照样 ReferenceError，warn 变自相矛盾的死防御
     console.warn('[stage.js] TW global not found; load twirlywoos.js first.');
+    return;
   }
 
   const STAGE_CSS = `
@@ -58,22 +60,30 @@
     box-shadow: 0 -3px 8px rgba(120, 90, 50, 0.08);
   }
 
-  /* 树影飘动层（叠在木墙上，mix-blend-mode 让影子贴自然） */
+  /* 树影飘动层（叠在木墙上，mix-blend-mode 让影子贴自然）
+     动画在内层 ::before 上动 transform（可合成，零重绘）——
+     此前直接动 background-position 是非合成属性，游玩全程每帧全屏 paint */
   .tw-stage-shadows {
     position: absolute;
     inset: 0;
-    /* feTurbulence 生成的斑驳深色噪点 */
-    background-image: var(--tw-shadow-url);
-    background-size: 140% 140%;
-    background-position: 0% 0%;
+    overflow: hidden;
     opacity: 0.22;
     mix-blend-mode: multiply;
+  }
+  .tw-stage-shadows::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0;
+    width: 140%; height: 140%;
+    /* feTurbulence 生成的斑驳深色噪点 */
+    background-image: var(--tw-shadow-url);
+    background-size: 100% 100%;
     animation: tw-shadows-drift 24s ease-in-out infinite;
-    will-change: background-position;
+    will-change: transform;
   }
   @keyframes tw-shadows-drift {
-    0%, 100% { background-position: 0% 0%; }
-    50%      { background-position: 8% 4%; }
+    0%, 100% { transform: translate(0, 0); }
+    50%      { transform: translate(-3%, -1.5%); }
   }
 
   /* ========== 红船切口（场景 B 增量） ========== */
