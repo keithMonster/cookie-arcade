@@ -44,6 +44,30 @@ HTTP_TIMEOUT = 20
 WORD_SPEED = 0.85   # 单词示范段放慢一点，方便跟读
 SENT_SPEED = 1.0    # 整句正常语速
 
+# 火山 TTS 波形自带 ~0.5s 前导静音 + ~0.55s 尾部静音，点击后要空等半秒才出声。
+# 合成后统一裁掉，只保留少量缓冲（首 80ms 免起音突兀 / 尾 120ms 免收音戛止）。
+TRIM_THRESHOLD = "-40dB"
+TRIM_HEAD_KEEP = 0.08
+TRIM_TAIL_KEEP = 0.12
+
+
+def trim_silence(path: Path) -> None:
+    """裁掉 mp3 首尾静音（保留少量缓冲），原地覆盖。中间的停顿不动。"""
+    tmp = path.with_suffix(".trim.mp3")
+    af = (
+        f"silenceremove=start_periods=1:start_threshold={TRIM_THRESHOLD}:start_silence={TRIM_HEAD_KEEP},"
+        "areverse,"
+        f"silenceremove=start_periods=1:start_threshold={TRIM_THRESHOLD}:start_silence={TRIM_TAIL_KEEP},"
+        "areverse"
+    )
+    cmd = ["ffmpeg", "-y", "-loglevel", "error", "-i", str(path), "-af", af,
+           "-ac", "1", "-ar", "24000", "-b:a", "64k", str(tmp)]
+    r = subprocess.run(cmd, capture_output=True, text=True)
+    if r.returncode != 0 or not tmp.is_file() or tmp.stat().st_size < 1024:
+        tmp.unlink(missing_ok=True)
+        sys.exit(f"裁静音失败：{path}\n{r.stderr}")
+    os.replace(tmp, path)
+
 
 def load_credentials() -> tuple[str, str]:
     appid = os.environ.get("DOUBAO_TTS_APP_ID")
@@ -215,6 +239,7 @@ def synth(text: str, speed: float, out_path: Path, appid: str, key: str,
             if not chunks:
                 raise RuntimeError("流结束但未收到音频")
             out_path.write_bytes(b"".join(chunks))
+            trim_silence(out_path)  # 段级裁剪：seq 拼接的留白由 apad 精确给，不吃 TTS 自带静音
             return
         except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError,
                 RuntimeError, json.JSONDecodeError) as e:
@@ -260,6 +285,7 @@ def stitch(seq: list, seg_paths: list[Path], out_path: Path) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--check", action="store_true", help="只核对 manifest ↔ 磁盘文件名，不调 API")
+    ap.add_argument("--trim", action="store_true", help="只裁磁盘上现有 mp3 的首尾静音，不调 API")
     ap.add_argument("--game", help="只处理指定游戏（目录名）")
     ap.add_argument("--only", help="只处理文件名含该子串的条目")
     args = ap.parse_args()
@@ -286,6 +312,22 @@ def main() -> int:
     print(f"manifest 共 {total} 个文件，{'与磁盘一致 ✓' if ok else '与磁盘不一致 ✗'}")
     if args.check:
         return 0 if ok else 1
+
+    # --trim：不调 API，原地裁磁盘现有文件的首尾静音（seq 文件中间留白不动）
+    if args.trim:
+        n = 0
+        for game, files in manifest.items():
+            for fname in files:
+                if args.only and args.only not in fname:
+                    continue
+                p = GAMES / game / "audio" / fname
+                if not p.is_file():
+                    sys.exit(f"缺文件：{p}")
+                trim_silence(p)
+                n += 1
+                print(f"  trim {game}/{fname}")
+        print(f"----\n裁剪 {n} 个 mp3")
+        return 0
 
     appid, key = load_credentials()
     seg_cache: dict[tuple[str, float], Path] = {}  # (文案, 语速) → 已合成段，跨游戏复用
