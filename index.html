@@ -20,39 +20,33 @@
     color: rgba(60, 40, 25, 0.9);
     user-select: none;
     -webkit-user-select: none;
-    overflow: hidden;
-    touch-action: manipulation;
+    overflow-x: hidden;
+    touch-action: pan-y;
+    overscroll-behavior-y: none;
     -webkit-touch-callout: none;
     -webkit-tap-highlight-color: transparent;
   }
   .title {
-    position: fixed;
-    top: 22px;
-    left: 50%;
-    transform: translateX(-50%);
+    padding: 22px 0 14px;
+    text-align: center;
     font-size: 14px;
     letter-spacing: 0.45em;
     color: rgba(80, 50, 30, 0.45);
     text-transform: uppercase;
     font-weight: 400;
-    z-index: 10;
   }
-  /* 18 块：6 列 × 7 行。前 6 块 hero（span 3，每行 2 个 → 3 行），后 12 块 small（span 2，每行 3 个 → 4 行），整满无残行。
-     18 在 6 列网格下的无残行解：2H+3S=18 → hero 行 3 + small 行 4（6 hero + 12 small）唯一带 hero 的干净解。
-     底部留 idle 角色台面。*/
+  /* 首页可滚动（2026-07-16 改版）：18 块统一 2 列大块，自然滚动。
+     不再玩「N 块在 6 列下的无残行算术」——任何款数 2 列都整齐，加游戏零布局成本。
+     滚到底 footer 下方留空，露出 fixed 在底部的 idle 角色台面。*/
   .grid {
-    position: fixed;
-    top: 52px;
-    left: 14px;
-    right: 14px;
-    bottom: 10vh;
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    grid-template-rows: repeat(7, 1fr);
+    margin: 0 auto;
+    padding: 0 14px;
+    max-width: 1100px; /* 桌面宽窗防止 2 列被拉成横幅；iPad 竖屏不受影响 */
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: clamp(150px, 24vh, 300px);
     gap: 10px;
   }
-  .tile { grid-column: span 2; }
-  .tile.hero { grid-column: span 3; }
   .tile {
     position: relative;
     border-radius: 18px;
@@ -694,15 +688,13 @@
     100% { background: #d18ab2; }
   }
 
+  /* footer 在文档流末尾：文字提示 + 底部大留白，滚到底露出 idle 角色台面 */
   .footer {
-    position: fixed;
-    bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
+    padding: 18px 0 30vh;
+    text-align: center;
     font-size: 11px;
     letter-spacing: 0.3em;
     color: rgba(80, 50, 30, 0.35);
-    z-index: 10;
   }
 </style>
 </head>
@@ -712,7 +704,7 @@
 
 <div class="grid">
   <!-- 1. feed 喂一喂（v0.18 假装喂食）-->
-  <a class="tile hero" href="games/feed/" data-num="1">
+  <a class="tile" href="games/feed/" data-num="1">
     <div class="preview feed">
       <span class="fd-food">🐟</span>
       <span class="fd-pet">🐱</span>
@@ -722,7 +714,7 @@
   </a>
 
   <!-- 2. shapes 送回家（v0.18 形状配对）-->
-  <a class="tile hero" href="games/shapes/" data-num="2">
+  <a class="tile" href="games/shapes/" data-num="2">
     <div class="preview shapes">
       <div class="sh-roof"></div>
       <div class="sh-wall"><div class="sh-hole"></div></div>
@@ -732,7 +724,7 @@
   </a>
 
   <!-- 3. storybook 谁在门后面（v0.17 敲门躲猫猫交互绘本）-->
-  <a class="tile hero" href="games/storybook/" data-num="3">
+  <a class="tile" href="games/storybook/" data-num="3">
     <div class="preview storybook">
       <span class="sb-peek"></span>
       <span class="sb-door"></span>
@@ -741,7 +733,7 @@
   </a>
 
   <!-- 2. scribble 画彩虹（最新 v0.16 手指拖拽留彩虹轨迹）-->
-  <a class="tile hero" href="games/scribble/" data-num="4">
+  <a class="tile" href="games/scribble/" data-num="4">
     <div class="preview scribble">
       <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -762,7 +754,7 @@
   </a>
 
   <!-- 3. peekaboo 躲猫猫（v0.15 掀盖找朋友）-->
-  <a class="tile hero" href="games/peekaboo/" data-num="5">
+  <a class="tile" href="games/peekaboo/" data-num="5">
     <div class="preview peekaboo">
       <div class="pk-nest"><div class="pk-emo">🐱</div><div class="pk-cover"><span class="knob">🫶</span></div></div>
       <div class="pk-nest"><div class="pk-emo">🐶</div><div class="pk-cover"><span class="knob">🫶</span></div></div>
@@ -771,7 +763,7 @@
   </a>
 
   <!-- 4. find 找一找（v0.13 听音指认）-->
-  <a class="tile hero" href="games/find/" data-num="6">
+  <a class="tile" href="games/find/" data-num="6">
     <div class="preview find">
       <div class="horn">📢</div>
       <div class="frow">
