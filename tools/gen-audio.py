@@ -186,6 +186,14 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
             ("motorbike", "摩托车", "嗡嗡嗡")]
     m["cars"] = {f"{k}.mp3": ("text", f"{name}，{cry}！", SENT_SPEED) for k, name, cry in cars}
 
+    # bath 洗澡澡：dirty_ 开场求助 / clean_ 洗净表扬（动物池与 feed 同源）
+    bath = [("cat", "小猫"), ("dog", "小狗"), ("rabbit", "兔子"), ("monkey", "猴子"),
+            ("panda", "熊猫"), ("cow", "奶牛"), ("chicken", "母鸡"), ("elephant", "大象")]
+    m["bath"] = {}
+    for k, name in bath:
+        m["bath"][f"dirty_{k}.mp3"] = ("text", f"{name}脏脏的，帮它洗澡澡吧！", SENT_SPEED)
+        m["bath"][f"clean_{k}.mp3"] = ("text", f"哇！{name}洗得干干净净！", SENT_SPEED)
+
     return m
 
 
@@ -286,15 +294,17 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--check", action="store_true", help="只核对 manifest ↔ 磁盘文件名，不调 API")
     ap.add_argument("--trim", action="store_true", help="只裁磁盘上现有 mp3 的首尾静音，不调 API")
-    ap.add_argument("--game", help="只处理指定游戏（目录名）")
+    ap.add_argument("--game", help="只处理指定游戏（目录名，逗号分隔可多个——同跑共享段缓存省 API）")
     ap.add_argument("--only", help="只处理文件名含该子串的条目")
     args = ap.parse_args()
 
     manifest = build_manifest()
     if args.game:
-        if args.game not in manifest:
-            sys.exit(f"未知游戏 {args.game}，可选：{'、'.join(manifest)}")
-        manifest = {args.game: manifest[args.game]}
+        picked = [g.strip() for g in args.game.split(",") if g.strip()]
+        unknown = [g for g in picked if g not in manifest]
+        if unknown:
+            sys.exit(f"未知游戏 {'、'.join(unknown)}，可选：{'、'.join(manifest)}")
+        manifest = {g: manifest[g] for g in picked}
 
     # --check：manifest ↔ 磁盘双射核对
     ok = True
