@@ -36,7 +36,7 @@ Open the live URL in Safari → **Share → Add to Home Screen** for a full-scre
 
 ## Audio
 
-Speech audio is pre-rendered mp3 (macOS `say -v Tingting`, mono 22.05kHz 32kbps) because iOS WebKit blocks SpeechSynthesis entirely. Regenerate with the scripts in `tools/`.
+Speech audio is pre-rendered mp3 (Volcengine TTS, voice 灿灿 / `zh_female_cancan_uranus_bigtts`, mono 24kHz) because iOS WebKit blocks SpeechSynthesis entirely. Regenerate with `tools/gen-audio.py` (needs `DOUBAO_TTS_APP_ID` / `DOUBAO_TTS_ACCESS_KEY` env vars).
 
 ## Inspirations
 
@@ -59,7 +59,7 @@ Speech audio is pre-rendered mp3 (macOS `say -v Tingting`, mono 22.05kHz 32kbps)
 │   ├── tw-summon/ tw-bubbles/ tw-chorus/ tw-mood/ tw-more/
 │   ├── peekaboo/ storybook/ scribble/
 │   └── keyboard/ bubbles/ drums/ cascade/   # the original four, fully self-contained
-└── tools/                  # offline audio generation scripts (say + lame)
+└── tools/                  # offline audio generation (gen-audio.py, Volcengine TTS + ffmpeg)
 ```
 
 v1 games are self-contained single files; the Twirlywoos five share `_lib/`, and words/find share one word list (`_lib/words-data.js`). `.nojekyll` keeps GitHub Pages from eating the `_lib` directory.

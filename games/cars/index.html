@@ -226,7 +226,7 @@ const VEHICLES = [
 ];
 
 // ===== 音频（预录 mp3，避开 iOS SpeechSynthesis 整段——Keith iPad 实证 SpeechSynthesis 静默） =====
-// audio/<key>.mp3 是 macOS say -v Tingting 婷婷音色离线生成
+// audio/<key>.mp3 是火山引擎灿灿音色离线生成（tools/gen-audio.py）
 const audioCache = {};
 // 人声 300ms 最小间隔——手掌拍屏 3-5 触点各 spawn 一辆是好的（视觉并行），
 // 但 3-5 段「名字+拟声」同时开播只会混成噪音，音频单独节流

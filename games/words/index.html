@@ -170,7 +170,7 @@ WORDS.forEach(w => (groups[w.theme] = groups[w.theme] || []).push(w));
 const DECK = shuffle(groups.filter(Boolean).map(g => shuffle(g.slice()))).flat();
 
 // ===== 音频（预录 mp3，避开 iOS SpeechSynthesis 整段被屏蔽——Keith iPad 实证） =====
-// audio/<key>.mp3 = say -v Tingting「<词>[[slnc 700]]<词>」念两遍、中间留 700ms 白引导跟读
+// audio/<key>.mp3 = 灿灿音色「<词> + 700ms 静音 + <词>」念两遍、中间留白引导跟读（tools/gen-audio.py）
 const audioCache = {};
 function getAudio(key) {
   let a = audioCache[key];

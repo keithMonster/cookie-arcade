@@ -241,7 +241,7 @@ for (let i = ANIMALS.length - 1; i > 0; i--) {
 }
 
 // ===== 音频（预录 mp3，避开 iOS SpeechSynthesis 整段——Keith iPad 实证 SpeechSynthesis 静默） =====
-// audio/<key>.mp3 是 macOS say -v Tingting 婷婷音色离线生成的「name，cry」组合语音
+// audio/<key>.mp3 是火山引擎灿灿音色离线生成的「name，cry」组合语音（tools/gen-audio.py）
 const audioCache = {};
 function playAudio(key) {
   let a = audioCache[key];

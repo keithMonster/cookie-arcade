@@ -1,6 +1,6 @@
 // 词库单一数据源：words（学说话）与 find（找一找）共享。
 // 扩容 2026-07-10：29→50 词，新增动作/日用/交通三主题（Cookie 24 月龄词汇爆发期）。
-// 修改词表后需重跑 tools/gen-words-audio.sh 与 tools/gen-find-audio.sh 重新生成音频。
+// 修改词表后需重跑 tools/gen-audio.py 重新生成音频（words/find 两款的词表都从本文件解析，只此一处）。
 // 字段：emoji 大图 + word 中文词 + key（audio 文件名）+ theme（主题索引，决定背景色）。
 // 按主题分组排列：同主题词连续出现形成语义聚类；家人放第一组（情感优先）；🍪饼干 = Cookie 名字双关。
 const WORDS_DATA = [
