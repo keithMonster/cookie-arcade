@@ -111,7 +111,12 @@
   }
 
   #back {
-    position: fixed; top: 0; right: 0;
+    position: fixed;
+    top: 8px; right: 4px;
+    top: calc(constant(safe-area-inset-top) + 8px);
+    right: calc(constant(safe-area-inset-right) + 4px);
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
+    right: calc(env(safe-area-inset-right, 0px) + 4px);
     width: 70px; height: 70px;
     z-index: 1000;
     display: flex; align-items: center; justify-content: center;
@@ -171,20 +176,26 @@ const DECK = shuffle(groups.filter(Boolean).map(g => shuffle(g.slice()))).flat()
 
 // ===== 音频（预录 mp3，避开 iOS SpeechSynthesis 整段被屏蔽——Keith iPad 实证） =====
 // audio/<key>.mp3 = 灿灿音色「<词> + 700ms 静音 + <词>」念两遍、中间留白引导跟读（tools/gen-audio.py）
-const audioCache = {};
-function getAudio(key) {
-  let a = audioCache[key];
-  if (!a) {
-    a = new Audio(`audio/${key}.mp3`);
-    a.preload = 'auto';
-    audioCache[key] = a;
-    // 念完（两遍 + 留白都结束）→ 进入停留窗口，到点自动翻下一张
-    a.addEventListener('ended', onSpoken);
-    // 资源错误（404/解码失败）也不能把 speaking 卡成永真——当作念完照常流转
-    a.addEventListener('error', onSpoken);
+// Safari 的媒体播放授权按元素授予。全程复用同一个 Audio，只换 src，
+// 避免 50 个词各占一个媒体元素后在旧 iPhone 上静默失声。
+const audioEl = new Audio();
+audioEl.preload = 'auto';
+let audioKey = null;
+
+function selectAudio(key) {
+  if (audioKey !== key) {
+    audioEl.src = `audio/${key}.mp3`;
+    audioKey = key;
+  } else {
+    audioEl.currentTime = 0;
   }
-  return a;
+  return audioEl;
 }
+
+// 念完（两遍 + 留白都结束）→ 进入停留窗口，到点自动翻下一张
+audioEl.addEventListener('ended', onSpoken);
+// 资源错误与 play() 拒绝走同一恢复口：停在当前卡，下一戳重新挂载并重试。
+audioEl.addEventListener('error', () => resetForRetry(audioEl.error));
 
 // ===== DOM =====
 const stage = document.getElementById('stage');
@@ -199,12 +210,25 @@ let swapping = false;
 let speaking = false;   // 当前卡正在念
 let spoken = false;     // 当前卡已念完（停留窗口内）
 let dwellTimer = null;
+let watchdogTimer = null;
+
+function resetForRetry(error) {
+  console.warn('语音播放失败', error);
+  audioEl.pause();
+  speaking = false;
+  spoken = false;
+  audioKey = null;       // 下一戳重设同一 src，强制媒体元素重新加载
+  clearTimeout(dwellTimer);
+  clearTimeout(watchdogTimer);
+}
 
 function paint(i) {
   const w = DECK[i];
   emojiEl.textContent = w.emoji;
   wordEl.textContent = w.word;
   document.body.style.backgroundColor = THEMES[w.theme];
+  // 单媒体元素提前挂当前词；iOS 首次仍由下一次触摸中的 play() 完成授权。
+  selectAudio(w.key);
 }
 
 function pulseRing() {
@@ -231,21 +255,16 @@ function tap() {
   speakCurrent();
 }
 
-let watchdogTimer = null;
 function speakCurrent() {
   clearTimeout(dwellTimer);
   speaking = true;
-  const a = getAudio(DECK[idx].key);
-  a.currentTime = 0;
-  a.play().catch(() => {
-    // 音频失败（加载失败/手势链外）不能卡死在 speaking：当作念完，照常停留→自动翻
-    speaking = false;
-    spoken = true;
-    scheduleAdvance();
-  });
-  // 看门狗：iOS 中断（Siri/锁屏）时 ended/error 都不来，6s 兜底防 speaking 永真软锁
+  const a = selectAudio(DECK[idx].key);
+  a.play().catch(resetForRetry);
+  // 看门狗：iOS 中断（Siri/锁屏）时 ended/error 都不来，6s 后留在原卡待重试。
   clearTimeout(watchdogTimer);
-  watchdogTimer = setTimeout(() => { if (speaking) onSpoken(); }, 6000);
+  watchdogTimer = setTimeout(() => {
+    if (speaking) resetForRetry(new Error('语音播放超时'));
+  }, 6000);
   bounce();
   pulseRing();
 }
@@ -331,12 +350,6 @@ document.addEventListener('keydown', (e) => {
 // 进入：静默展示第一张，等 Cookie 戳
 paint(0);
 
-// 空闲预载全部 50 词 mp3（共 ~420KB）——首戳出声不等网络（2026-06-10）
-// fetch 暖 HTTP 缓存 + Audio 元素实例复用双轨（iOS Safari 对媒体 preload='auto' 消极，fetch 兜底）
-setTimeout(() => DECK.forEach(w => {
-  getAudio(w.key);
-  fetch(`audio/${w.key}.mp3`).catch(() => {});
-}), 400);
 </script>
 </body>
 </html>
