@@ -37,7 +37,12 @@ Open the live URL in Safari → **Share → Add to Home Screen** for a full-scre
 
 ## Audio
 
-Speech audio is pre-rendered mp3 (Volcengine TTS, voice 灿灿 / `zh_female_cancan_uranus_bigtts`, mono 24kHz) because iOS WebKit blocks SpeechSynthesis entirely. Regenerate with `tools/gen-audio.py` (needs `DOUBAO_TTS_APP_ID` / `DOUBAO_TTS_ACCESS_KEY` env vars).
+All spoken voice follows one contract:
+
+- Generate mp3 files at build time with Volcengine TTS V3, voice 灿灿 (`zh_female_cancan_uranus_bigtts`, mono 24kHz). The game never calls TTS at runtime, so it still works offline.
+- `tools/gen-audio.py` is the single source of truth for voice settings and spoken copy. Add a new game's manifest there, run `python3 tools/gen-audio.py --game <game-directory>`, then run the same command with `--check` before committing. Credentials come from `DOUBAO_TTS_APP_ID` / `DOUBAO_TTS_ACCESS_KEY` or the local voice-reply skill fallback; never commit them.
+- Do not use `SpeechSynthesis` for spoken Chinese: it has been silent on the target iPad and would break the shared voice. Web Audio remains appropriate for non-speech effects.
+- For sequential or autoplay-follow-up speech on iOS, reuse one `Audio` element and swap `src`; `games/words/` is the reference implementation.
 
 ## Inspirations
 

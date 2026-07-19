@@ -174,8 +174,9 @@ const groups = [];
 WORDS.forEach(w => (groups[w.theme] = groups[w.theme] || []).push(w));
 const DECK = shuffle(groups.filter(Boolean).map(g => shuffle(g.slice()))).flat();
 
-// ===== 音频（预录 mp3，避开 iOS SpeechSynthesis 整段被屏蔽——Keith iPad 实证） =====
-// audio/<key>.mp3 = 灿灿音色「<词> + 700ms 静音 + <词>」念两遍、中间留白引导跟读（tools/gen-audio.py）
+// ===== 音频（构建期由火山豆包 TTS V3 生成，运行时只播放本地 mp3） =====
+// audio/<key>.mp3 = 灿灿音色「<词> + 700ms 静音 + <词>」念两遍、中间留白引导跟读（tools/gen-audio.py --game words）
+// 不改用 SpeechSynthesis：Keith 的 iPad 已实证整段静默，且会破坏全站统一音色。
 // Safari 的媒体播放授权按元素授予。全程复用同一个 Audio，只换 src，
 // 避免 50 个词各占一个媒体元素后在旧 iPhone 上静默失声。
 const audioEl = new Audio();
