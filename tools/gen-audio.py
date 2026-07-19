@@ -4,7 +4,7 @@
 2026-07-16 起替代原 6 个 gen-*-audio.sh（macOS say -v Tingting）：
 音色换成火山豆包 TTS V3 的「灿灿」（zh_female_cancan_uranus_bigtts），
 自然甜美人声，比 say 的机械音更适合 2 岁小朋友。
-全部 9 款游戏的文案表收编在本文件 MANIFEST 一处（words/find 词表直接
+全部 10 款游戏的文案表收编在本文件 MANIFEST 一处（words/find 词表直接
 解析 games/_lib/words-data.js，不再维护第二份副本）。
 
 停顿处理：火山大模型 TTS 不支持 say 的 [[slnc N]] 停顿语法——
