@@ -85,6 +85,15 @@
     75%  { transform: scale(1.18) rotate(-4deg) translateY(-4%); }
     100% { transform: scale(1)    rotate(0); }
   }
+  /* 摇头拒绝：喂错了，左右快速摆头说不要 */
+  .pet.no { animation: pet-no 700ms ease-in-out; }
+  @keyframes pet-no {
+    0%, 100% { transform: rotate(0); }
+    20% { transform: rotate(-10deg); }
+    40% { transform: rotate(9deg); }
+    60% { transform: rotate(-7deg); }
+    80% { transform: rotate(5deg); }
+  }
   /* 换动物进出场 */
   .pet.deal-out { animation: pet-deal-out 300ms ease-in forwards; }
   .pet.deal-in  { animation: pet-deal-in  460ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
@@ -144,6 +153,15 @@
     35%  { transform: scale(0.86); }
     70%  { transform: scale(1.06); }
     100% { transform: scale(1); }
+  }
+  /* 被拒绝：卡片原地左右摇，食物不飞出去 */
+  .food.refused { animation: food-refused 500ms ease-in-out; }
+  @keyframes food-refused {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-7%) rotate(-2deg); }
+    40% { transform: translateX(6%)  rotate(2deg); }
+    60% { transform: translateX(-4%) rotate(-1deg); }
+    80% { transform: translateX(3%)  rotate(1deg); }
   }
   /* 托盘换场 */
   .food.deal-out { animation: food-deal-out 300ms ease-in forwards; }
@@ -230,7 +248,7 @@
 </div>
 
 <a id="back" href="../../">←</a>
-<div id="hint">戳一戳好吃的，喂给小动物</div>
+<div id="hint">找到它最爱吃的，喂给它吧</div>
 
 <script>
 // ===== 动物 & 最爱食物：假装游戏（pretend play）+「谁爱吃什么」常识配对 =====
@@ -259,7 +277,7 @@ const BITES_TO_FULL = 3;   // 喂满 3 口吃饱换下一只（无进度 UI，�
 const THEMES = ['#ffe3c9', '#ffd9dd', '#e3edc9', '#fdeaad', '#d9e8d2', '#e0dcf5', '#ffe8b8', '#d2e6f0'];
 
 // ===== 音频 =====
-// fxEl：手势内即时反馈（yum/fav），每次戳都在手势链内，换 src 即播
+// fxEl：手势内即时反馈（fav/yum/no），每次戳都在手势链内，换 src 即播
 // sysEl：吃饱音在 chomp 动画结束后播 = 手势链外，必须走首戳解锁过的元素
 const fxEl = new Audio();
 const sysEl = new Audio();
@@ -359,10 +377,35 @@ function flyFood(fromEl, emoji) {
 }
 
 const YUM_KEYS = ['yum_1', 'yum_2', 'yum_3'];
+const NO_KEYS = ['no_1', 'no_2', 'no_3'];
+
+// 喂错了：摇头拒绝 + 「不爱吃」语音，不吃不计口——只有最爱才通过
+let refuseSeq = 0;
+function refuse(i) {
+  const seq = ++refuseSeq;
+
+  foods[i].classList.remove('served', 'refused');
+  void foods[i].offsetWidth;
+  foods[i].classList.add('refused');
+
+  fxEl.src = 'audio/' + NO_KEYS[Math.floor(Math.random() * 3)] + '.mp3';
+  fxEl.currentTime = 0;
+  fxEl.play().catch(() => {});
+
+  petEl.classList.remove('waiting', 'chomp', 'no');
+  void petEl.offsetWidth;
+  petEl.classList.add('no');
+  // 摇完头回到等喂；期间又被拒/被喂对则交给新一轮动画接管
+  setTimeout(() => {
+    if (seq !== refuseSeq) return;
+    petEl.classList.remove('no');
+    if (phase === 'feed') petEl.classList.add('waiting');
+  }, 720);
+}
 
 function serve(i) {
   const foodKey = tray[i];
-  const isFav = foodKey === pet.fav;
+  if (foodKey !== pet.fav) { refuse(i); return; }
   phase = 'eating';
   bites++;
 
@@ -371,17 +414,17 @@ function serve(i) {
   foods[i].classList.add('served');
   flyFood(foods[i], FOODS[foodKey].emoji);
 
-  // 即时反馈音（手势链内）：最爱 = 专属惊喜音；普通 = 三条「真好吃」轮换
-  fxEl.src = 'audio/' + (isFav ? 'fav_' + pet.key : YUM_KEYS[Math.floor(Math.random() * 3)]) + '.mp3';
+  // 即时反馈音（手势链内）：第一口 = 专属惊喜音「最爱吃 X 啦」；后续口 = 三条「真好吃」轮换
+  fxEl.src = 'audio/' + (bites === 1 ? 'fav_' + pet.key : YUM_KEYS[Math.floor(Math.random() * 3)]) + '.mp3';
   fxEl.currentTime = 0;
   fxEl.play().catch(() => {});
 
   // 食物飞到嘴边后开始咀嚼
   setTimeout(() => {
-    petEl.classList.remove('waiting', 'chomp');
+    petEl.classList.remove('waiting', 'chomp', 'no');
     void petEl.offsetWidth;
     petEl.classList.add('chomp');
-    if (isFav) burstSparks(petEl, ['💛', '❤️', '💕', '💖', '⭐']);
+    burstSparks(petEl, ['💛', '❤️', '💕', '💖', '⭐']);
   }, 380);
 
   // 咀嚼完：吃饱了庆祝换场；没饱回到等喂
@@ -475,7 +518,7 @@ function tapPet() {
     phase = 'feed';
   }
   if (phase !== 'feed') return;
-  petEl.classList.remove('waiting', 'chomp');
+  petEl.classList.remove('waiting', 'chomp', 'no');
   void petEl.offsetWidth;
   petEl.classList.add('chomp');
   setTimeout(() => {
@@ -517,13 +560,14 @@ pickTray();
 paintPet();
 paintTray();
 
-// 空闲预载全部 19 个 mp3 进 HTTP 缓存
+// 空闲预载全部 22 个 mp3 进 HTTP 缓存
 setTimeout(() => {
   PETS.forEach(({ key }) => {
     fetch(`audio/fav_${key}.mp3`).catch(() => {});
     fetch(`audio/full_${key}.mp3`).catch(() => {});
   });
   YUM_KEYS.forEach(k => fetch(`audio/${k}.mp3`).catch(() => {}));
+  NO_KEYS.forEach(k => fetch(`audio/${k}.mp3`).catch(() => {}));
 }, 600);
 </script>
 </body>

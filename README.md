@@ -11,7 +11,7 @@ https://keithmonster.github.io/cookie-arcade/
 | # | Name | What it does |
 |---|---|---|
 | 1 | **洗澡澡 Bath Time** | Scrub-to-clean pretend play: an animal shows up mucky and gray with mud blobs, scrub (tap or drag) to pop them off with splashes and squeaks, and when the last one goes the animal brightens up, bounces and hears "哇！小狗洗得干干净净！". 8 animals, shuffled queue. |
-| 2 | **喂一喂 Feed Me** | Pretend play: a big animal waits hungry, tap a food card and it flies into its mouth — chomp-chomp, "啊呜！真好吃！". Feed its favorite ("小猫最爱吃小鱼啦！") for a heart burst. Three bites and it's full — burp, celebration, next animal. 8 animals, each with a signature food. |
+| 2 | **喂一喂 Feed Me** | Food-matching pretend play: a big animal waits hungry over three food cards, but only its favorite gets eaten — tap it and it flies into its mouth with a heart burst ("小猫最爱吃小鱼啦！"). Tap a wrong food and the animal shakes its head, the card wobbles and a voice says "咦？我不爱吃这个呀！" — nothing is eaten. Three right bites and it's full — burp, celebration, next animal. 8 animals, each with a signature food. |
 | 3 | **送回家 Shape Home** | Shape matching: a little house has a shape-shaped hole, a voice asks "圆形在哪里呀？", tap the right of two shape cards and it flies in and clicks into place. Wrong taps wobble + replay; after 2 misses the right card glows. Always ends in success. 6 shapes. |
 | 4 | **谁在门后面 Storybook** | A knock-knock peekaboo picture book. The narrator asks "who's behind the door?", tap the door, it swings open and a Twirlywoo pops out — "哇！是蓝呼呼！" — then auto-flips to the next door. Ends with all four friends together + confetti. |
 | 5 | **画彩虹 Scribble** | Drag a finger and it leaves a rainbow trail; lift and the canvas slowly clears. First continuous-creation game on the台. |

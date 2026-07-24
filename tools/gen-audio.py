@@ -141,6 +141,10 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
     m["feed"]["yum_1.mp3"] = ("text", "啊呜！真好吃！", SENT_SPEED)
     m["feed"]["yum_2.mp3"] = ("text", "啊呜啊呜，好吃好吃！", SENT_SPEED)
     m["feed"]["yum_3.mp3"] = ("text", "哇哦，太好吃啦！", SENT_SPEED)
+    # 喂错拒绝音（三条轮换，跨动物共用）：只有最爱才通过，喂错摇头不吃
+    m["feed"]["no_1.mp3"] = ("text", "咦？我不爱吃这个呀！", SENT_SPEED)
+    m["feed"]["no_2.mp3"] = ("text", "这个不是我最爱的，换一个嘛！", SENT_SPEED)
+    m["feed"]["no_3.mp3"] = ("text", "摇摇头，我想吃别的！", SENT_SPEED)
 
     # peekaboo 躲猫猫：惊喜揭晓
     peek = [("cat", "小猫"), ("dog", "小狗"), ("rabbit", "小兔子"), ("cow", "奶牛"),
