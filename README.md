@@ -6,25 +6,26 @@ A toddler-friendly mini-game collection for a (now 2-year-old) who started out s
 
 https://keithmonster.github.io/cookie-arcade/
 
-## Games (19)
+## Games (20)
 
 | # | Name | What it does |
 |---|---|---|
-| 1 | **洗澡澡 Bath Time** | Scrub-to-clean pretend play: an animal shows up mucky and gray with mud blobs, scrub (tap or drag) to pop them off with splashes and squeaks, and when the last one goes the animal brightens up, bounces and hears "哇！小狗洗得干干净净！". 8 animals, shuffled queue. |
-| 2 | **喂一喂 Feed Me** | Food-matching pretend play: a big animal waits hungry over three food cards, but only its favorite gets eaten — tap it and it flies into its mouth with a heart burst ("小猫最爱吃小鱼啦！"). Tap a wrong food and the animal shakes its head, the card wobbles and a voice says "咦？我不爱吃这个呀！" — nothing is eaten. Three right bites and it's full — burp, celebration, next animal. 8 animals, each with a signature food. |
-| 3 | **送回家 Shape Home** | Shape matching: a little house has a shape-shaped hole, a voice asks "圆形在哪里呀？", tap the right of two shape cards and it flies in and clicks into place. Wrong taps wobble + replay; after 2 misses the right card glows. Always ends in success. 6 shapes. |
-| 4 | **谁在门后面 Storybook** | A knock-knock peekaboo picture book. The narrator asks "who's behind the door?", tap the door, it swings open and a Twirlywoo pops out — "哇！是蓝呼呼！" — then auto-flips to the next door. Ends with all four friends together + confetti. |
-| 5 | **画彩虹 Scribble** | Drag a finger and it leaves a rainbow trail; lift and the canvas slowly clears. First continuous-creation game on the台. |
-| 6 | **躲猫猫 Peekaboo** | Four candy blankets, a friend hiding under each. Lift a blanket and a friend pops out with confetti + "哇！是小猫！". After a beat the blanket drops back over a new friend. Blankets peek by themselves to say "someone's here!" — built for the object-permanence age. |
-| 7 | **找一找 Find It** | Listen-and-point: a voice asks "X 在哪里呀?", tap the right one of three big cards. Wrong taps wobble + replay; after 2 misses the right card glows. Always ends in success. |
-| 8 | **学说话 First Words** | Word-card machine: 50 Chinese words across 8 themes (family / fruit / food / body / nature / actions / everyday things / vehicles). Tap = the card says its word twice with a pause for imitation, then auto-flips. Deck shuffles every visit. |
-| 9 | **车车 Cars** | Tap anywhere — a vehicle appears and drives off-screen with dust trails, name + sound. Emergency vehicles flash. |
-| 10 | **动物园 Zoo** | 2×2 animal panels. Tap an animal to hear its name + cry; panels rotate through 17 animals. |
-| 11-15 | **Twirlywoos × 5** | Summon birds / falling bubbles / four-bird chorus / mood colors / more-more-more ball pile — starring BigHoo, Toodloo, Chickedy & Chick on their red-boat stage. |
-| 16 | **键盘小子 Keyboard Smash** | Each keypress spawns a shape + piano note + particles. Space = firework. |
-| 17 | **戳泡泡 Pop Bubbles** | Bubbles drift up; hover / touch to pop. |
-| 18 | **小鼓机 Drum Pad** | Keyboard rows = drums / cymbals / chimes. |
-| 19 | **变色屏 Color Cascade** | Each key fades the screen to a new color with a soft note. Calming. |
+| 1 | **睡觉觉 Sleep Tight** | Tuck-in pretend play: a sleepy animal sways on its little bed, tap anywhere and the blanket pulls up to its chin — the sky turns to night, stars come out, a soft "嘘，晚安，小猫，做个好梦" plays over a three-note lullaby while 💤 drifts up. Extra taps float quiet stars instead of waking it. Then a gentle sunrise brings the next of 8 animals. The wind-down closer of the care trilogy (bath → feed → sleep), deliberately low-stimulation. |
+| 2 | **洗澡澡 Bath Time** | Scrub-to-clean pretend play: an animal shows up mucky and gray with mud blobs, scrub (tap or drag) to pop them off with splashes and squeaks, and when the last one goes the animal brightens up, bounces and hears "哇！小狗洗得干干净净！". 8 animals, shuffled queue. |
+| 3 | **喂一喂 Feed Me** | Food-matching pretend play: a big animal waits hungry over three food cards, but only its favorite gets eaten — tap it and it flies into its mouth with a heart burst ("小猫最爱吃小鱼啦！"). Tap a wrong food and the animal shakes its head, the card wobbles and a voice says "咦？我不爱吃这个呀！" — nothing is eaten. Three right bites and it's full — burp, celebration, next animal. 8 animals, each with a signature food. |
+| 4 | **送回家 Shape Home** | Shape matching: a little house has a shape-shaped hole, a voice asks "圆形在哪里呀？", tap the right of two shape cards and it flies in and clicks into place. Wrong taps wobble + replay; after 2 misses the right card glows. Always ends in success. 6 shapes. |
+| 5 | **谁在门后面 Storybook** | A knock-knock peekaboo picture book. The narrator asks "who's behind the door?", tap the door, it swings open and a Twirlywoo pops out — "哇！是蓝呼呼！" — then auto-flips to the next door. Ends with all four friends together + confetti. |
+| 6 | **画彩虹 Scribble** | Drag a finger and it leaves a rainbow trail; lift and the canvas slowly clears. First continuous-creation game on the台. |
+| 7 | **躲猫猫 Peekaboo** | Four candy blankets, a friend hiding under each. Lift a blanket and a friend pops out with confetti + "哇！是小猫！". After a beat the blanket drops back over a new friend. Blankets peek by themselves to say "someone's here!" — built for the object-permanence age. |
+| 8 | **找一找 Find It** | Listen-and-point: a voice asks "X 在哪里呀?", tap the right one of three big cards. Wrong taps wobble + replay; after 2 misses the right card glows. Always ends in success. |
+| 9 | **学说话 First Words** | Word-card machine: 50 Chinese words across 8 themes (family / fruit / food / body / nature / actions / everyday things / vehicles). Tap = the card says its word twice with a pause for imitation, then auto-flips. Deck shuffles every visit. |
+| 10 | **车车 Cars** | Tap anywhere — a vehicle appears and drives off-screen with dust trails, name + sound. Emergency vehicles flash. |
+| 11 | **动物园 Zoo** | 2×2 animal panels. Tap an animal to hear its name + cry; panels rotate through 17 animals. |
+| 12-16 | **Twirlywoos × 5** | Summon birds / falling bubbles / four-bird chorus / mood colors / more-more-more ball pile — starring BigHoo, Toodloo, Chickedy & Chick on their red-boat stage. |
+| 17 | **键盘小子 Keyboard Smash** | Each keypress spawns a shape + piano note + particles. Space = firework. |
+| 18 | **戳泡泡 Pop Bubbles** | Bubbles drift up; hover / touch to pop. |
+| 19 | **小鼓机 Drum Pad** | Keyboard rows = drums / cymbals / chimes. |
+| 20 | **变色屏 Color Cascade** | Each key fades the screen to a new color with a soft note. Calming. |
 
 ## Navigation
 
@@ -57,6 +58,7 @@ All spoken voice follows one contract:
 ├── index.html              # arcade home (game picker)
 ├── games/
 │   ├── _lib/               # Twirlywoos characters + stage + shared word data
+│   ├── sleep/              # tuck-in bedtime (audio/ = pre-rendered mp3)
 │   ├── bath/               # scrub-to-clean bath time (audio/ = pre-rendered mp3)
 │   ├── feed/               # pretend feeding (audio/ = pre-rendered mp3)
 │   ├── shapes/             # shape matching (audio/ = pre-rendered mp3)

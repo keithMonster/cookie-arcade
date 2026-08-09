@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>睡觉觉 · Cookie's Arcade</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", sans-serif;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* 黄昏 → 夜晚：整个游戏只有这一次大变色，刻意低刺激（睡前收尾场景） */
+  body {
+    background: linear-gradient(180deg, #cdb9e0 0%, #e8cfc0 100%);
+    transition: background 1400ms ease;
+  }
+  body.night {
+    background: linear-gradient(180deg, #141c3c 0%, #23305c 100%);
+  }
+
+  /* 月亮和星星：夜晚才浮现，纯装饰不可点 */
+  #moon {
+    position: fixed;
+    top: 7vh; left: 8vw;
+    font-size: 11vmin;
+    line-height: 1;
+    opacity: 0;
+    transform: translateY(6vh);
+    transition: opacity 1600ms ease, transform 1600ms ease;
+    pointer-events: none;
+    z-index: 2;
+  }
+  body.night #moon { opacity: 1; transform: translateY(0); }
+  .star {
+    position: fixed;
+    font-size: 3.2vmin;
+    line-height: 1;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+  body.night .star { animation: star-twinkle 2.8s ease-in-out infinite; }
+  @keyframes star-twinkle {
+    0%, 100% { opacity: 0.25; transform: scale(0.9); }
+    50%      { opacity: 0.9;  transform: scale(1.1); }
+  }
+
+  .stage {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2.4vmin;
+  }
+
+  /* ===== 小床 ===== */
+  .bed {
+    position: relative;
+    width: min(72vmin, 88vw);
+    height: 46vmin;
+  }
+  .bed-base {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 15vmin;
+    border-radius: 5vmin;
+    background: #e9dcc8;
+    box-shadow: 0 8px 20px rgba(60, 40, 80, 0.18);
+    transition: background 1400ms ease;
+  }
+  body.night .bed-base { background: #3a4470; }
+  .pillow {
+    position: absolute;
+    left: 6%;
+    bottom: 12vmin;
+    width: 22%;
+    height: 9vmin;
+    border-radius: 3vmin;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 3px 8px rgba(60, 40, 80, 0.15);
+    transition: background 1400ms ease;
+  }
+  body.night .pillow { background: rgba(210, 218, 245, 0.85); }
+
+  .pet {
+    position: absolute;
+    left: 50%;
+    bottom: 9vmin;
+    transform: translateX(-50%);
+    font-size: 26vmin;
+    line-height: 1;
+    filter: drop-shadow(0 5px 0 rgba(0, 0, 0, 0.08));
+    will-change: transform;
+    z-index: 3;
+  }
+  /* 困了：缓慢左右点头打盹（节奏刻意比 bath/feed 慢一档） */
+  .pet.sleepy { animation: pet-sleepy 3s ease-in-out infinite; }
+  @keyframes pet-sleepy {
+    0%, 100% { transform: translateX(-50%) rotate(0); }
+    30%      { transform: translateX(-50%) rotate(-5deg) translateY(1%); }
+    65%      { transform: translateX(-50%) rotate(4deg)  translateY(0.5%); }
+  }
+  /* 睡着：极慢呼吸起伏 */
+  .pet.asleep { animation: pet-asleep 4.5s ease-in-out infinite; }
+  @keyframes pet-asleep {
+    0%, 100% { transform: translateX(-50%) scale(1); }
+    50%      { transform: translateX(-50%) scale(1.025) translateY(-0.6%); }
+  }
+  /* 换动物进出场：淡入淡出，不用弹跳（保持安静） */
+  .pet.fade-out { animation: pet-fade-out 500ms ease forwards; }
+  .pet.fade-in  { animation: pet-fade-in  700ms ease forwards; }
+  @keyframes pet-fade-out { 100% { opacity: 0; transform: translateX(-50%) scale(0.92); } }
+  @keyframes pet-fade-in {
+    0%   { opacity: 0; transform: translateX(-50%) scale(0.92); }
+    100% { opacity: 1; transform: translateX(-50%) scale(1); }
+  }
+
+  /* ===== 小被子：本游戏唯一的操作对象 ===== */
+  .blanket {
+    position: absolute;
+    left: 3%;
+    bottom: 7vmin;
+    width: 94%;
+    height: 16vmin;
+    border-radius: 4.5vmin 4.5vmin 3.5vmin 3.5vmin;
+    background:
+      repeating-linear-gradient(90deg,
+        rgba(255, 255, 255, 0.16) 0 5vmin,
+        rgba(255, 255, 255, 0)    5vmin 10vmin),
+      linear-gradient(180deg, #b39ddb 0%, #9c86c9 100%);
+    box-shadow:
+      inset 0 3px 0 rgba(255, 255, 255, 0.35),
+      0 6px 14px rgba(60, 40, 80, 0.2);
+    transition: height 750ms cubic-bezier(0.33, 1, 0.5, 1), background 1400ms ease;
+    z-index: 4;
+    cursor: pointer;
+  }
+  body.night .blanket {
+    background:
+      repeating-linear-gradient(90deg,
+        rgba(255, 255, 255, 0.1) 0 5vmin,
+        rgba(255, 255, 255, 0)   5vmin 10vmin),
+      linear-gradient(180deg, #6d5ba8 0%, #574887 100%);
+  }
+  /* 盖好：被子拉到下巴，只露出头 */
+  .blanket.tucked { height: 30vmin; }
+  /* 待盖提示：被子轻轻招手起伏 */
+  .blanket.waiting { animation: blanket-wave 2.4s ease-in-out infinite; }
+  @keyframes blanket-wave {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-1.6vmin); }
+  }
+
+  .pet-name {
+    font-size: clamp(24px, 5.5vmin, 52px);
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: rgba(60, 45, 85, 0.85);
+    text-shadow: 0 3px 0 rgba(255, 255, 255, 0.5);
+    transition: color 1400ms ease, text-shadow 1400ms ease;
+  }
+  body.night .pet-name {
+    color: rgba(235, 238, 255, 0.9);
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  }
+
+  /* 呼噜气泡：睡着后从头顶慢慢飘起 */
+  .zzz {
+    position: fixed;
+    font-size: 6vmin;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 500;
+    animation: zzz-float 2.8s ease-out forwards;
+  }
+  @keyframes zzz-float {
+    0%   { transform: translate(0, 0)          scale(0.5); opacity: 0; }
+    15%  { opacity: 0.85; }
+    100% { transform: translate(4vmin, -16vmin) scale(1.1); opacity: 0; }
+  }
+
+  /* 夜晚轻点的小星星反馈（安静版粒子：单颗、慢、无爆开） */
+  .spark {
+    position: fixed;
+    font-size: 5.5vmin;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 600;
+    animation: spark-drift 1400ms ease-out forwards;
+  }
+  @keyframes spark-drift {
+    0%   { transform: translate(0, 0) scale(0.4);        opacity: 0.9; }
+    100% { transform: translate(0, -9vmin) scale(1.05);  opacity: 0; }
+  }
+
+  #back {
+    position: fixed;
+    top: 8px; right: 4px;
+    top: calc(constant(safe-area-inset-top) + 8px);
+    right: calc(constant(safe-area-inset-right) + 4px);
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
+    right: calc(env(safe-area-inset-right, 0px) + 4px);
+    width: 70px; height: 70px;
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    color: rgba(60, 45, 85, 0.5);
+    text-decoration: none;
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.4);
+    transition: color 1400ms ease;
+  }
+  body.night #back { color: rgba(235, 238, 255, 0.45); text-shadow: none; }
+  #back:active { color: rgba(60, 45, 85, 0.9); }
+
+  #hint {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 15px;
+    letter-spacing: 0.3em;
+    color: rgba(60, 45, 85, 0.55);
+    pointer-events: none;
+    transition: opacity 600ms;
+    z-index: 100;
+    white-space: nowrap;
+  }
+  #hint.gone { opacity: 0; }
+</style>
+</head>
+<body>
+
+<div id="moon">🌙</div>
+
+<div class="stage">
+  <div class="bed">
+    <div class="bed-base"></div>
+    <div class="pillow"></div>
+    <div class="pet sleepy" id="pet"></div>
+    <div class="blanket waiting" id="blanket"></div>
+  </div>
+  <div class="pet-name" id="petName"></div>
+</div>
+
+<a id="back" href="../../">←</a>
+<div id="hint">点一点小被子，帮它盖好睡觉觉</div>
+
+<script>
+// ===== 睡觉觉：盖被子哄睡 + 睡前流程假装游戏（动物池与 bath/feed 同源）=====
+// 生活三部曲收尾：洗澡澡（洗）→ 喂一喂（吃）→ 睡觉觉（睡）。
+// 全程刻意低刺激：一次大变色、淡入淡出换场、单颗慢速粒子——睡前玩不越玩越兴奋。
+const PETS = [
+  { key: 'cat',      emoji: '🐱', name: '小猫' },
+  { key: 'dog',      emoji: '🐶', name: '小狗' },
+  { key: 'rabbit',   emoji: '🐰', name: '兔子' },
+  { key: 'monkey',   emoji: '🐵', name: '猴子' },
+  { key: 'panda',    emoji: '🐼', name: '熊猫' },
+  { key: 'cow',      emoji: '🐮', name: '奶牛' },
+  { key: 'chicken',  emoji: '🐔', name: '母鸡' },
+  { key: 'elephant', emoji: '🐘', name: '大象' },
+];
+
+// ===== 音频 =====
+// fxEl：手势内即时反馈（盖好的晚安音），换 src 即播
+// sysEl：换场后的「困了」开场音 = 手势链外，必须走首戳解锁过的元素
+const fxEl = new Audio();
+const sysEl = new Audio();
+fxEl.preload = 'auto';
+sysEl.preload = 'auto';
+
+// 摇篮曲：Web Audio 三音下行（非语音效果音允许运行时合成），音量压低
+let actx = null;
+function lullaby() {
+  if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; } }
+  [[659.3, 0], [523.3, 0.75], [392.0, 1.5]].forEach(([freq, at]) => {
+    const t = actx.currentTime + at;
+    const osc = actx.createOscillator();
+    const g = actx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.1, t + 0.06);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 1.1);
+    osc.connect(g).connect(actx.destination);
+    osc.start(t);
+    osc.stop(t + 1.2);
+  });
+}
+// 夜晚轻点的单音回应（五声音阶随机一颗，很轻）
+const NIGHT_NOTES = [392.0, 440.0, 523.3, 587.3, 659.3];
+function softNote() {
+  if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; } }
+  const t = actx.currentTime;
+  const osc = actx.createOscillator();
+  const g = actx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = NIGHT_NOTES[Math.floor(Math.random() * NIGHT_NOTES.length)];
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(0.08, t + 0.04);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+  osc.connect(g).connect(actx.destination);
+  osc.start(t);
+  osc.stop(t + 0.8);
+}
+
+// ===== DOM =====
+const petEl = document.getElementById('pet');
+const petNameEl = document.getElementById('petName');
+const blanketEl = document.getElementById('blanket');
+
+// ===== 状态机 =====
+// idle = 静候首戳解锁音频；tuck = 等盖被子；night = 睡着中；dealing = 换动物中
+let phase = 'idle';
+let pet = null;
+let petIdx = 0;
+let petOrder = [];
+let zzzTimer = null;
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// 洗牌队列：一轮 8 只全亮相再重洗（同 feed nextPet，根治纯随机短期重复）
+function nextPet() {
+  if (petIdx >= petOrder.length) {
+    const last = petOrder.length ? petOrder[petOrder.length - 1] : null;
+    do { petOrder = shuffle(PETS); } while (petOrder.length > 1 && petOrder[0] === last);
+    petIdx = 0;
+  }
+  return petOrder[petIdx++];
+}
+
+function paintPet() {
+  petEl.textContent = pet.emoji;
+  petNameEl.textContent = pet.name;
+}
+
+// 星星只生成一次，夜晚靠 body.night 显隐
+(function plantStars() {
+  for (let i = 0; i < 9; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.textContent = '⭐';
+    s.style.left = (4 + Math.random() * 92) + 'vw';
+    s.style.top = (3 + Math.random() * 30) + 'vh';
+    s.style.animationDelay = (Math.random() * 2.8) + 's';
+    document.body.appendChild(s);
+  }
+})();
+
+function spawnZzz() {
+  const r = petEl.getBoundingClientRect();
+  const z = document.createElement('div');
+  z.className = 'zzz';
+  z.textContent = '💤';
+  z.style.left = (r.left + r.width * 0.68) + 'px';
+  z.style.top = (r.top + r.height * 0.1) + 'px';
+  document.body.appendChild(z);
+  setTimeout(() => z.remove(), 2900);
+}
+
+function spawnSpark(x, y) {
+  const s = document.createElement('div');
+  s.className = 'spark';
+  s.textContent = Math.random() < 0.5 ? '⭐' : '✨';
+  s.style.left = x + 'px';
+  s.style.top = y + 'px';
+  document.body.appendChild(s);
+  setTimeout(() => s.remove(), 1450);
+}
+
+// ===== 盖被子：本游戏唯一主动作，怎么点都成功 =====
+let nightSeq = 0;
+function tuckIn() {
+  phase = 'night';
+  const seq = ++nightSeq;
+
+  blanketEl.classList.remove('waiting');
+  blanketEl.classList.add('tucked');
+  petEl.classList.remove('sleepy');
+  petEl.classList.add('asleep');
+  document.body.classList.add('night');
+
+  // 晚安语音（手势链内）+ 摇篮曲 + 呼噜气泡循环
+  fxEl.src = 'audio/night_' + pet.key + '.mp3';
+  fxEl.currentTime = 0;
+  fxEl.play().catch(() => {});
+  setTimeout(lullaby, 900);
+  spawnZzz();
+  zzzTimer = setInterval(spawnZzz, 1700);
+
+  // 看门狗：iOS 中断（Siri/锁屏）时 ended/error 都不来，8s 兜底防卡死
+  setTimeout(() => { if (phase === 'night' && seq === nightSeq) nextRound(); }, 8000);
+}
+// 晚安音念完再睡一小会儿（2.2s 呼噜时间）进换场
+fxEl.addEventListener('ended', () => { if (phase === 'night') setTimeout(nextRound, 2200); });
+fxEl.addEventListener('error', () => { if (phase === 'night') setTimeout(nextRound, 2600); });
+
+function nextRound() {
+  if (phase === 'dealing') return;
+  phase = 'dealing';
+  clearInterval(zzzTimer);
+
+  petEl.classList.add('fade-out');
+  setTimeout(() => {
+    // 天亮 + 换下一只困困的动物
+    document.body.classList.remove('night');
+    blanketEl.classList.remove('tucked');
+    blanketEl.classList.add('waiting');
+    pet = nextPet();
+    paintPet();
+    petEl.className = 'pet fade-in';
+    // 「困了」开场音走解锁过的 sysEl（手势链外）
+    sysEl.src = 'audio/sleepy_' + pet.key + '.mp3';
+    sysEl.currentTime = 0;
+    sysEl.play().catch(() => {});
+    setTimeout(() => {
+      petEl.className = 'pet sleepy';
+      phase = 'tuck';
+    }, 720);
+  }, 520);
+}
+
+let hintGone = false;
+function hideHint() {
+  if (hintGone) return;
+  hintGone = true;
+  const h = document.getElementById('hint');
+  if (h) {
+    h.classList.add('gone');
+    setTimeout(() => h.remove(), 800);
+  }
+}
+
+// ===== 输入：点哪都算（2 岁的准头不用瞄准被子）=====
+function tapAt(x, y) {
+  hideHint();
+  if (phase === 'idle') {
+    // 首戳：手势内解锁 sysEl（静音空放一次），然后直接盖被子——首戳也要有真反馈
+    sysEl.muted = true;
+    sysEl.play().then(() => { sysEl.pause(); sysEl.muted = false; }).catch(() => { sysEl.muted = false; });
+    phase = 'tuck';
+    tuckIn();
+    return;
+  }
+  if (phase === 'tuck') { tuckIn(); return; }
+  // 睡着后轻点：一颗慢星星 + 一颗轻音（每按必反馈，但不吵醒气氛）
+  if (phase === 'night') {
+    spawnSpark(x, y);
+    softNote();
+  }
+}
+
+// 触屏：document 级监听 + #back 放行（bath 返回键被吞的教训）
+document.addEventListener('touchstart', (e) => {
+  if (e.target.closest('#back')) return;   // 放行返回键，preventDefault 会吞掉它的合成 click
+  const t = e.changedTouches[0];
+  if (t) tapAt(t.clientX, t.clientY);
+  e.preventDefault();   // 抑制 iOS 合成 click/mouse，避免幽灵双触发
+}, { passive: false });
+
+// 桌面鼠标：见过触屏后整路忽略（tw-bubbles 幽灵 mousemove 教训）
+let sawTouch = false;
+document.addEventListener('touchstart', () => { sawTouch = true; }, { passive: true, once: true });
+document.addEventListener('mousedown', (e) => {
+  if (sawTouch) return;
+  if (e.target.closest('#back')) return;
+  tapAt(e.clientX, e.clientY);
+});
+
+// 键盘：任意键 = 点一下（乱拍键盘也能盖被子/召唤小星星）
+document.addEventListener('keydown', (e) => {
+  if (e.repeat) return;   // 按住键 OS 自动重复不是真实按键
+  if (e.metaKey || e.ctrlKey) return;
+  if (e.key === 'Escape') {
+    if (!document.fullscreenElement) location.href = '../../';
+    return;
+  }
+  if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
+    // 已全屏时 F 键不再拦截——落回下方正常游戏反馈（每按必反馈）
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+    return;
+  }
+  e.preventDefault();
+  const r = petEl.getBoundingClientRect();
+  tapAt(r.left + r.width * (0.3 + Math.random() * 0.4), r.top - 20);
+});
+
+// 进入：摆好第一只困困的动物，静候首戳
+pet = nextPet();
+paintPet();
+
+// 空闲预载全部 16 个 mp3 进 HTTP 缓存
+setTimeout(() => {
+  PETS.forEach(({ key }) => {
+    fetch(`audio/sleepy_${key}.mp3`).catch(() => {});
+    fetch(`audio/night_${key}.mp3`).catch(() => {});
+  });
+}, 600);
+</script>
+</body>
+</html>

@@ -198,6 +198,15 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
         m["bath"][f"dirty_{k}.mp3"] = ("text", f"{name}脏脏的，帮它洗澡澡吧！", SENT_SPEED)
         m["bath"][f"clean_{k}.mp3"] = ("text", f"哇！{name}洗得干干净净！", SENT_SPEED)
 
+    # sleep 睡觉觉：sleepy_ 困了求盖被 / night_ 盖好晚安（动物池与 bath/feed 同源）
+    # 晚安句放慢到 0.9——睡前收尾场景，语气跟着软下来
+    sleep = [("cat", "小猫"), ("dog", "小狗"), ("rabbit", "兔子"), ("monkey", "猴子"),
+             ("panda", "熊猫"), ("cow", "奶牛"), ("chicken", "母鸡"), ("elephant", "大象")]
+    m["sleep"] = {}
+    for k, name in sleep:
+        m["sleep"][f"sleepy_{k}.mp3"] = ("text", f"{name}困了，帮它盖上小被子吧！", SENT_SPEED)
+        m["sleep"][f"night_{k}.mp3"] = ("text", f"嘘，晚安，{name}，做个好梦。", 0.9)
+
     return m
 
 

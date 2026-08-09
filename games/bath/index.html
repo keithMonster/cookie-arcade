@@ -459,6 +459,7 @@ function scrubAt(x, y) {
 // 触屏：start 直接搓，move 按距离节流连续搓（keyboard/drums 同款 per-touch 节流）
 const touchLast = new Map();
 document.addEventListener('touchstart', (e) => {
+  if (e.target.closest('#back')) return;   // 放行返回键，preventDefault 会吞掉它的合成 click
   for (const t of e.changedTouches) {
     touchLast.set(t.identifier, { x: t.clientX, y: t.clientY });
     scrubAt(t.clientX, t.clientY);
@@ -466,6 +467,7 @@ document.addEventListener('touchstart', (e) => {
   e.preventDefault();   // 抑制 iOS 合成 click/mouse，避免幽灵双触发
 }, { passive: false });
 document.addEventListener('touchmove', (e) => {
+  if (e.target.closest('#back')) return;
   for (const t of e.changedTouches) {
     const last = touchLast.get(t.identifier);
     if (!last || Math.hypot(t.clientX - last.x, t.clientY - last.y) > 44) {
