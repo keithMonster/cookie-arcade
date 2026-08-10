@@ -8,8 +8,9 @@ WHY.md 用两张表描述全台 20 款的位置（toy→game 轴分布 + 能力�
 检查项（任一失败退出码 1）：
     1. README「## Games (N)」标题里的 N 与表内实际款数一致
     2. WHY.md toy→game 轴表三档款数之和 == README 总款数
-    3. README 里每个游戏名都在 WHY.md 中出现过（新增游戏必须在地图上落位）
-    4. 根目录 md 之间的相对链接不指向不存在或被 .gitignore 挡住的文件
+    3. games/ 磁盘上的游戏目录数 == README 总款数（防做了没登记 / 登记了没做）
+    4. README 里每个游戏名都在 WHY.md 中出现过（新增游戏必须在地图上落位）
+    5. 根目录 md 之间的相对链接不指向不存在或被 .gitignore 挡住的文件
        （public 仓读者看不到 ignored 文件，链过去就是死链）
 
 用法：
@@ -87,7 +88,17 @@ def main():
             " —— 新增游戏后忘了更新 WHY.md 的分布表"
         )
 
-    # 3：每款都要在地图上有位置
+    # 3：文档 vs 磁盘 —— 唯一一条锚在物理事实上的对账
+    on_disk = sorted(
+        d.name for d in (ROOT / "games").iterdir() if d.is_dir() and d.name != "_lib"
+    )
+    if len(on_disk) != actual:
+        failures.append(
+            f"games/ 磁盘上有 {len(on_disk)} 个游戏目录，README 说 {actual} 款"
+            " —— 做了没登记，或登记了没做"
+        )
+
+    # 4：每款都要在地图上有位置
     missing = [n for n in names if n not in why]
     if missing:
         failures.append(
@@ -95,7 +106,7 @@ def main():
             + "、".join(missing)
         )
 
-    # 4：进仓文档的相对链接不能指向仓外文件
+    # 5：进仓文档的相对链接不能指向仓外文件
     for doc in DOCS:
         for target in set(re.findall(r"\]\(([A-Za-z0-9_.-]+\.md)\)", read(doc))):
             if not (ROOT / target).exists():
