@@ -228,5 +228,7 @@ Safari 打开 → 分享 → 添加到主屏幕 → Cookie 自己一戳就能进
 
 - **Live**：https://keithmonster.github.io/cookie-arcade/
 - **GitHub repo**：https://github.com/keithMonster/cookie-arcade（public）
-- **设计文档**：`design-brief.md`（本地，含完整 changelog 和 backlog）
+- **现行规则**：`CLAUDE.md`（新增游戏准入四问 + 设计底线）
+- **规则的理由**：`WHY.md`（toy→game 轴、教与玩为何竞争、能力线地图、底线的失效信号）
+- **缘起快照**：`design-brief.md` — v0.1 单游戏时代的设计 brief，含早期 changelog 和 backlog。**只在爸爸本机、不在这个仓里**（`.gitignore` 挡着），部分结论后来被推翻，文件头有标注
 - **协作记忆**（爸爸用 AI 工具的工作笔记）：`~/githubProject/monster/threads/cookie-arcade.md`

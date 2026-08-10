@@ -45,6 +45,12 @@ All spoken voice follows one contract:
 - Do not use `SpeechSynthesis` for spoken Chinese: it has been silent on the target iPad and would break the shared voice. Web Audio remains appropriate for non-speech effects.
 - For sequential or autoplay-follow-up speech on iOS, reuse one `Audio` element and swap `src`; `games/words/` is the reference implementation.
 
+## Design
+
+- [`CLAUDE.md`](CLAUDE.md) — the admission rules every new game has to pass (four questions + hard lines).
+- [`WHY.md`](WHY.md) — why those rules exist: the toy→game axis, why "educational" and "fun" compete at this age, the capability map behind all 20 games, and the observable signals that will retire each hard line.
+- [`STORY.md`](STORY.md) — how it all happened, written for Cookie to read someday.
+
 ## Inspirations
 
 - [BabySmash](https://github.com/shanselman/babysmash) by Scott Hanselman
