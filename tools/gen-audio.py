@@ -4,7 +4,7 @@
 2026-07-16 起替代原 6 个 gen-*-audio.sh（macOS say -v Tingting）：
 音色换成火山豆包 TTS V3 的「灿灿」（zh_female_cancan_uranus_bigtts），
 自然甜美人声，比 say 的机械音更适合 2 岁小朋友。
-全部 10 款游戏的文案表收编在本文件 MANIFEST 一处（words/find 词表直接
+全部 11 款游戏的文案表收编在本文件 MANIFEST 一处（words/find 词表直接
 解析 games/_lib/words-data.js，不再维护第二份副本）。
 
 停顿处理：火山大模型 TTS 不支持 say 的 [[slnc N]] 停顿语法——
@@ -197,6 +197,18 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
     for k, name in bath:
         m["bath"][f"dirty_{k}.mp3"] = ("text", f"{name}脏脏的，帮它洗澡澡吧！", SENT_SPEED)
         m["bath"][f"clean_{k}.mp3"] = ("text", f"哇！{name}洗得干干净净！", SENT_SPEED)
+
+    # basket 装一装：拖水果进篮，放一个数一个（数量感首款）
+    # count_ 逐个点数（口语点数说「两个」不说「二个」）/ intro_ 开场引导 / done_ 装满收尾
+    fruits = [("apple", "苹果"), ("banana", "香蕉"), ("orange", "橘子"), ("strawberry", "草莓")]
+    cn_num = {1: "一", 2: "两", 3: "三", 4: "四", 5: "五"}
+    m["basket"] = {}
+    for n in range(1, 6):
+        m["basket"][f"count_{n}.mp3"] = ("text", f"{cn_num[n]}个！", SENT_SPEED)
+    for k, name in fruits:
+        m["basket"][f"intro_{k}.mp3"] = ("text", f"把{name}装进小篮子里吧！", SENT_SPEED)
+        for n in (3, 4, 5):
+            m["basket"][f"done_{k}_{n}.mp3"] = ("text", f"哇！{cn_num[n]}个{name}，全部装进来啦！", SENT_SPEED)
 
     # sleep 睡觉觉：sleepy_ 困了求盖被 / night_ 盖好晚安（动物池与 bath/feed 同源）
     # 晚安句放慢到 0.9——睡前收尾场景，语气跟着软下来
