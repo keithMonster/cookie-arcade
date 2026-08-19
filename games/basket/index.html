@@ -261,8 +261,9 @@ let total = 0;           // 本轮个数 3-5
 let inCount = 0;         // 已入篮数
 let fruitEls = [];
 let firstRound = true;
-let tapStreak = 0;       // 连续「只点不拖」次数——≥3 次降级为点按即飞入
-let everDragged = false; // 成功拖入过一次 = 会拖了，点按只跳不飞
+let missStreak = 0;      // 连续「没送进篮子」的尝试次数——只点没拖 / 拖了没到，都算
+let everDragged = false; // 成功拖入过一次 = 会拖了，帮忙门槛放宽一档
+let assistMode = false;  // 还不会拖的娃：帮过一次之后，碰一下就替他送进去
 let lastFruitKey = null;
 
 function pickRound() {
@@ -426,7 +427,8 @@ function bindFruit(el) {
   el.addEventListener('pointermove', (e) => {
     if (!dragging) return;
     const dx = e.clientX - startX, dy = e.clientY - startY;
-    if (Math.abs(dx) + Math.abs(dy) > 10) moved = true;
+    // 阈值给到 14px：2 岁的手指按下去就会蹭，10px 太容易把「点一下」误判成「拖了一下」
+    if (Math.abs(dx) + Math.abs(dy) > 14) moved = true;
     el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(1.18)';
   });
 
@@ -437,13 +439,23 @@ function bindFruit(el) {
     const r = el.getBoundingClientRect();
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     const b = basketEl.getBoundingClientRect();
-    const pad = b.width * 0.25;   // 篮子命中区外扩——2 岁手不必精准
+    const pad = b.width * 0.32;   // 篮子命中区外扩——2 岁手不必精准
     const hit = cx > b.left - pad && cx < b.right + pad && cy > b.top - pad * 1.6 && cy < b.bottom + pad;
 
     if (moved && hit) {
       everDragged = true;
-      tapStreak = 0;
+      assistMode = false;   // 会拖了就把帮忙收回去，让他接着自己拖
+      missStreak = 0;
       el.style.transition = 'none';
+      flyIn(el);
+      return;
+    }
+    // 没送进篮子——「只点没拖」和「拖了没到」都算一次没成的尝试，攒够就替他送进去。
+    // 只数「点」不数「拖偏」会留死路：娃反复戳同一个果子，每次都滑回原地，这一轮永远装不满。
+    missStreak++;
+    if (assistMode || missStreak >= (everDragged ? 4 : 3)) {
+      if (!everDragged) assistMode = true;   // 还不会拖 → 之后碰一下就送进去
+      missStreak = 0;
       flyIn(el);
       return;
     }
@@ -455,19 +467,15 @@ function bindFruit(el) {
       setTimeout(() => { el.classList.remove('slide-back'); el.classList.add('idle-sway'); el.style.animation = ''; }, 460);
       return;
     }
-    // 只点没拖：跳一下 + 噗声；连点 3 次还没拖过 = 还不会拖，点按降级直接飞入
-    tapStreak++;
-    if (!everDragged && tapStreak >= 3) {
-      flyIn(el);
-      return;
-    }
+    // 只点没拖：原地开心跳一下 + 噗声
     el.style.transition = 'none';
     el.style.transform = '';
     el.classList.remove('hop');
+    el.style.animation = '';   // pointerdown 关掉的 animation 先还回来，否则 hop 关键帧被 inline none 压死、点了纹丝不动
     void el.offsetWidth;
     el.classList.add('hop');
     fxPick();
-    setTimeout(() => { el.classList.remove('hop'); el.classList.add('idle-sway'); el.style.animation = ''; }, 500);
+    setTimeout(() => { el.classList.remove('hop'); el.classList.add('idle-sway'); el.style.transition = ''; }, 500);
   }
   el.addEventListener('pointerup', release);
   el.addEventListener('pointercancel', release);
