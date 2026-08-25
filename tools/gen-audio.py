@@ -219,6 +219,21 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
         m["sleep"][f"sleepy_{k}.mp3"] = ("text", f"{name}困了，帮它盖上小被子吧！", SENT_SPEED)
         m["sleep"][f"night_{k}.mp3"] = ("text", f"嘘，晚安，{name}，做个好梦。", 0.9)
 
+    # train 排排队：听指令按顺序送动物上火车（序列记忆首款）
+    # 指令三段式「先 / 轮到 / 最后」是这款游戏的存在理由；动物池与 bath/feed/sleep 同源
+    train = [("cat", "小猫"), ("dog", "小狗"), ("rabbit", "兔子"), ("monkey", "猴子"),
+             ("panda", "熊猫"), ("cow", "奶牛"), ("chicken", "母鸡"), ("elephant", "大象")]
+    m["train"] = {}
+    for k, name in train:
+        m["train"][f"first_{k}.mp3"] = ("text", f"{name}，先上车！", SENT_SPEED)
+        m["train"][f"next_{k}.mp3"] = ("text", f"轮到{name}啦！", SENT_SPEED)
+        m["train"][f"last_{k}.mp3"] = ("text", f"最后是{name}！", SENT_SPEED)
+    m["train"]["intro.mp3"] = ("text", "小火车来啦！", SENT_SPEED)
+    m["train"]["go.mp3"] = ("text", "小火车出发咯，再见！", SENT_SPEED)
+    # 点错（还没轮到的动物）拒绝语，两条轮换
+    m["train"]["no_1.mp3"] = ("text", "还没轮到我呀！", SENT_SPEED)
+    m["train"]["no_2.mp3"] = ("text", "咦，现在不是我哦！", SENT_SPEED)
+
     return m
 
 
