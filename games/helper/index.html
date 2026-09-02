@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>帮帮忙 · Cookie's Arcade</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", sans-serif;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    /* 温暖的家：奶油色墙 + 木地板（与 train 的蓝天草地、echo 的暗色舞台明确分开）*/
+    background: linear-gradient(180deg, #fff3e3 0%, #ffe7cb 70%, #dcab72 70%, #c9915a 100%);
+  }
+  /* 午后阳光光晕：质感走这层 overlay，不抢注意力 */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(110% 80% at 22% 8%, rgba(255, 248, 220, 0.85), rgba(255, 255, 255, 0) 62%),
+      radial-gradient(120% 90% at 50% 112%, rgba(90, 50, 10, 0.16), rgba(0, 0, 0, 0) 58%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* 远景装饰：窗户透光 + 一盆绿植（纯 CSS / emoji，静态不动） */
+  .window {
+    position: fixed;
+    top: 7vmin; right: 6vmin;
+    width: 20vmin; height: 16vmin;
+    border-radius: 1.6vmin;
+    background: linear-gradient(180deg, #bfe6f7, #e6f6ff);
+    box-shadow: 0 0 0 1.2vmin #f4dcbb, 0 1.4vmin 2.4vmin rgba(120, 70, 20, 0.14);
+    z-index: 1;
+  }
+  .window::after {
+    /* 窗棂十字 */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, transparent 47%, #f4dcbb 47% 53%, transparent 53%),
+      linear-gradient(0deg,  transparent 47%, #f4dcbb 47% 53%, transparent 53%);
+  }
+  .plant {
+    position: fixed;
+    left: 3vmin;
+    bottom: max(2vmin, env(safe-area-inset-bottom, 0px));
+    font-size: 13vmin;
+    line-height: 1;
+    opacity: 0.9;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .stage {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: max(5vmin, env(safe-area-inset-top, 0px)) 2vmin max(2vmin, env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ===== 顶部喇叭：戳一下重听整句（零文字 UI，只有图形）===== */
+  .ask {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22vmin;
+    min-height: 11vmin;
+    cursor: pointer;
+    z-index: 5;
+  }
+  .ask .horn {
+    font-size: clamp(30px, 8vmin, 66px);
+    line-height: 1;
+    filter: drop-shadow(0 0.8vmin 0.8vmin rgba(120, 70, 20, 0.2));
+  }
+  .ask.talking .horn { animation: horn-wiggle 620ms ease-in-out infinite; }
+  @keyframes horn-wiggle {
+    0%, 100% { transform: rotate(0)     scale(1); }
+    25%      { transform: rotate(-9deg) scale(1.12); }
+    75%      { transform: rotate(9deg)  scale(1.12); }
+  }
+
+  /* ===== 上排：架子上的 3 个物件 ===== */
+  .shelf {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 4;
+  }
+  .items {
+    display: flex;
+    gap: 6vmin;
+    align-items: flex-end;
+  }
+  .item {
+    font-size: 14vmin;
+    line-height: 1;
+    cursor: pointer;
+    position: relative;
+    filter: drop-shadow(0 1.2vmin 0.8vmin rgba(120, 70, 20, 0.28));
+    will-change: transform;
+    animation: item-idle 3s ease-in-out infinite;
+  }
+  .item:nth-child(2) { animation-delay: -1s; }
+  .item:nth-child(3) { animation-delay: -2s; }
+  @keyframes item-idle {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-0.6vmin); }
+  }
+  .plank {
+    width: 76vmin;
+    max-width: 94vw;
+    height: 3vmin;
+    margin-top: 0.6vmin;
+    border-radius: 0.8vmin;
+    background: linear-gradient(180deg, #b9803f, #935f2a);
+    box-shadow: 0 1.4vmin 2vmin rgba(90, 50, 10, 0.24), inset 0 0.5vmin 0 rgba(255, 255, 255, 0.28);
+  }
+  /* 点中了：被拿走 —— 位置留白，架子不塌陷 */
+  .item.gone { visibility: hidden; pointer-events: none; animation: none; }
+  /* 随手戳一下（不算对也不算错）：原地开心跳。物件 / 动物 / 手掌共用 */
+  .item.hop, .pet.hop, .palms.wig { animation: pop-hop 480ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes pop-hop {
+    0%   { transform: translateY(0)       scale(1); }
+    40%  { transform: translateY(-2.4vmin) scale(1.12); }
+    100% { transform: translateY(0)       scale(1); }
+  }
+  /* 点错物件：左右晃，不飞走（信息不是评价）*/
+  .item.wobble { animation: wobble 520ms ease-in-out; }
+  @keyframes wobble {
+    0%, 100% { transform: translateX(0)   rotate(0); }
+    20%      { transform: translateX(-8%) rotate(-7deg); }
+    45%      { transform: translateX(8%)  rotate(7deg); }
+    70%      { transform: translateX(-5%) rotate(-4deg); }
+    88%      { transform: translateX(3%)  rotate(2deg); }
+  }
+
+  /* ===== 下排：等着的 2 只动物 ===== */
+  .pets {
+    position: relative;
+    display: flex;
+    gap: 16vmin;
+    z-index: 4;
+  }
+  .pet {
+    font-size: 18vmin;
+    line-height: 1;
+    cursor: pointer;
+    position: relative;
+    filter: drop-shadow(0 1.6vmin 1vmin rgba(90, 50, 10, 0.26));
+    will-change: transform;
+    animation: pet-sway 2.6s ease-in-out infinite;
+  }
+  .pet:nth-child(2) { animation-delay: -1.3s; }
+  @keyframes pet-sway {
+    0%, 100% { transform: rotate(-3deg) translateY(0); }
+    50%      { transform: rotate(3deg)  translateY(-1vmin); }
+  }
+  /* 点错动物 / 还没拿东西就来找它：摇头说不是我 */
+  .pet.nope { animation: pet-nope 700ms ease-in-out; }
+  @keyframes pet-nope {
+    0%, 100% { transform: rotate(0); }
+    20%      { transform: rotate(-11deg); }
+    40%      { transform: rotate(10deg); }
+    60%      { transform: rotate(-7deg); }
+    80%      { transform: rotate(5deg); }
+  }
+  /* 收到东西：开心大蹦跳 */
+  .pet.happy { animation: pet-happy 1s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes pet-happy {
+    0%   { transform: scale(1)    translateY(0)      rotate(0); }
+    28%  { transform: scale(1.2)  translateY(-5vmin) rotate(-7deg); }
+    56%  { transform: scale(1.04) translateY(0)      rotate(6deg); }
+    80%  { transform: scale(1.14) translateY(-2vmin) rotate(-3deg); }
+    100% { transform: scale(1)    translateY(0)      rotate(0); }
+  }
+
+  /* 同一步错 2 次：正确项发光脉动（永远以成功收尾）—— 物件与动物共用 */
+  .item.guide, .pet.guide { animation: guide-pulse 1s ease-in-out infinite; }
+  @keyframes guide-pulse {
+    0%, 100% { transform: scale(1)    translateY(0);       filter: drop-shadow(0 1.4vmin 1vmin rgba(90, 50, 10, 0.26)); }
+    50%      { transform: scale(1.16) translateY(-2.2vmin); filter: drop-shadow(0 0 3.2vmin rgba(255, 226, 110, 0.98)); }
+  }
+  /* 闲置 8s：该点的那个亮一下（一次性，不是持续发光）*/
+  .item.flash, .pet.flash { animation: guide-pulse 900ms ease-in-out 2; }
+
+  /* 换轮进出场 */
+  .item.deal-out, .pet.deal-out { animation: deal-out 320ms ease-in forwards; }
+  .item.deal-in,  .pet.deal-in  { animation: deal-in  460ms cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
+  @keyframes deal-out {
+    100% { transform: translateY(22%) scale(0.35); opacity: 0; }
+  }
+  @keyframes deal-in {
+    0%   { transform: translateY(28%) scale(0.3);  opacity: 0; }
+    60%  { transform: translateY(-5%) scale(1.08); opacity: 1; }
+    100% { transform: translateY(0)   scale(1);    opacity: 1; }
+  }
+
+  /* ===== 中下方的小手：拿在手里的东西悬在这儿 ===== */
+  .hand {
+    position: relative;
+    width: 34vmin;
+    height: 21vmin;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 6;
+  }
+  .palms {
+    font-size: 14vmin;
+    line-height: 1;
+    cursor: pointer;
+    filter: drop-shadow(0 1.2vmin 1vmin rgba(90, 50, 10, 0.22));
+    will-change: transform;
+  }
+  /* 手里有东西时手掌托稳一点（幅度小，不抢物件的注意力）*/
+  .hand.full .palms { animation: palms-hold 2.4s ease-in-out infinite; }
+  @keyframes palms-hold {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-0.5vmin); }
+  }
+  .held {
+    position: absolute;
+    left: 50%;
+    bottom: 7.5vmin;
+    width: 13vmin;
+    height: 13vmin;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11.5vmin;
+    line-height: 1;
+    transform: translateX(-50%);
+    touch-action: none;
+    cursor: grab;
+    will-change: transform;
+    z-index: 2;
+  }
+  .held:empty { pointer-events: none; }          /* 空手时点击落到手掌上 */
+  .hand.full .held { animation: held-float 2.4s ease-in-out infinite; }
+  @keyframes held-float {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%      { transform: translateX(-50%) translateY(-1.2vmin); }
+  }
+  /* 拖起来的瞬间放大，跟手时不再跑 keyframes（inline transform 说了算）*/
+  .held.lift { animation: none !important; cursor: grabbing; filter: drop-shadow(0 0 2.4vmin rgba(255, 226, 110, 0.9)); }
+  .held.back { animation: none !important; transition: transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .held.hop  { animation: held-hop 480ms cubic-bezier(0.34, 1.56, 0.64, 1) !important; }
+  @keyframes held-hop {
+    0%   { transform: translateX(-50%) translateY(0)       scale(1); }
+    40%  { transform: translateX(-50%) translateY(-2.6vmin) scale(1.14); }
+    100% { transform: translateX(-50%) translateY(0)       scale(1); }
+  }
+  /* 手里有东西时手掌下方的暖光圈：看得出「现在拿着」*/
+  .hand.full::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 8.5vmin;
+    width: 17vmin; height: 17vmin;
+    margin-left: -8.5vmin;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 226, 110, 0.55), rgba(255, 226, 110, 0) 68%);
+    pointer-events: none;
+    z-index: 1;
+    animation: halo-breathe 2.4s ease-in-out infinite;
+  }
+  @keyframes halo-breathe {
+    0%, 100% { transform: scale(0.92); opacity: 0.75; }
+    50%      { transform: scale(1.06); opacity: 1; }
+  }
+
+  /* 飞行中的克隆物件（拿起来 / 送出去都用它）*/
+  .flyer {
+    position: fixed;
+    z-index: 500;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transform-origin: center center;
+    will-change: transform;
+  }
+
+  /* 庆祝粒子（confetti / 爱心共用）*/
+  .spark {
+    position: fixed;
+    font-size: 7vmin;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 600;
+    animation: spark-fly 1s ease-out forwards;
+  }
+  @keyframes spark-fly {
+    0%   { transform: translate(0, 0)                                    scale(0.4); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(1.2); opacity: 0; }
+  }
+
+  #back {
+    position: fixed;
+    top: 8px; left: 4px;
+    top: calc(constant(safe-area-inset-top) + 8px);
+    left: calc(constant(safe-area-inset-left) + 4px);
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
+    left: calc(env(safe-area-inset-left, 0px) + 4px);
+    width: 70px; height: 70px;
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    color: rgba(80, 50, 30, 0.5);
+    text-decoration: none;
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.4);
+  }
+  #back:active { color: rgba(80, 50, 30, 0.9); }
+
+  #hint {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 15px;
+    letter-spacing: 0.3em;
+    color: rgba(80, 50, 30, 0.5);
+    pointer-events: none;
+    transition: opacity 600ms;
+    z-index: 100;
+    white-space: nowrap;
+  }
+  #hint.gone { opacity: 0; }
+</style>
+</head>
+<body>
+
+<div class="window"></div>
+<div class="plant">🪴</div>
+
+<div class="stage" id="stage">
+  <div class="ask" id="ask"><span class="horn">📢</span></div>
+
+  <div class="shelf">
+    <div class="items" id="items">
+      <div class="item" id="item0"></div>
+      <div class="item" id="item1"></div>
+      <div class="item" id="item2"></div>
+    </div>
+    <div class="plank"></div>
+  </div>
+
+  <div class="pets" id="pets">
+    <div class="pet" id="pet0"></div>
+    <div class="pet" id="pet1"></div>
+  </div>
+
+  <div class="hand" id="hand">
+    <span class="palms" id="palms">🤲</span>
+    <span class="held" id="held"></span>
+  </div>
+</div>
+
+<a id="back" href="../../">←</a>
+<div id="hint">听一听，先拿再给</div>
+
+<script>
+// ===== 物件池 5 个 / 动物池 4 只（key 与 audio/ 文件名一一对应）=====
+const ITEMS = [
+  { key: 'apple',  emoji: '🍎' },
+  { key: 'banana', emoji: '🍌' },
+  { key: 'cup',    emoji: '🥤' },
+  { key: 'ball',   emoji: '⚽' },
+  { key: 'hat',    emoji: '🧢' },
+];
+const PETS = [
+  { key: 'cat',   emoji: '🐱' },
+  { key: 'dog',   emoji: '🐶' },
+  { key: 'bunny', emoji: '🐰' },
+  { key: 'bear',  emoji: '🐻' },
+];
+const YAY_COUNT = 3;         // yay_1 ~ yay_3 轮换
+const IDLE_MS = 8000;        // 闲置这么久没输入：目标亮一下 + 复播整句
+const REPLAY_AFTER_MS = 1600;// 拒绝语念完再复播整句（同 train）
+const DRAG_THRESHOLD = 14;   // 2 岁的手指按下去就会蹭，阈值给宽（同 basket）
+const CHAIN_DOG_MS = 5500;   // 语音链看门狗：iOS 被 Siri/锁屏打断时 ended/error 都不来
+
+// ===== 语音：单 Audio 元素 + 换 src（iOS 解锁后非手势链 play 才可靠）=====
+const qEl = new Audio();
+qEl.preload = 'auto';
+const uEl = new Audio();     // 只用来在首次手势里解锁播放权限
+uEl.preload = 'auto';
+
+// ===== Web Audio 效果音：音量克制，peak ≤ 0.3 且再过一层 0.55 的 master =====
+let actx = null, master = null;
+function ensureAudio() {
+  try {
+    if (!actx) {
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+      master = actx.createGain();
+      master.gain.value = 0.55;
+      const comp = actx.createDynamicsCompressor();
+      master.connect(comp);
+      comp.connect(actx.destination);
+    }
+    if (actx.state === 'suspended') actx.resume();
+    return true;
+  } catch (e) { return false; }
+}
+// 单个音符：type + 起止频率 + 峰值 + 时长
+function tone(type, f0, f1, peak, dur, delay) {
+  if (!ensureAudio()) return;
+  const t0 = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(f0, t0);
+  if (f1 && f1 !== f0) o.frequency.linearRampToValueAtTime(f1, t0 + dur * 0.8);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.linearRampToValueAtTime(peak, t0 + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g).connect(master);
+  o.start(t0);
+  o.stop(t0 + dur + 0.05);
+}
+const fxDing  = () => { tone('triangle', 660, 660, 0.24, 0.16); tone('triangle', 990, 990, 0.22, 0.26, 0.1); }; // 拿到了
+const fxSoft  = () => tone('sine', 440, 520, 0.14, 0.16);        // 随手戳（不算对错）
+const fxNope  = () => { tone('sine', 340, 250, 0.16, 0.22); };   // 点错了（软，不惩罚）
+const fxWhoosh= () => tone('sine', 300, 720, 0.12, 0.22);        // 物件飞出去
+const fxCheer = () => {                                          // 两步都对：上行小三和弦
+  [523, 659, 784, 1047].forEach((f, i) => tone('triangle', f, f, 0.2, 0.35, i * 0.09));
+};
+
+// ===== DOM =====
+const askEl   = document.getElementById('ask');
+const itemEls = [0, 1, 2].map(i => document.getElementById('item' + i));
+const petEls  = [0, 1].map(i => document.getElementById('pet' + i));
+const handEl  = document.getElementById('hand');
+const palmsEl = document.getElementById('palms');
+const heldEl  = document.getElementById('held');
+
+// ===== 状态机 =====
+// idle   = 静候首戳解锁音频
+// take   = 第一步，等他点目标物件
+// give   = 第二步，手里有东西了，等他点/拖给目标动物
+// fly    = 飞行动画中（不接受输入）
+// cheer  = 两步都对，庆祝中
+// dealing= 换轮动画中
+let phase = 'idle';
+let target = { item: null, pet: null };   // 本轮目标
+let roundItems = [], roundPets = [];      // 本轮上架的 3 物 / 2 动物
+let heldItem = null;                      // 手里拿着的物件对象（null = 空手）
+let wrong = 0;                            // 当前这一步已经错了几次
+let yayAlt = 0;
+let prevItemKey = null, prevPetKey = null;
+let idleTimer = null;
+
+function later(fn, ms) { return setTimeout(fn, ms); }
+function clearIdle() { if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; } }
+function restart(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+function shuffle(a) { return a.slice().sort(() => Math.random() - 0.5); }
+
+// ===== 抽一轮：3 物 + 2 动物 + 目标 =====
+function pickRound() {
+  // 目标物先定，且不与上一轮相同——同一句指令连着来两遍就不用听了
+  const itemPool = ITEMS.filter(i => i.key !== prevItemKey);
+  const tItem = itemPool[Math.floor(Math.random() * itemPool.length)];
+  const others = shuffle(ITEMS.filter(i => i.key !== tItem.key)).slice(0, 2);
+  roundItems = shuffle([tItem].concat(others));
+
+  // 目标动物同理避开上一轮，池子只有 4 只、避重后仍有 3 只可选
+  const petPool = PETS.filter(p => p.key !== prevPetKey);
+  const tPet = petPool[Math.floor(Math.random() * petPool.length)];
+  const otherPet = shuffle(PETS.filter(p => p.key !== tPet.key))[0];
+  roundPets = shuffle([tPet, otherPet]);
+
+  target = { item: tItem, pet: tPet };
+  prevItemKey = tItem.key;
+  prevPetKey = tPet.key;
+  heldItem = null;
+  wrong = 0;
+  // 本轮那条整句提前拉进 HTTP 缓存
+  fetch(taskFile()).catch(() => {});
+}
+
+function paintRound() {
+  itemEls.forEach((el, i) => {
+    el.textContent = roundItems[i].emoji;
+    el.dataset.key = roundItems[i].key;
+    el.className = 'item';
+  });
+  petEls.forEach((el, i) => {
+    el.textContent = roundPets[i].emoji;
+    el.dataset.key = roundPets[i].key;
+    el.className = 'pet';
+  });
+  heldEl.textContent = '';
+  heldEl.className = 'held';
+  heldEl.style.transform = '';
+  handEl.classList.remove('full');
+}
+
+// ===== 语音链（words / train / echo 同一模式）=====
+let chain = [];
+let chainDone = null;
+let chainDog = null;
+let taskSpeaking = false;   // 整句指令正在念：这期间的点击只蹦一下，不算对也不算错
+
+function say(files, onDone) {
+  taskSpeaking = false;
+  chain = files.slice();
+  chainDone = onDone || null;
+  stepChain();
+}
+function stepChain() {
+  clearTimeout(chainDog);
+  if (!chain.length) {
+    askEl.classList.remove('talking');
+    taskSpeaking = false;
+    const fn = chainDone; chainDone = null;
+    if (fn) fn();
+    return;
+  }
+  qEl.src = 'audio/' + chain.shift();
+  qEl.currentTime = 0;
+  askEl.classList.add('talking');
+  qEl.play().catch(() => {});
+  chainDog = setTimeout(stepChain, CHAIN_DOG_MS);
+}
+qEl.addEventListener('ended', stepChain);
+qEl.addEventListener('error', stepChain);   // mp3 缺失也不卡链，往下走
+
+// 急停：pause 只停当前这句，排队中的下一句和看门狗都得一起清掉
+function stopSay() {
+  clearTimeout(chainDog);
+  chain = [];
+  chainDone = null;
+  taskSpeaking = false;
+  try { qEl.pause(); } catch (e) {}
+  askEl.classList.remove('talking');
+}
+
+function taskFile() { return 'audio/task_' + target.item.key + '_' + target.pet.key + '.mp3'; }
+
+// 整句指令：「先拿苹果，再给小兔子！」一句到底，中间不等待——这款游戏的存在理由
+function sayTask() {
+  say(['task_' + target.item.key + '_' + target.pet.key + '.mp3']);
+  taskSpeaking = true;
+  armIdle();
+}
+
+// ===== 闲置提醒 =====
+function armIdle() {
+  clearIdle();
+  idleTimer = setTimeout(() => {
+    if (phase !== 'take' && phase !== 'give') return;
+    const el = currentTargetEl();
+    if (el) { restart(el, 'flash'); later(() => el.classList.remove('flash'), 1900); }
+    sayTask();
+  }, IDLE_MS);
+}
+function currentTargetEl() {
+  if (phase === 'take') return itemEls.find(e => e.dataset.key === target.item.key && !e.classList.contains('gone'));
+  if (phase === 'give') return petEls.find(e => e.dataset.key === target.pet.key);
+  return null;
+}
+
+// ===== 粒子 =====
+function burst(fromEl, emojis, n) {
+  const r = fromEl.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement('div');
+    s.className = 'spark';
+    s.textContent = emojis[i % emojis.length];
+    const ang = (Math.PI * 2 * i) / n + Math.random() * 0.6;
+    const dist = 16 + Math.random() * 18;
+    s.style.left = cx + 'px';
+    s.style.top = cy + 'px';
+    s.style.setProperty('--dx', Math.cos(ang) * dist + 'vmin');
+    s.style.setProperty('--dy', Math.sin(ang) * dist + 'vmin');
+    s.style.setProperty('--rot', (Math.random() * 90 - 45) + 'deg');
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 1050);
+  }
+}
+const heartBurst = el => burst(el, ['❤️', '💛', '💕', '💖', '✨'], 10);
+const confetti   = el => burst(el, ['🎉', '⭐', '✨', '🎊', '🌟'], 14);
+
+// ===== 克隆物件飞行：中心飞到中心，缩放围绕中心 =====
+function flyEmoji(a, b, emoji, fontPx, scale, ms, fade, cb) {
+  const fl = document.createElement('div');
+  fl.className = 'flyer';
+  fl.textContent = emoji;
+  fl.style.left = a.left + 'px';
+  fl.style.top = a.top + 'px';
+  fl.style.width = a.width + 'px';
+  fl.style.height = a.height + 'px';
+  fl.style.fontSize = fontPx + 'px';
+  fl.style.transition = 'transform ' + ms + 'ms cubic-bezier(0.5, 0, 0.3, 1.1), opacity ' + ms + 'ms ease-in';
+  document.body.appendChild(fl);
+  void fl.offsetWidth;
+  const dx = (b.left + b.width / 2) - (a.left + a.width / 2);
+  const dy = (b.top + b.height / 2) - (a.top + a.height / 2);
+  fl.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + scale + ')';
+  if (fade) fl.style.opacity = '0';
+  later(() => { fl.remove(); if (cb) cb(); }, ms);
+}
+function fontPxOf(el) { return parseFloat(getComputedStyle(el).fontSize) || 40; }
+
+// ===== 第一步：拿 =====
+function takeItem(el) {
+  phase = 'fly';
+  clearIdle();
+  stopSay();
+  itemEls.forEach(e => e.classList.remove('guide', 'flash'));
+
+  const item = roundItems.find(i => i.key === el.dataset.key);
+  const a = el.getBoundingClientRect();
+  const b = heldEl.getBoundingClientRect();
+  el.className = 'item gone';
+  fxWhoosh();
+  flyEmoji(a, b, item.emoji, fontPxOf(el), fontPxOf(heldEl) / fontPxOf(el), 620, false, () => {
+    heldItem = item;
+    heldEl.textContent = item.emoji;
+    handEl.classList.add('full');
+    restart(heldEl, 'hop');
+    later(() => heldEl.classList.remove('hop'), 500);
+    fxDing();
+    phase = 'give';
+    wrong = 0;
+    say(['got_' + item.key + '.mp3']);
+    armIdle();
+  });
+}
+
+// ===== 第二步：给 =====
+function givePet(petEl) {
+  if (!heldItem) return;   // 这一步已被另一路输入做完了（多指 / 键盘），别再飞一次
+  phase = 'fly';
+  clearIdle();
+  stopSay();
+  petEls.forEach(e => e.classList.remove('guide', 'flash'));
+
+  const item = heldItem;
+  const a = heldEl.getBoundingClientRect();
+  const pr = petEl.getBoundingClientRect();
+  // 目标是动物的怀里/嘴边：中心偏下
+  const mouth = { left: pr.left + pr.width * 0.2, top: pr.top + pr.height * 0.35,
+                  width: pr.width * 0.6, height: pr.height * 0.6 };
+  heldEl.textContent = '';
+  heldEl.className = 'held';
+  heldEl.style.transform = '';
+  handEl.classList.remove('full');
+  heldItem = null;
+  fxWhoosh();
+  flyEmoji(a, mouth, item.emoji, fontPxOf(heldEl), 0.3, 620, true, () => {
+    restart(petEl, 'happy');
+    heartBurst(petEl);
+    confetti(petEl);
+    fxCheer();
+    cheer(petEl);
+  });
+}
+
+// ===== 两步都对：庆祝 → 停一下 → 换下一轮 =====
+function cheer(petEl) {
+  phase = 'cheer';
+  clearIdle();
+  yayAlt = yayAlt % YAY_COUNT + 1;
+  const t0 = Date.now();
+  let moved = false;
+  const go = () => { if (moved) return; moved = true; nextRound(); };
+  // 谢谢 + 庆祝两句连播；念完再停一下换轮，且至少让庆祝停留 1.5s
+  say(['thanks_' + petEl.dataset.key + '.mp3', 'yay_' + yayAlt + '.mp3'],
+      () => later(go, Math.max(500, 1500 - (Date.now() - t0))));
+  later(go, 5000);   // mp3 全 404 / 卡住时的兜底
+}
+
+// ===== 换轮：物件架与动物淡出，全部重抽 =====
+function nextRound() {
+  if (phase === 'dealing') return;
+  phase = 'dealing';
+  clearIdle();
+  itemEls.forEach(e => { if (!e.classList.contains('gone')) restart(e, 'deal-out'); });
+  petEls.forEach(e => restart(e, 'deal-out'));
+  later(() => {
+    pickRound();
+    paintRound();
+    itemEls.concat(petEls).forEach((e, i) => {
+      e.classList.add('deal-in');
+      e.style.animationDelay = (i * 80) + 'ms';
+    });
+    later(() => {
+      itemEls.concat(petEls).forEach(e => { e.classList.remove('deal-in'); e.style.animationDelay = ''; });
+      phase = 'take';
+      sayTask();
+    }, 900);
+  }, 340);
+}
+
+// ===== 错了：摇 / 晃 + 语音，2 次后正确项发光并复播整句（永远以成功收尾）=====
+function missed(el, shakeCls, voice) {
+  wrong++;
+  restart(el, shakeCls);
+  fxNope();
+  say([voice]);
+  if (wrong >= 2) {
+    const t = currentTargetEl();
+    if (t) { t.classList.remove('flash'); t.classList.add('guide'); }
+    later(() => { if (phase === 'take' || phase === 'give') sayTask(); }, REPLAY_AFTER_MS);
+  }
+  armIdle();
+}
+
+// ===== 首戳解锁（iOS 音频必须在手势里起播）=====
+function unlock() {
+  ensureAudio();
+  uEl.muted = true;
+  uEl.play().then(() => { uEl.pause(); uEl.muted = false; }).catch(() => { uEl.muted = false; });
+  phase = 'take';
+  sayTask();
+}
+
+// ===== 输入总闸 =====
+// 返回 true 表示这次点击已经被「非玩法反馈」消化掉了（解锁 / 动画中 / 整句还在念）
+function absorbed(el) {
+  if (phase === 'idle') { unlock(); return true; }
+  if (phase === 'fly' || phase === 'cheer' || phase === 'dealing') { fxSoft(); return true; }
+  // 整句还没念完：随时可点，但不算对也不算错，只蹦一下（先把一整句听完是这款的玩点）。
+  // 例外：已经错够 2 次、正确项正在发光时放行——那时候把他领到成功比听完整句重要
+  const guiding = !!document.querySelector('.guide');
+  if (taskSpeaking && !guiding) {
+    if (el) restart(el, 'hop');
+    fxSoft();
+    armIdle();
+    return true;
+  }
+  return false;
+}
+
+function tapItem(i) {
+  hideHint();
+  const el = itemEls[i];
+  if (el.classList.contains('gone')) { fxSoft(); return; }
+  if (absorbed(el)) return;
+  if (phase === 'give') {
+    // 手里已经有东西了，架子上剩下的随便戳：蹦一下，不算错
+    restart(el, 'hop');
+    fxSoft();
+    armIdle();
+    return;
+  }
+  if (phase !== 'take') return;
+  if (el.dataset.key === target.item.key) takeItem(el);
+  else missed(el, 'wobble', 'no_item_' + target.item.key + '.mp3');
+}
+
+function tapPet(i) {
+  hideHint();
+  const el = petEls[i];
+  if (absorbed(el)) return;
+  if (phase === 'take') {
+    // 还没拿东西就来找动物：摇头 + 「先拿东西哦！」，也算这一步的一次错
+    missed(el, 'nope', 'first_take.mp3');
+    return;
+  }
+  if (phase !== 'give') return;
+  if (el.dataset.key === target.pet.key) givePet(el);
+  else missed(el, 'nope', 'no_animal_' + target.pet.key + '.mp3');
+}
+
+// 戳喇叭 = 重听整句（idle 时同首戳解锁）
+function tapHorn() {
+  hideHint();
+  if (phase === 'idle') { unlock(); return; }
+  if (phase !== 'take' && phase !== 'give') { fxSoft(); return; }
+  sayTask();
+}
+
+// 戳空手掌：手掌动一下 + 轻响（每次输入必反馈）
+function tapPalms() {
+  hideHint();
+  if (phase === 'idle') { unlock(); return; }
+  restart(palmsEl, 'wig');
+  fxSoft();
+  if (phase === 'take' || phase === 'give') armIdle();
+}
+
+// ===== 绑定：click + touchstart（touchstart 内 preventDefault 抑制 iOS 合成 click）=====
+function bindTap(el, fn) {
+  el.addEventListener('click', fn, { passive: true });
+  el.addEventListener('touchstart', (e) => { fn(); e.preventDefault(); }, { passive: false });
+}
+itemEls.forEach((el, i) => bindTap(el, () => tapItem(i)));
+petEls.forEach((el, i) => bindTap(el, () => tapPet(i)));
+bindTap(askEl, tapHorn);
+bindTap(palmsEl, tapPalms);
+
+// ===== 手里的东西可以直接拖到动物身上（drop 判定同 basket：命中区外扩）=====
+(function bindDrag() {
+  let sx = 0, sy = 0, dragging = false, moved = false;
+
+  heldEl.addEventListener('pointerdown', (e) => {
+    hideHint();
+    if (phase !== 'give' || !heldItem) return;
+    const guiding = !!document.querySelector('.guide');
+    if (taskSpeaking && !guiding) { restart(heldEl, 'hop'); fxSoft(); armIdle(); return; }
+    dragging = true;
+    moved = false;
+    sx = e.clientX; sy = e.clientY;
+    try { heldEl.setPointerCapture(e.pointerId); } catch (err) {}
+    heldEl.classList.remove('hop', 'back');
+    heldEl.classList.add('lift');
+    heldEl.style.transform = 'translateX(-50%) scale(1.16)';
+    fxSoft();
+    clearIdle();
+    e.preventDefault();
+  });
+
+  heldEl.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (Math.abs(dx) + Math.abs(dy) > DRAG_THRESHOLD) moved = true;
+    heldEl.style.transform = 'translateX(-50%) translate(' + dx + 'px,' + dy + 'px) scale(1.16)';
+  });
+
+  function release(e) {
+    if (!dragging) return;
+    dragging = false;
+    // 先量：一摘 lift，held-float 动画就会盖掉 inline transform，量到的会是归位后的矩形
+    const r = heldEl.getBoundingClientRect();
+    heldEl.classList.remove('lift');
+    const slideBack = () => {
+      heldEl.classList.add('back');
+      heldEl.style.transform = '';
+      later(() => heldEl.classList.remove('back'), 440);
+    };
+    // 这一步已经不在了：另一根手指或键盘在拖的过程中把东西送出去了。
+    // 只收拾自己的样式走人，别再判一次对错（再判会二次 givePet，把 phase 卡死在 fly）
+    if (phase !== 'give' || !heldItem) {
+      heldEl.style.transform = '';
+      return;
+    }
+    // 系统收走手势（第二根手指缩放 / 掌根碰到 / 来电）：孩子没做错任何事，
+    // 一律滑回手心，不摇头、不记错、不出声
+    if (e && e.type === 'pointercancel') {
+      slideBack();
+      armIdle();
+      return;
+    }
+    if (!moved) {
+      // 只点没拖：原地蹦一下（每次输入必反馈）
+      heldEl.style.transform = '';
+      restart(heldEl, 'hop');
+      later(() => heldEl.classList.remove('hop'), 500);
+      armIdle();
+      return;
+    }
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const hit = petEls.find(p => {
+      const b = p.getBoundingClientRect();
+      const pad = b.width * 0.3;   // 2 岁的手不必精准
+      return cx > b.left - pad && cx < b.right + pad && cy > b.top - pad && cy < b.bottom + pad;
+    });
+    if (hit) {
+      if (hit.dataset.key === target.pet.key) {
+        heldEl.style.transform = '';   // 归位后由 givePet 从小手位置起飞，落点一致
+        givePet(hit);
+      } else {
+        slideBack();                   // 拖错了：东西滑回小手，还在手里
+        missed(hit, 'nope', 'no_animal_' + target.pet.key + '.mp3');
+      }
+      return;
+    }
+    // 拖到空处：滑回小手（无失败音，纯信息）
+    slideBack();
+    armIdle();
+  }
+  heldEl.addEventListener('pointerup', release);
+  heldEl.addEventListener('pointercancel', release);
+})();
+
+// ===== 键盘：任意字母 / 数字 = 自动完成当前这一步 =====
+document.addEventListener('keydown', (e) => {
+  if (e.repeat) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === 'Escape') {
+    if (!document.fullscreenElement) location.href = '../../';
+    return;
+  }
+  if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+    return;
+  }
+  e.preventDefault();
+  hideHint();
+  if (phase === 'idle') { unlock(); return; }
+  if (absorbed(currentTargetEl())) return;
+  if (phase === 'take') {
+    const el = itemEls.find(x => x.dataset.key === target.item.key && !x.classList.contains('gone'));
+    if (el) takeItem(el);
+  } else if (phase === 'give') {
+    const el = petEls.find(x => x.dataset.key === target.pet.key);
+    if (el) givePet(el);
+  }
+});
+
+// ===== 回前台：AudioContext 与语音链都可能被挂起，回来立刻续上 =====
+function onResume() {
+  if (document.visibilityState === 'hidden') return;
+  try { if (actx && actx.state === 'suspended') actx.resume(); } catch (e) {}
+  // 后台里 ended/error 不来、setTimeout 被节流：链卡在哪句就从哪句往下走
+  if (chain.length && qEl.paused) stepChain();
+  if (phase === 'take' || phase === 'give') armIdle();
+}
+document.addEventListener('visibilitychange', onResume);
+window.addEventListener('pageshow', onResume);
+
+let hintGone = false;
+function hideHint() {
+  if (hintGone) return;
+  hintGone = true;
+  const h = document.getElementById('hint');
+  if (h) {
+    h.classList.add('gone');
+    setTimeout(() => h.remove(), 800);
+  }
+}
+
+// ===== 进入：摆好第一轮，静候首戳（iOS 音频需手势）=====
+pickRound();
+paintRound();
+
+// 空闲预载：短句常用的那批先进 HTTP 缓存，20 条整句稍后再拉（每轮那条已在 pickRound 里单独预载）
+setTimeout(() => {
+  const common = ['first_take.mp3', 'yay_1.mp3', 'yay_2.mp3', 'yay_3.mp3'];
+  ITEMS.forEach(i => common.push('got_' + i.key + '.mp3', 'no_item_' + i.key + '.mp3'));
+  PETS.forEach(p => common.push('thanks_' + p.key + '.mp3', 'no_animal_' + p.key + '.mp3'));
+  common.forEach(f => fetch('audio/' + f).catch(() => {}));
+}, 600);
+setTimeout(() => {
+  ITEMS.forEach(i => PETS.forEach(p => {
+    fetch('audio/task_' + i.key + '_' + p.key + '.mp3').catch(() => {});
+  }));
+}, 2500);
+</script>
+</body>
+</html>

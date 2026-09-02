@@ -247,6 +247,46 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
         "yay_3.mp3":       ("text", "咚咚咚，真好听！", SENT_SPEED),
     }
 
+    # sort 分一分：按颜色把东西分到两个篮子（能力线 #5 的颜色维度 + 第 8 线「分类装两个篮」）
+    # 三组同构文案各管一件事：put_ 指路（这个篮子放什么色）/ name_ 放对时把颜色词再喂一遍 /
+    # no_ 放错时报出物件的真实颜色——是信息不是评价，不说「错了」
+    m["sort"] = {}
+    for k, name in [("red", "红"), ("yellow", "黄"), ("blue", "蓝"), ("green", "绿")]:
+        m["sort"][f"put_{k}.mp3"] = ("text", f"{name}色的，放这里！", SENT_SPEED)
+        m["sort"][f"name_{k}.mp3"] = ("text", f"{name}色的！", SENT_SPEED)
+        m["sort"][f"no_{k}.mp3"] = ("text", f"咦，这个是{name}色的呀！", SENT_SPEED)
+    m["sort"]["intro.mp3"] = ("text", "来分一分！", SENT_SPEED)
+    # 收尾三条轮换：不带具体颜色，任何一对颜色都能用
+    m["sort"]["done_1.mp3"] = ("text", "哇！全部分好啦！", SENT_SPEED)
+    m["sort"]["done_2.mp3"] = ("text", "每个都放对篮子啦！", SENT_SPEED)
+    m["sort"]["done_3.mp3"] = ("text", "分得真整齐！", SENT_SPEED)
+
+    # helper 帮帮忙：听一句两步指令（先拿 X，再给 Y），按顺序做两个不同的动作（两步指令首款）
+    # task_ 整句一句到底、中间不断句——「把一整句先听完再动」正是这款游戏的存在理由；
+    # 上一站排排队是一句一动逐个喊，这一站整句说完才动手。
+    # 物件池 5 个 × 动物池 4 只 = 20 条整句指令；动物名用「小猫 / 小狗 / 小兔子 / 小熊」
+    # （比 bath/feed/sleep 的「兔子」多一个「小」字，两步长句里叠字更好听、也更像在跟他说话）
+    helper_items = [("apple", "苹果"), ("banana", "香蕉"), ("cup", "杯子"),
+                    ("ball", "小球"), ("hat", "帽子")]
+    helper_animals = [("cat", "小猫"), ("dog", "小狗"), ("bunny", "小兔子"), ("bear", "小熊")]
+    m["helper"] = {}
+    for ik, iname in helper_items:
+        for ak, aname in helper_animals:
+            m["helper"][f"task_{ik}_{ak}.mp3"] = ("text", f"先拿{iname}，再给{aname}！", SENT_SPEED)
+    for ik, iname in helper_items:
+        m["helper"][f"got_{ik}.mp3"] = ("text", f"拿到{iname}啦！", SENT_SPEED)
+        # 点错物件：只说目标是什么，不评价他点的那个（信息不是评价）
+        m["helper"][f"no_item_{ik}.mp3"] = ("text", f"咦，这不是{iname}呀！", SENT_SPEED)
+    for ak, aname in helper_animals:
+        m["helper"][f"thanks_{ak}.mp3"] = ("text", f"{aname}说：谢谢你！", SENT_SPEED)
+        m["helper"][f"no_animal_{ak}.mp3"] = ("text", f"是给{aname}的呀！", SENT_SPEED)
+    # 顺序提示：还没拿东西就先去给动物
+    m["helper"]["first_take.mp3"] = ("text", "先拿东西哦！", SENT_SPEED)
+    # 两步都做对的庆祝，三条轮换
+    m["helper"]["yay_1.mp3"] = ("text", "哇，你帮了大忙！", SENT_SPEED)
+    m["helper"]["yay_2.mp3"] = ("text", "真是个小帮手！", SENT_SPEED)
+    m["helper"]["yay_3.mp3"] = ("text", "太棒啦，都做对了！", SENT_SPEED)
+
     return m
 
 
