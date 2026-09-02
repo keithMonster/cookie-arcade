@@ -284,8 +284,14 @@ sysEl.preload = 'auto';
 
 // 摇篮曲：Web Audio 三音下行（非语音效果音允许运行时合成），音量压低
 let actx = null;
+// iOS 挂起后不 resume 会静默失声（同 train/bath）；建不出 AudioContext 就静音退出
+function ensureCtx() {
+  if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return false; } }
+  if (actx.state === 'suspended') actx.resume();
+  return true;
+}
 function lullaby() {
-  if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; } }
+  if (!ensureCtx()) return;
   [[659.3, 0], [523.3, 0.75], [392.0, 1.5]].forEach(([freq, at]) => {
     const t = actx.currentTime + at;
     const osc = actx.createOscillator();
@@ -303,7 +309,7 @@ function lullaby() {
 // 夜晚轻点的单音回应（五声音阶随机一颗，很轻）
 const NIGHT_NOTES = [392.0, 440.0, 523.3, 587.3, 659.3];
 function softNote() {
-  if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; } }
+  if (!ensureCtx()) return;
   const t = actx.currentTime;
   const osc = actx.createOscillator();
   const g = actx.createGain();

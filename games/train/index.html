@@ -484,16 +484,19 @@ function paintRound() {
 
 // ===== 语音：qEl 连播链（intro → 指令），words 单元素模式 =====
 let chain = [];
+let chainDog = null;   // 看门狗：iOS 中断（Siri/锁屏）时 ended/error 都不来，6s 兜底往下走（同 find/shapes）
 function playChain(files) {
   chain = files.slice();
   stepChain();
 }
 function stepChain() {
+  clearTimeout(chainDog);
   if (!chain.length) { askEl.classList.remove('talking'); return; }
   qEl.src = 'audio/' + chain.shift();
   qEl.currentTime = 0;
   askEl.classList.add('talking');
   qEl.play().catch(() => {});
+  chainDog = setTimeout(stepChain, 6000);
 }
 qEl.addEventListener('ended', stepChain);
 qEl.addEventListener('error', stepChain);

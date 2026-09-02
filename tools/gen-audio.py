@@ -234,6 +234,19 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
     m["train"]["no_1.mp3"] = ("text", "还没轮到我呀！", SENT_SPEED)
     m["train"]["no_2.mp3"] = ("text", "咦，现在不是我哦！", SENT_SPEED)
 
+    # echo 跟着敲：小兔子敲一段节奏，轮到他在大鼓上敲同样的次数（有结构的节奏首款）
+    # 语音只管"轮流"这件事——听我 / 该你 / 再听——鼓声本身走 Web Audio，不念「咚咚」
+    m["echo"] = {
+        "intro.mp3":       ("text", "小兔子要敲鼓啦！", SENT_SPEED),
+        "listen.mp3":      ("text", "听我敲！", SENT_SPEED),
+        "again.mp3":       ("text", "再听一次哦！", SENT_SPEED),
+        "your_turn_1.mp3": ("text", "该你啦！", SENT_SPEED),
+        "your_turn_2.mp3": ("text", "轮到你敲啦！", SENT_SPEED),
+        "yay_1.mp3":       ("text", "耶！敲得一模一样！", SENT_SPEED),
+        "yay_2.mp3":       ("text", "哇，你也会敲鼓啦！", SENT_SPEED),
+        "yay_3.mp3":       ("text", "咚咚咚，真好听！", SENT_SPEED),
+    }
+
     return m
 
 

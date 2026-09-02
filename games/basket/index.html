@@ -228,6 +228,7 @@ let actx = null;
 function fx(freqs, dur, type, gain) {
   try {
     if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();   // iOS 挂起后不 resume 会静默失声（同 train/bath）
     const t0 = actx.currentTime;
     freqs.forEach((f, i) => {
       const o = actx.createOscillator();

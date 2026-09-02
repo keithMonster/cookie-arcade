@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """文档一致性检查：防 WHY.md 的能力线地图与 README 存量表脱节。
 
-WHY.md 用两张表描述全台 20 款的位置（toy→game 轴分布 + 能力线地图），
+WHY.md 用两张表描述全台每一款的位置（toy→game 轴分布 + 能力线地图），
 新增游戏时若只改 README 不回头改 WHY.md，地图就开始骗人——而骗人的地图
 比没有地图更糟，因为准入四问第 2 问要靠它选址。本脚本就是那个传感器。
 
@@ -12,6 +12,8 @@ WHY.md 用两张表描述全台 20 款的位置（toy→game 轴分布 + 能力�
     4. README 里每个游戏名都在 WHY.md 中出现过（新增游戏必须在地图上落位）
     5. 根目录 md 之间的相对链接不指向不存在或被 .gitignore 挡住的文件
        （public 仓读者看不到 ignored 文件，链过去就是死链）
+    6. 首页 index.html 的 tile 集合 == games/ 磁盘目录集合（交付清单第 3 条
+       曾是全链唯一没机械兜底的一环：做了游戏没上首页 = 没人能点进去）
 
 用法：
     python3 tools/check-docs.py
@@ -116,13 +118,23 @@ def main():
                     f"{doc} 链接的 {target} 被 .gitignore 挡住 —— 对 GitHub 上的读者是死链"
                 )
 
+    # 6：首页 tile ↔ 磁盘目录双向对账
+    tiles = sorted(set(re.findall(r'href="games/([A-Za-z0-9_-]+)/"', read("index.html"))))
+    if tiles != on_disk:
+        not_on_home = sorted(set(on_disk) - set(tiles))
+        no_dir = sorted(set(tiles) - set(on_disk))
+        if not_on_home:
+            failures.append("这些游戏目录没登记进首页 index.html：" + "、".join(not_on_home))
+        if no_dir:
+            failures.append("首页 tile 指向不存在的目录：" + "、".join(no_dir))
+
     if failures:
         print("✗ 文档一致性检查未通过：")
         for f in failures:
             print(f"  · {f}")
         return 1
 
-    print(f"✓ 文档一致 —— {actual} 款全部在 WHY.md 地图上落位，链接无死链")
+    print(f"✓ 文档一致 —— {actual} 款全部在 WHY.md 地图上落位、首页 tile 齐全，链接无死链")
     return 0
 
 
