@@ -30,7 +30,7 @@ Cookie 的家用游戏台：面向不识字幼儿的 mini game 合集，每款�
 
 - 所有中文语音构建期生成 mp3：文案写进 `tools/gen-audio.py` 的 manifest → `python3 tools/gen-audio.py --game <目录>` 生成 → 同命令 `--check` 通过再提交。
 - 运行时不调 SpeechSynthesis（目标 iPad 上无声）；非语音效果音继续用 Web Audio。
-- iOS 连续 / 自动接续语音复用单个 `Audio` 元素换 `src`，参考实现 `games/words/`。
+- iOS 连续 / 自动接续语音复用单个 `Audio` 元素换 `src`，参考实现 `games/words/`。**链式推进必须带 5–6s 看门狗超时**（`setTimeout(stepChain)`，每次 step 先 clear）：iOS 被 Siri / 锁屏打断、以及后台 tab 里，`ended` / `error` 都可能不来，裸接事件的链会永久卡死（2026-09-02 train 实证）。
 - TTS 是付费接口：只为新增文案生成，不为「确认一下」重跑已有音频。**本仓语音生成已获 Keith 长期授权（2026-09-02：「不用问我，全部 ack」）——新增文案直接跑 `--game <目录>`，不再逐次请求确认**；授权范围止于本仓 manifest 里的新增条目，全量重生成仍先说一声。
 
 ## 交付清单（做完逐项勾）
