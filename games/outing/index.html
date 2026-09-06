@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>出门喽 · Cookie's Arcade</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", sans-serif;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    /* 早晨的家：亮一档的奶油墙 + 木地板（与 helper 的午后同族不同时辰）*/
+    background: linear-gradient(180deg, #fff8ec 0%, #ffeed5 66%, #e0b585 66%, #cb9760 100%);
+  }
+  /* 晨光光晕：质感走这层 overlay，不抢注意力 */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(110% 80% at 78% 6%, rgba(255, 250, 226, 0.9), rgba(255, 255, 255, 0) 60%),
+      radial-gradient(120% 90% at 50% 112%, rgba(90, 50, 10, 0.16), rgba(0, 0, 0, 0) 58%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* 右侧那扇门：小车最后就是往它那儿开出去的（纯装饰不可点）*/
+  .door {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    width: 13vmin;
+    height: 42vmin;
+    border-radius: 8vmin 0 0 0;
+    background: linear-gradient(100deg, #c98a4e, #a96c34);
+    box-shadow: inset 0.8vmin 0 0 rgba(255, 255, 255, 0.28), -1.2vmin 0 2.4vmin rgba(90, 50, 10, 0.18);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .door::after {
+    content: '';
+    position: absolute;
+    left: 2.4vmin;
+    top: 52%;
+    width: 2vmin;
+    height: 2vmin;
+    border-radius: 50%;
+    background: #ffe08a;
+    box-shadow: 0 0 0 0.4vmin rgba(120, 70, 20, 0.25);
+  }
+  /* 出门的一刻门口透进外面的光 */
+  .door.open { background: linear-gradient(100deg, #fff4cd, #ffe08a); }
+
+  /* 舞台：inset 用 safe-area 真正缩进（padding 缩不动绝对定位的孩子——
+     它们的包含块是 padding box，加 padding 不挪原点，喇叭会被顶到屏幕外）。
+     四件东西一律以画面中心为锚用 vmin 排，横屏也不会被拉成一字长蛇。 */
+  .field {
+    position: fixed;
+    top: env(safe-area-inset-top, 0px);
+    right: env(safe-area-inset-right, 0px);
+    bottom: env(safe-area-inset-bottom, 0px);
+    left: env(safe-area-inset-left, 0px);
+    z-index: 2;
+  }
+
+  /* ===== 顶部喇叭：戳一下听一句还没做的事（零文字 UI，只有图形）===== */
+  .ask {
+    position: absolute;
+    left: 50%;
+    top: 2vmin;
+    transform: translateX(-50%);
+    width: 20vmin;
+    height: 12vmin;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 30;
+  }
+  .ask .horn {
+    font-size: clamp(28px, 7.5vmin, 62px);
+    line-height: 1;
+    filter: drop-shadow(0 0.8vmin 0.8vmin rgba(120, 70, 20, 0.2));
+  }
+  .ask.talking .horn { animation: horn-wiggle 620ms ease-in-out infinite; }
+  @keyframes horn-wiggle {
+    0%, 100% { transform: rotate(0)     scale(1); }
+    25%      { transform: rotate(-9deg) scale(1.12); }
+    75%      { transform: rotate(9deg)  scale(1.12); }
+  }
+
+  /* ===== 中间的小宝宝 ===== */
+  .baby {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 34vmin;
+    height: 40vmin;
+    margin-left: -17vmin;
+    margin-top: -20vmin;
+    z-index: 10;
+    cursor: pointer;
+    will-change: transform;
+  }
+  .baby > span {
+    position: absolute;
+    left: 50%;
+    line-height: 1;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0 1vmin 0.8vmin rgba(120, 70, 20, 0.24));
+  }
+  .baby .face  { top: 32%; font-size: 21vmin; z-index: 3; }
+  .baby .cap   { top: 7%;  font-size: 11vmin; z-index: 4; opacity: 0; }
+  .baby .shirt { top: 66%; font-size: 14vmin; z-index: 2; opacity: 0; }
+  .baby .ride  { top: 88%; font-size: 20vmin; z-index: 1; opacity: 0; }
+  /* 穿上 / 戴上 / 坐进去：从上方轻轻落位 */
+  .baby .worn.on, .baby .ride.on { animation: put-on 620ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+  @keyframes put-on {
+    0%   { opacity: 0; transform: translate(-50%, -160%) scale(0.7) rotate(-14deg); }
+    70%  { opacity: 1; transform: translate(-50%, -38%)  scale(1.08) rotate(4deg); }
+    100% { opacity: 1; transform: translate(-50%, -50%)  scale(1)   rotate(0); }
+  }
+  /* 收到东西：整个宝宝开心晃一下 */
+  .baby.wiggle { animation: baby-wiggle 720ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes baby-wiggle {
+    0%, 100% { transform: translateY(0)      rotate(0); }
+    25%      { transform: translateY(-3vmin) rotate(-6deg); }
+    60%      { transform: translateY(0)      rotate(5deg); }
+    85%      { transform: translateY(-1vmin) rotate(-2deg); }
+  }
+  /* 喝奶时轻轻仰头 */
+  .baby.drinking .face { animation: baby-drink 900ms ease-in-out infinite alternate; }
+  @keyframes baby-drink {
+    0%   { transform: translate(-50%, -50%) rotate(0); }
+    100% { transform: translate(-50%, -52%) rotate(-7deg); }
+  }
+  /* 出门：连人带车往右开出画面 */
+  .baby.drive { animation: baby-drive 1700ms cubic-bezier(0.5, 0, 0.75, 0.3) forwards; }
+  @keyframes baby-drive {
+    0%   { transform: translate(0, 0)      rotate(0); }
+    14%  { transform: translate(-4vmin, 0) rotate(-3deg); }
+    100% { transform: translate(120vw, 0)  rotate(2deg); }
+  }
+
+  /* ===== 四件东西 ===== */
+  .item {
+    position: absolute;
+    width: 20vmin;
+    height: 20vmin;
+    margin-left: -10vmin;
+    margin-top: -10vmin;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    touch-action: none;
+    z-index: 20;
+    will-change: transform;
+  }
+  .item .art {
+    font-size: 14vmin;
+    line-height: 1;
+    display: block;
+    filter: drop-shadow(0 1vmin 0.9vmin rgba(120, 70, 20, 0.26));
+    will-change: transform;
+  }
+  /* 待操作时轻轻摇——「我可以动」的暗示 */
+  .item.sway .art { animation: art-sway 3s ease-in-out infinite; }
+  @keyframes art-sway {
+    0%, 100% { transform: rotate(-5deg) translateY(0); }
+    50%      { transform: rotate(5deg)  translateY(-1.2vmin); }
+  }
+  /* 只点没拖：原地开心跳一下（每次输入必反馈）*/
+  .item.hop .art { animation: art-hop 480ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes art-hop {
+    0%, 100% { transform: translateY(0)       scale(1); }
+    40%      { transform: translateY(-3vmin)  scale(1.14); }
+  }
+  .item.lift { cursor: grabbing; z-index: 320; }
+  .item.lift .art { animation: none; filter: drop-shadow(0 0 2.6vmin rgba(255, 226, 110, 0.95)); }
+  .item.back { transition: transform 420ms cubic-bezier(0.3, 0.9, 0.4, 1.1); }
+  .item.done { pointer-events: none; }
+  /* 闲置 8s / 戳喇叭：还没做的那件亮两下（一次性，不是持续发光）*/
+  .item.flash { animation: item-flash 900ms ease-in-out 2; }
+  @keyframes item-flash {
+    0%, 100% { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255, 226, 110, 0)); }
+    50%      { transform: scale(1.18); filter: drop-shadow(0 0 3.2vmin rgba(255, 226, 110, 1)); }
+  }
+  /* 换宝宝：淡出淡入 */
+  .item.deal-out { animation: deal-out 320ms ease-in forwards; }
+  .item.deal-in  { animation: deal-in  460ms cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
+  @keyframes deal-out { 100% { transform: translateY(16%) scale(0.4); opacity: 0; } }
+  @keyframes deal-in {
+    0%   { transform: translateY(22%) scale(0.35); opacity: 0; }
+    60%  { transform: translateY(-4%) scale(1.08); opacity: 1; }
+    100% { transform: translateY(0)   scale(1);    opacity: 1; }
+  }
+
+  /* ===== 奶瓶：CSS 画的，长按时奶量真的往下掉 ===== */
+  /* 倾斜挂在 .bottle-set 上而不是瓶身上——奶嘴和瓶盖圈是它的兄弟节点，
+     只转瓶身会把奶嘴留在原地 */
+  .bottle-set {
+    position: relative;
+    display: block;
+    /* 用 padding 不用瓶身的 margin-top —— margin 会外溢（margin collapsing），
+       父容器顶边跟着下移，奶嘴反而落进瓶身里 */
+    padding-top: 5.4vmin;
+    transform-origin: 50% 16%;
+  }
+  .bottle {
+    position: relative;
+    display: block;
+    width: 11.5vmin;
+    height: 17vmin;
+    border-radius: 2.8vmin 2.8vmin 3.4vmin 3.4vmin;
+    /* 空的那半是淡蓝玻璃、奶是暖白——两者必须一眼分得出，
+       奶量往下掉才是「按着是对的」的那个可见信号 */
+    background: linear-gradient(180deg, #b7d6e6, #93bcd2);
+    box-shadow:
+      inset 0 0 0 0.6vmin rgba(255, 255, 255, 0.95),
+      0 0 0 0.35vmin rgba(120, 80, 40, 0.16),
+      0 1vmin 1.4vmin rgba(120, 70, 20, 0.24);
+    overflow: hidden;
+  }
+  .bottle-top {
+    position: absolute;
+    left: 50%;
+    top: 0.4vmin;
+    transform: translateX(-50%);
+    width: 4vmin;
+    height: 4.8vmin;
+    border-radius: 50% 50% 34% 34%;
+    background: #f6cfae;
+    box-shadow: 0 0.5vmin 0.8vmin rgba(120, 70, 20, 0.2);
+  }
+  .bottle-ring {
+    position: absolute;
+    left: 50%;
+    top: 3.8vmin;
+    transform: translateX(-50%);
+    width: 7.4vmin;
+    height: 2.4vmin;
+    border-radius: 1.2vmin;
+    background: linear-gradient(180deg, #ffd7e6, #f7aec8);
+  }
+  .milk {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    background: linear-gradient(180deg, #fffdf6, #ffe9c2);
+    box-shadow: inset 0 0.6vmin 0 rgba(255, 255, 255, 0.9);
+    transition: height 320ms ease;
+  }
+  /* 喝的过程：整支奶瓶倾斜 + 暖光晕渐强（按着是对的，看得见）*/
+  .bottle-wrap { position: relative; display: block; }
+  .item.holding .bottle-wrap { animation: none; }
+  .item.holding .bottle-wrap::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 26vmin;
+    height: 26vmin;
+    margin: -13vmin 0 0 -13vmin;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 226, 110, 0.6), rgba(255, 226, 110, 0) 68%);
+    pointer-events: none;
+    animation: halo-grow 1700ms ease-out forwards;
+  }
+  @keyframes halo-grow {
+    0%   { transform: scale(0.4); opacity: 0.35; }
+    100% { transform: scale(1.15); opacity: 1; }
+  }
+
+  /* 庆祝粒子（同 helper）*/
+  .spark {
+    position: fixed;
+    font-size: 7vmin;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 600;
+    animation: spark-fly 1s ease-out forwards;
+  }
+  @keyframes spark-fly {
+    0%   { transform: translate(0, 0)                                    scale(0.4); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(1.2); opacity: 0; }
+  }
+
+  #back {
+    position: fixed;
+    top: 8px; left: 4px;
+    top: calc(constant(safe-area-inset-top) + 8px);
+    left: calc(constant(safe-area-inset-left) + 4px);
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
+    left: calc(env(safe-area-inset-left, 0px) + 4px);
+    width: 70px; height: 70px;
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    color: rgba(80, 50, 30, 0.5);
+    text-decoration: none;
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.4);
+  }
+  #back:active { color: rgba(80, 50, 30, 0.9); }
+
+  #hint {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 15px;
+    letter-spacing: 0.3em;
+    color: rgba(80, 50, 30, 0.5);
+    pointer-events: none;
+    transition: opacity 600ms;
+    z-index: 100;
+    white-space: nowrap;
+  }
+  #hint.gone { opacity: 0; }
+</style>
+</head>
+<body>
+
+<div class="door" id="door"></div>
+
+<div class="field" id="field">
+  <div class="ask" id="ask"><span class="horn">📢</span></div>
+
+  <div class="baby" id="baby">
+    <span class="ride"       id="ride"></span>
+    <span class="worn shirt" id="wornShirt"></span>
+    <span class="face"       id="face">👶</span>
+    <span class="worn cap"   id="wornCap"></span>
+  </div>
+
+  <div class="item sway" id="itShirt"  style="left:calc(50% - 32vmin); top:calc(50% - 26vmin)"><span class="art"></span></div>
+  <div class="item sway" id="itBottle" style="left:calc(50% + 32vmin); top:calc(50% - 26vmin)">
+    <span class="art bottle-wrap">
+      <span class="bottle-set" id="bottleSet">
+        <span class="bottle"><span class="milk" id="milkEl"></span></span>
+        <span class="bottle-top"></span>
+        <span class="bottle-ring"></span>
+      </span>
+    </span>
+  </div>
+  <div class="item sway" id="itCap" style="left:calc(50% - 32vmin); top:calc(50% + 26vmin)"><span class="art"></span></div>
+  <div class="item sway" id="itCar" style="left:calc(50% + 32vmin); top:calc(50% + 26vmin)"><span class="art"></span></div>
+</div>
+
+<a id="back" href="../../">←</a>
+<div id="hint">帮宝宝准备好，就出门啦</div>
+
+<script>
+// ===== 出门喽：穿衣 / 喝奶 / 戴帽 / 上车，四件不同的事做完就出门 =====
+// 全台第一款「连续假装序列」（能力线 #6）——已有的多步游戏都是同一个动作重复
+// （装一装拖 5 个水果、分一分拖 6 个玩具），这一款每一步的动作都不一样：
+// 拖 → 长按 → 拖 → 点。顺序完全不判对错，碰哪件就做哪件。
+// 也是全台第一次用「长按」这个交互（他自己泡奶时长按解锁热水器，比这难）。
+
+// 四步的定义：key 与 audio/ 文件名一一对应
+// mode: 'drag' 拖到宝宝身上 / 'hold' 按住不放 / 'tap' 点一下
+const STEPS = [
+  { key: 'shirt',  mode: 'drag', slot: 'itShirt'  },
+  { key: 'bottle', mode: 'hold', slot: 'itBottle' },
+  { key: 'cap',    mode: 'drag', slot: 'itCap'    },
+  { key: 'car',    mode: 'tap',  slot: 'itCar'    },
+];
+
+// 换宝宝时整套换皮：角色 + 衣服 + 帽子 + 车（同一批东西看腻了就换个样）
+const BABIES = ['👶', '🐻', '🐰', '🐱', '🐶', '🐼'];
+const SHIRTS = ['👕', '👚', '🧥', '🦺'];
+const CAPS   = ['🧢', '👒', '⛑️', '🎩'];
+const CARS   = ['🚗', '🚙', '🚕', '🛺'];
+
+const IDLE_MS      = 8000;   // 静默这么久：还没做的其中一件发光 + 说一句引导
+const HOLD_STEPS   = [1700, 1250, 900];  // 长按阈值：松手早了不惩罚，下次门槛降一档
+const HOLD_ASSIST  = 350;    // 已经试过 3 次：碰一下就算喝完
+const DRAG_THRESH  = 14;     // 2 岁的手指按下去就会蹭，阈值给宽（同 basket/helper）
+const CHAIN_DOG_MS = 5500;   // 语音链看门狗：iOS 被 Siri/锁屏打断时 ended/error 都不来
+const BYE_COUNT    = 2;
+
+// ===== 语音：单 Audio 元素 + 换 src（iOS 解锁后非手势链 play 才可靠）=====
+const qEl = new Audio();
+qEl.preload = 'auto';
+const uEl = new Audio();     // 只用来在首次手势里解锁播放权限
+uEl.preload = 'auto';
+
+// ===== Web Audio 效果音：peak ≤ 0.3 且再过一层 0.55 的 master =====
+let actx = null, master = null;
+function ensureAudio() {
+  try {
+    if (!actx) {
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+      master = actx.createGain();
+      master.gain.value = 0.55;
+      const comp = actx.createDynamicsCompressor();
+      master.connect(comp);
+      comp.connect(actx.destination);
+    }
+    if (actx.state === 'suspended') actx.resume();
+    return true;
+  } catch (e) { return false; }
+}
+function tone(type, f0, f1, peak, dur, delay) {
+  if (!ensureAudio()) return;
+  const t0 = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(f0, t0);
+  if (f1 && f1 !== f0) o.frequency.linearRampToValueAtTime(f1, t0 + dur * 0.8);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.linearRampToValueAtTime(peak, t0 + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g).connect(master);
+  o.start(t0);
+  o.stop(t0 + dur + 0.05);
+}
+const fxPick  = () => tone('sine', 520, 600, 0.16, 0.14);                    // 拿起
+const fxSoft  = () => tone('sine', 440, 520, 0.13, 0.16);                    // 随手戳
+const fxOn    = () => { tone('triangle', 660, 660, 0.22, 0.16);              // 穿好 / 戴好
+                        tone('triangle', 990, 990, 0.2, 0.26, 0.1); };
+const fxGulp  = () => tone('sine', 210, 130, 0.2, 0.16);                     // 咕咚
+const fxCar   = () => { tone('sawtooth', 90, 190, 0.12, 0.5);                // 引擎
+                        tone('square', 520, 660, 0.1, 0.18, 0.12); };
+const fxParty = () => [523, 659, 784, 1047].forEach((f, i) => tone('triangle', f, f, 0.2, 0.36, i * 0.09));
+
+// ===== DOM =====
+const fieldEl  = document.getElementById('field');
+const askEl    = document.getElementById('ask');
+const babyEl   = document.getElementById('baby');
+const faceEl   = document.getElementById('face');
+const rideEl   = document.getElementById('ride');
+const wornCapEl   = document.getElementById('wornCap');
+const wornShirtEl = document.getElementById('wornShirt');
+const milkEl   = document.getElementById('milkEl');
+const bottleEl = document.getElementById('bottleSet');
+const doorEl   = document.getElementById('door');
+
+STEPS.forEach(s => { s.el = document.getElementById(s.slot); s.art = s.el.querySelector('.art'); });
+const byKey = k => STEPS.find(s => s.key === k);
+
+// ===== 状态机 =====
+// idle    = 静候首戳解锁音频（iOS 音频必须在手势里起播）
+// play    = 四件事任意顺序做，顺序不判对错
+// leaving = 四件都做完，小车往门外开 + confetti + 收尾语音
+// dealing = 换下一个宝宝的进出场动画
+//
+// 每一步自己带 done 标记，completeStep 靠它幂等——两根手指同时把衣服和帽子
+// 拖到宝宝身上、或键盘和手指同时走完最后一步，都只会各自结算一次。
+let phase = 'idle';
+let doneCount = 0;         // 已经判定完成的步数（点下去那一刻就 +1）
+let settled = 0;           // 东西已经真的穿到 / 戴到 / 坐进宝宝身上的步数
+let finished = false;      // 出门只触发一次
+let outSeq = 0;            // 出门/换场那条独立定时器的代次（不挂在语音回调上）
+let idleTimer = null;
+let byeAlt = 0;
+let everDragged = false;   // 成功拖到宝宝身上过一次 = 会拖了，帮忙门槛放宽一档
+// 帮忙标记挂在每一步自己身上（s.assist），不设全局开关：
+// 全局开关会让「拖不好衣服」把奶瓶的长按一并降成碰一下，而四个动作各不相同
+// 正是这一款存在的全部理由。且它只活一轮，dealRound 里清零。
+let totalMiss = 0;         // 全轮累计没成的尝试——分心期反复拖偏也不能把这一轮走死
+let lastBaby = null;
+
+function later(fn, ms) { return setTimeout(fn, ms); }
+function restart(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+function pick(arr, not) {
+  const pool = arr.filter(x => x !== not);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// ===== 语音链（helper / words / train 同一模式）=====
+let chain = [];
+let chainDog = null;
+function say(files) {
+  chain = files.slice();
+  stepChain();
+}
+function stepChain() {
+  clearTimeout(chainDog);
+  if (!chain.length) {
+    askEl.classList.remove('talking');
+    return;
+  }
+  qEl.src = 'audio/' + chain.shift();
+  qEl.currentTime = 0;
+  askEl.classList.add('talking');
+  qEl.play().catch(() => {});
+  // 看门狗：iOS 被打断 / 后台 tab 里 ended 与 error 都可能永远不来，裸接事件的链会卡死
+  chainDog = setTimeout(stepChain, CHAIN_DOG_MS);
+}
+qEl.addEventListener('ended', stepChain);
+qEl.addEventListener('error', stepChain);   // mp3 缺失也不卡链，往下走
+// 注意：say() 只管播报。相位切换、引导点亮、换宝宝一律走独立定时器 —— 挂在语音
+// 回调上的话，下一次 say() 一抢占就把那一跳丢了（前两款抓出来的真 bug）。
+
+// ===== 闲置引导：只说还没做的其中一件，绝不一次说完四步 =====
+function armIdle() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    if (phase !== 'play') return;
+    nudge();
+    armIdle();
+  }, IDLE_MS);
+}
+function nudge() {
+  // 正拿在手里 / 正按着的那件不点它：flash 的 keyframes 优先级高于 inline transform，
+  // 一手拖东西一手戳喇叭时东西会当场跳一下
+  const todo = STEPS.filter(s => !s.done &&
+    !s.el.classList.contains('lift') && !s.el.classList.contains('holding'));
+  if (!todo.length) return;
+  const s = todo[Math.floor(Math.random() * todo.length)];
+  restart(s.el, 'flash');
+  later(() => s.el.classList.remove('flash'), 1900);
+  say(['go_' + s.key + '.mp3']);
+}
+
+// ===== 粒子 =====
+function burst(fromEl, emojis, n) {
+  const r = fromEl.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  for (let i = 0; i < n; i++) {
+    const sp = document.createElement('div');
+    sp.className = 'spark';
+    sp.textContent = emojis[i % emojis.length];
+    const ang = (Math.PI * 2 * i) / n + Math.random() * 0.6;
+    const dist = 16 + Math.random() * 18;
+    sp.style.left = cx + 'px';
+    sp.style.top = cy + 'px';
+    sp.style.setProperty('--dx', Math.cos(ang) * dist + 'vmin');
+    sp.style.setProperty('--dy', Math.sin(ang) * dist + 'vmin');
+    sp.style.setProperty('--rot', (Math.random() * 90 - 45) + 'deg');
+    document.body.appendChild(sp);
+    setTimeout(() => sp.remove(), 1050);
+  }
+}
+const sparkle  = el => burst(el, ['✨', '⭐', '💛', '🌟'], 8);
+const confetti = el => burst(el, ['🎉', '⭐', '✨', '🎊', '🌟'], 16);
+
+// ===== 位移：item 的 transform 全归 JS 管（摇摆动画挂在里层 .art 上，互不打架）=====
+function setXY(el, dx, dy, extra) {
+  el._dx = dx; el._dy = dy;
+  el.style.transform = 'translate(' + dx + 'px,' + dy + 'px)' + (extra || '');
+}
+function resetXY(el) { el._dx = 0; el._dy = 0; el.style.transform = ''; }
+
+// ===== 完成一步（幂等）=====
+function completeStep(s) {
+  if (s.done || phase === 'leaving' || phase === 'dealing') return;
+  s.done = true;
+  doneCount++;
+  clearTimeout(idleTimer);
+  s.el.classList.remove('sway', 'lift', 'flash', 'hop', 'holding');
+  s.el.classList.add('done');
+  // 走降级路径替他喝完时，奶量刚被 cancelHold 退回满格——飞走前先把它喝干净，
+  // 别让一支满奶瓶飞到宝宝嘴边还说「奶喝完啦」
+  if (s.key === 'bottle') {
+    // 别的路（键盘 / 降级）判完成时，手指可能还按在奶瓶上：咕咚声会一直响到阈值烧完
+    clearTimeout(holdTimer); holdTimer = null;
+    clearInterval(gulpTimer); gulpTimer = null;
+    holdPtr = null;
+    milkEl.style.transition = 'height 300ms ease';
+    milkEl.style.height = '8%';
+    babyEl.classList.remove('drinking');
+  }
+
+  // 东西飞到宝宝身上再消失
+  const a = s.el.getBoundingClientRect();
+  const b = babyEl.getBoundingClientRect();
+  const dx = (b.left + b.width / 2) - (a.left + a.width / 2);
+  const dy = (b.top + b.height * 0.5) - (a.top + a.height / 2);
+  s.el.style.transition = 'transform 460ms cubic-bezier(0.5, 0, 0.3, 1.1), opacity 460ms ease-in';
+  setXY(s.el, (s.el._dx || 0) + dx, (s.el._dy || 0) + dy, ' scale(0.35)');
+  s.el.style.opacity = '0';
+
+  later(() => {
+    if (s.key === 'shirt') { wornShirtEl.textContent = s.emoji; restart(wornShirtEl, 'on'); }
+    if (s.key === 'cap')   { wornCapEl.textContent = s.emoji;   restart(wornCapEl, 'on'); }
+    if (s.key === 'car')   { rideEl.textContent = s.emoji;      restart(rideEl, 'on'); fxCar(); }
+    if (s.key !== 'car') fxOn();
+    restart(babyEl, 'wiggle');
+    sparkle(babyEl);
+    say(['ok_' + s.key + '.mp3']);        // 只说这一步的名字，不预告下一步
+    settled++;
+    // 用 settled 不用 doneCount：两步隔得近时，先落地那步的回调会看到 doneCount 已满，
+    // 于是小车在后一件衣服还没穿上身就开走了
+    if (settled >= STEPS.length) leave();
+    else armIdle();
+  }, 420);
+}
+
+// ===== 没成一次：不是失败，只是还没成。攒够就替他做（照 basket 抄）=====
+// 「只点没拖」和「拖偏了没到」都算，别只数点击——只数点会留死路：
+// 娃反复戳同一件东西，每次都滑回原地，这一轮永远出不了门。
+function registerMiss(s) {
+  s.miss = (s.miss || 0) + 1;
+  totalMiss++;
+  const limit = everDragged ? 4 : 3;
+  if (s.assist || s.miss >= limit || totalMiss >= 6) {
+    if (!everDragged && s.mode === 'drag') {
+      // 帮忙只在「拖」这一族里传染：拖不好衣服 ⇒ 帽子也放宽，但不碰奶瓶和小车
+      STEPS.forEach(x => { if (x.mode === 'drag') x.assist = true; });
+    } else {
+      s.assist = true;               // 长按只帮它自己
+    }
+    completeStep(s);
+    return true;
+  }
+  return false;
+}
+
+// ===== 出门：四件都做完 =====
+function leave() {
+  if (finished) return;
+  finished = true;
+  phase = 'leaving';
+  clearTimeout(idleTimer);
+  const seq = ++outSeq;
+
+  // 没坐车也能出门（车那一步走的是降级路径时 ride 已经有了；兜底再填一次）
+  if (!rideEl.textContent) { rideEl.textContent = byKey('car').emoji; rideEl.classList.add('on'); }
+  doorEl.classList.add('open');
+  confetti(babyEl);
+  fxParty();
+  later(fxCar, 260);
+  later(() => { if (seq === outSeq) restart(babyEl, 'drive'); }, 420);
+
+  byeAlt = byeAlt % BYE_COUNT + 1;
+  say(['bye_' + byeAlt + '.mp3']);
+  // 换宝宝走这条独立定时器，不挂语音回调——语音被抢占也照样换场
+  later(() => { if (seq === outSeq) nextBaby(); }, 3400);
+}
+
+// ===== 换下一个宝宝：换角色 + 换衣服帽子小车的样子，无限循环 =====
+function nextBaby() {
+  if (phase === 'dealing') return;
+  phase = 'dealing';
+  clearTimeout(idleTimer);
+  const seq = ++outSeq;
+  STEPS.forEach(s => { if (!s.done) restart(s.el, 'deal-out'); });
+
+  later(() => {
+    if (seq !== outSeq) return;
+    dealRound();
+    STEPS.forEach((s, i) => {
+      s.el.classList.add('deal-in');
+      s.el.style.animationDelay = (i * 80) + 'ms';
+    });
+    later(() => {
+      if (seq !== outSeq) return;
+      STEPS.forEach(s => { s.el.classList.remove('deal-in'); s.el.style.animationDelay = ''; });
+      phase = 'play';
+      say(['next.mp3']);
+      armIdle();
+    }, 900);
+  }, 360);
+}
+
+// 摆好一轮：重置四步 + 换皮
+function dealRound() {
+  doneCount = 0;
+  settled = 0;
+  finished = false;
+  totalMiss = 0;
+  babyEl.classList.remove('drive', 'wiggle', 'drinking');
+  babyEl.style.transform = '';
+  doorEl.classList.remove('open');
+  wornCapEl.textContent = '';   wornCapEl.className = 'worn cap';
+  wornShirtEl.textContent = ''; wornShirtEl.className = 'worn shirt';
+  rideEl.textContent = '';      rideEl.className = 'ride';
+
+  const baby = pick(BABIES, lastBaby);
+  lastBaby = baby;
+  faceEl.textContent = baby;
+  byKey('shirt').emoji = pick(SHIRTS);
+  byKey('cap').emoji   = pick(CAPS);
+  byKey('car').emoji   = pick(CARS);
+  byKey('bottle').emoji = '🍼';
+
+  STEPS.forEach(s => {
+    s.done = false;
+    s.miss = 0;
+    s.assist = false;   // 帮忙是「这一轮他手不顺」，不是「这个娃从此不会拖」
+    s.el.className = 'item sway';
+    s.el.style.transition = '';
+    s.el.style.opacity = '';
+    resetXY(s.el);
+    if (s.key !== 'bottle') s.art.textContent = s.emoji;
+  });
+  resetMilk(true);
+}
+
+// ===== 奶瓶长按 =====
+// pointerdown 起计时；pointerup / pointercancel / pointerleave / 切后台都要能取消，
+// 任何一条路都把 holdTimer 清掉——不留永久卡住的计时器。
+let holdPtr = null;      // 正在按的那根手指（第二根手指按上来直接忽略，不重复计时）
+let holdTimer = null;
+let gulpTimer = null;
+
+function holdThreshold() {
+  const s = byKey('bottle');
+  if (s.assist || (s.miss || 0) >= 3) return HOLD_ASSIST;
+  return HOLD_STEPS[Math.min(s.miss || 0, HOLD_STEPS.length - 1)];
+}
+function resetMilk(instant) {
+  milkEl.style.transition = instant ? 'none' : 'height 340ms ease';
+  milkEl.style.height = '100%';
+  bottleEl.style.transition = instant ? 'none' : 'transform 340ms ease';
+  bottleEl.style.transform = 'rotate(0deg)';
+  if (instant) { void milkEl.offsetWidth; milkEl.style.transition = ''; bottleEl.style.transition = ''; }
+}
+function startHold() {
+  const s = byKey('bottle');
+  if (phase !== 'play' || s.done || holdTimer) return false;
+  const ms = holdThreshold();
+  s.el.classList.remove('hop', 'flash', 'back');
+  s.el.classList.add('holding');
+  babyEl.classList.add('drinking');
+  // 持续视觉：奶量一路往下掉 + 奶瓶倾斜（按着是对的，看得见）
+  milkEl.style.transition = 'height ' + ms + 'ms linear';
+  milkEl.style.height = '8%';
+  bottleEl.style.transition = 'transform ' + ms + 'ms ease-in';
+  bottleEl.style.transform = 'rotate(-34deg)';
+  fxGulp();
+  clearInterval(gulpTimer);
+  gulpTimer = setInterval(fxGulp, 340);   // 咕咚咕咚
+  holdTimer = setTimeout(() => {
+    holdTimer = null;
+    endHold(true);
+    completeStep(s);
+  }, ms);
+  clearTimeout(idleTimer);
+  return true;
+}
+// completed=true 表示喝完了（奶量停在空）；false 是松手太早，奶量退回去
+function endHold(completed) {
+  clearTimeout(holdTimer); holdTimer = null;
+  clearInterval(gulpTimer); gulpTimer = null;
+  holdPtr = null;
+  const s = byKey('bottle');
+  s.el.classList.remove('holding');
+  babyEl.classList.remove('drinking');
+  if (!completed) resetMilk(false);
+}
+// 松手太早：不算失败，只累计一次没成的尝试（攒够就替他喝完），没有惩罚音
+function cancelHold() {
+  const s = byKey('bottle');
+  const wasHolding = !!holdTimer;
+  // 已经喝完了就别把奶量退回去——喝完后那一下 pointerup 也会走到这里
+  endHold(s.done);
+  if (!wasHolding || s.done) return;
+  restart(s.el, 'hop');
+  later(() => s.el.classList.remove('hop'), 500);
+  fxSoft();
+  if (!registerMiss(s)) armIdle();
+}
+
+// ===== 拖放 / 点按 =====
+function bindItem(s) {
+  const el = s.el;
+  let sx = 0, sy = 0, dragging = false, moved = false, ptr = null;
+
+  el.addEventListener('pointerdown', (e) => {
+    hideHint();
+    if (phase === 'idle') unlock();          // 首戳既解锁也照常玩，不白按一下（同 basket）
+    if (phase !== 'play' || s.done) { fxSoft(); return; }
+    e.preventDefault();
+    if (s.mode === 'hold') {
+      if (holdPtr !== null) return;          // 第二根手指按上来：忽略，别重复计时
+      try { el.setPointerCapture(e.pointerId); } catch (err) {}
+      // 起不来就别占着 holdPtr——占住了这只奶瓶后面谁都按不动
+      if (startHold()) holdPtr = e.pointerId;
+      return;
+    }
+    if (dragging) return;                    // 同一件东西上的第二根手指
+    dragging = true;
+    moved = false;
+    ptr = e.pointerId;
+    sx = e.clientX; sy = e.clientY;
+    try { el.setPointerCapture(e.pointerId); } catch (err) {}
+    el.classList.remove('sway', 'hop', 'back', 'flash');
+    el.style.transition = 'none';
+    el.classList.add('lift');
+    setXY(el, 0, 0, ' scale(1.16)');
+    fxPick();
+    clearTimeout(idleTimer);
+  });
+
+  el.addEventListener('pointermove', (e) => {
+    if (!dragging || e.pointerId !== ptr) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (Math.abs(dx) + Math.abs(dy) > DRAG_THRESH) moved = true;
+    setXY(el, dx, dy, ' scale(1.16)');
+  });
+
+  function release(e) {
+    if (s.mode === 'hold') {
+      if (holdPtr !== null && e.pointerId !== holdPtr) return;
+      cancelHold();
+      return;
+    }
+    // cancel 也必须认 id：第二根手指落在同一件东西上被忽略、随后被系统收走发 cancel，
+    // 放行的话会把第一根手指正拖着的东西滑回去，之后再也不跟手
+    if (!dragging || e.pointerId !== ptr) return;
+    dragging = false;
+    ptr = null;
+    // 先量再摘 lift —— 一摘 lift，.art 的摇摆动画就回来了，量到的会是归位后的矩形
+    const r = el.getBoundingClientRect();
+    el.classList.remove('lift');
+    if (s.done || phase !== 'play') { slideBack(el); return; }
+
+    // 系统收走手势（第二根手指缩放 / 掌根碰到 / 来电）：孩子没做错任何事，
+    // 一律滑回原位，不记一次没成
+    if (e && e.type === 'pointercancel') { slideBack(el); armIdle(); return; }
+
+    // 点一下就完成的那件（小车）：点了 / 拖了都算数
+    if (s.mode === 'tap') { completeStep(s); return; }
+
+    const b = babyEl.getBoundingClientRect();
+    const pad = b.width * 0.34;    // 命中区外扩——2 岁的手不必精准，碰到宝宝就算
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const hit = cx > b.left - pad && cx < b.right + pad && cy > b.top - pad && cy < b.bottom + pad;
+    if (moved && hit) {
+      everDragged = true;
+      // 会拖了就把「拖」这一族的帮忙收回去，让他接着自己拖
+      STEPS.forEach(x => { if (x.mode === 'drag') x.assist = false; });
+      s.miss = 0;
+      completeStep(s);
+      return;
+    }
+    // 没送到宝宝身上——「只点没拖」和「拖了没到」都算一次没成的尝试
+    if (registerMiss(s)) return;
+    if (moved) {
+      slideBack(el);               // 拖偏了：滑回原位（无失败音，纯信息）
+      armIdle();
+      return;
+    }
+    resetXY(el);                   // 只点没拖：原地开心跳一下
+    restart(el, 'hop');
+    fxSoft();
+    later(() => { el.classList.remove('hop'); el.classList.add('sway'); }, 500);
+    armIdle();
+  }
+  function slideBack(el2) {
+    el2.style.transition = '';
+    el2.classList.add('back');
+    resetXY(el2);
+    later(() => { el2.classList.remove('back'); if (!s.done) el2.classList.add('sway'); }, 440);
+  }
+
+  el.addEventListener('pointerup', release);
+  el.addEventListener('pointercancel', release);
+  el.addEventListener('pointerleave', (e) => {
+    if (s.mode !== 'hold') return;
+    // 规范要求触摸指针在 pointerup 之后补发一发 pointerleave——不认 id 的话，
+    // 另一根手指戳一下奶瓶再抬起，就会掐掉拇指正按着的那口奶
+    if (holdPtr === null || e.pointerId !== holdPtr) return;
+    cancelHold();   // 只收自己那根：桌面鼠标划出元素那条兜底仍然成立
+  });
+  // capture 拿不到时 pointerup 可能丢在别处，用它兜住，别让东西永远粘在手上
+  el.addEventListener('lostpointercapture', (e) => {
+    if (dragging && e.pointerId === ptr) release(e);
+  });
+}
+STEPS.forEach(bindItem);
+
+// ===== 首戳解锁（iOS 音频必须在手势里起播）=====
+function unlock() {
+  if (phase !== 'idle') return;
+  ensureAudio();
+  uEl.muted = true;
+  uEl.play().then(() => { uEl.pause(); uEl.muted = false; }).catch(() => { uEl.muted = false; });
+  phase = 'play';
+  say(['intro.mp3']);
+  armIdle();
+}
+
+// ===== 戳喇叭 = 听一句还没做的事；戳宝宝 = 他笑一下（每次输入必反馈）=====
+function tapHorn() {
+  hideHint();
+  if (phase === 'idle') { unlock(); return; }
+  if (phase !== 'play') { fxSoft(); return; }
+  nudge();
+  armIdle();
+}
+function tapBaby() {
+  hideHint();
+  if (phase === 'idle') { unlock(); return; }
+  restart(babyEl, 'wiggle');
+  fxSoft();
+  if (phase === 'play') armIdle();
+}
+// touchstart 内 preventDefault 抑制 iOS 合成 click（一戳只触发一次）；
+// 只绑在这两个元素上，绝不在 document 上无条件 preventDefault —— bath 曾因此
+// 吞掉 #back 的合成 click，返回键在触屏上点不动。
+function bindTap(el, fn) {
+  el.addEventListener('click', fn, { passive: true });
+  el.addEventListener('touchstart', (e) => { fn(); e.preventDefault(); }, { passive: false });
+}
+bindTap(askEl, tapHorn);
+bindTap(babyEl, tapBaby);
+
+// 点画面任何空白处也能解锁音频（只挂 click、不 preventDefault，返回键照常工作）
+document.addEventListener('click', (e) => {
+  const t = e.target;
+  if (t && t.closest && t.closest('#back')) return;
+  hideHint();   // 第一下戳在空白处也算开局，那行字不能挂着不走（零文字 UI）
+  if (phase === 'idle') unlock();
+}, { passive: true });
+
+// ===== 键盘：三输入全通 =====
+// 按住任意键 ≥300ms = 长按喝奶；短按一下 = 做完下一件还没做的事。
+// 语义和手指那一路一模一样：短按在只剩奶瓶时也算一次「松手太早」，攒够自动喝完。
+let keyDownAt = 0, keyArm = null, keyHolding = false;
+document.addEventListener('keydown', (e) => {
+  if (e.repeat) return;              // 按住时 OS 的自动重复不是新的一次按键
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === 'Escape') {
+    if (!document.fullscreenElement) location.href = '../../';
+    return;
+  }
+  if ((e.key === 'f' || e.key === 'F') && !document.fullscreenElement) {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+    return;
+  }
+  e.preventDefault();
+  hideHint();
+  if (phase === 'idle') { unlock(); return; }
+  if (phase !== 'play') { fxSoft(); return; }
+  if (keyDownAt) return;             // 已经有一个键按着了
+  keyDownAt = Date.now();
+  clearTimeout(keyArm);
+  // 300ms 后才进长按视觉：短按不会把奶瓶的奶量白晃一下
+  keyArm = setTimeout(() => {
+    keyArm = null;
+    if (!keyDownAt) return;
+    if (byKey('bottle').done) return;
+    keyHolding = startHold();
+  }, 300);
+});
+document.addEventListener('keyup', (e) => {
+  if (!keyDownAt) return;
+  keyDownAt = 0;
+  clearTimeout(keyArm); keyArm = null;
+  if (keyHolding) { keyHolding = false; cancelHold(); return; }
+  if (phase !== 'play') return;
+  // 短按：做完下一件还没做的事；只剩奶瓶时按 hold 的语义记一次没成
+  const next = STEPS.find(s => !s.done && s.mode !== 'hold');
+  if (next) { completeStep(next); return; }
+  const b = byKey('bottle');
+  if (!b.done) {
+    restart(b.el, 'hop');
+    later(() => b.el.classList.remove('hop'), 500);
+    fxSoft();
+    if (!registerMiss(b)) armIdle();
+  }
+});
+
+// ===== 回前台 / 失焦：AudioContext 与语音链都可能被挂起；长按一律收住 =====
+function onResume() {
+  if (document.visibilityState === 'hidden') {
+    if (holdTimer) cancelHold();     // 切后台时正按着：别让它在看不见的地方偷偷喝完
+    keyDownAt = 0; clearTimeout(keyArm); keyArm = null;
+    return;
+  }
+  try { if (actx && actx.state === 'suspended') actx.resume(); } catch (e) {}
+  if (chain.length && qEl.paused) stepChain();   // 后台里 ended/error 不来，链卡在哪句从哪句续
+  if (phase === 'play') armIdle();
+}
+document.addEventListener('visibilitychange', onResume);
+window.addEventListener('pageshow', onResume);
+window.addEventListener('blur', () => {
+  if (holdTimer) cancelHold();
+  // keyHolding 不清的话，回来第一次短按会被当成「松手太早」白记一次没成
+  keyDownAt = 0; keyHolding = false; clearTimeout(keyArm); keyArm = null;
+});
+
+let hintGone = false;
+function hideHint() {
+  if (hintGone) return;
+  hintGone = true;
+  const h = document.getElementById('hint');
+  if (h) {
+    h.classList.add('gone');
+    setTimeout(() => h.remove(), 800);
+  }
+}
+
+// ===== 进入：摆好第一个宝宝，静候首戳 =====
+dealRound();
+
+// 空闲预载全部 mp3 进 HTTP 缓存——后续换 src 即播不等网络
+setTimeout(() => {
+  const files = ['intro.mp3', 'next.mp3'];
+  STEPS.forEach(s => files.push('ok_' + s.key + '.mp3', 'go_' + s.key + '.mp3'));
+  for (let i = 1; i <= BYE_COUNT; i++) files.push('bye_' + i + '.mp3');
+  files.forEach(f => fetch('audio/' + f).catch(() => {}));
+}, 600);
+</script>
+</body>
+</html>

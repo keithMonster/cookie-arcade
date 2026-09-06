@@ -96,6 +96,90 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* ====== Outing preview（出门喽：衣服落上身 → 奶瓶倾过来 → 帽子扣头顶 → 小车载着开出门）====== */
+  /* 四拍各一个不同动作 —— 这款的存在理由就是「四件不一样的事」，缩略图必须看得出不是同一个动作重复 */
+  .preview.outing {
+    background: linear-gradient(180deg, #fff8ec 0%, #ffeed5 64%, #e0b585 64%, #cb9760 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .preview.outing > span {
+    position: absolute;
+    line-height: 1;
+  }
+  .preview.outing .ou-kid {
+    left: 40%;
+    bottom: 14%;
+    width: 20%;
+    height: 46%;
+    animation: ou-kid 5.6s ease-in infinite;
+  }
+  .preview.outing .ou-kid > span {
+    position: absolute;
+    left: 50%;
+    line-height: 1;
+    transform: translateX(-50%);
+  }
+  .preview.outing .ou-baby   { top: 16%; font-size: 30px; z-index: 3; }
+  .preview.outing .ou-cap2   { top: -8%; font-size: 17px; z-index: 4; opacity: 0; animation: ou-cap2 5.6s ease-out infinite; }
+  .preview.outing .ou-shirt2 { top: 62%; font-size: 20px; z-index: 2; opacity: 0; animation: ou-shirt2 5.6s ease-out infinite; }
+  .preview.outing .ou-car    { top: 88%; font-size: 28px; z-index: 1; opacity: 0; animation: ou-car 5.6s ease-out infinite; }
+
+  .preview.outing .ou-shirt  { left: 10%; top: 14%; font-size: 20px; animation: ou-shirt 5.6s cubic-bezier(0.5, 0, 0.3, 1.1) infinite; }
+  .preview.outing .ou-bottle { right: 10%; top: 16%; font-size: 20px; animation: ou-bottle 5.6s ease-in-out infinite; }
+  .preview.outing .ou-cap    { left: 12%; bottom: 16%; font-size: 19px; animation: ou-cap 5.6s cubic-bezier(0.5, 0, 0.3, 1.1) infinite; }
+  .preview.outing .ou-spark  { left: 46%; top: 18%; font-size: 15px; opacity: 0; animation: ou-spark 5.6s ease-out infinite; }
+
+  /* 第一拍：衣服拖上身 */
+  @keyframes ou-shirt {
+    0%, 6%    { transform: translate(0, 0)       scale(1);   opacity: 1; }
+    17%       { transform: translate(150%, 96%)  scale(0.8); opacity: 1; }
+    21%, 100% { transform: translate(150%, 96%)  scale(0.5); opacity: 0; }
+  }
+  @keyframes ou-shirt2 {
+    0%, 17%   { opacity: 0; transform: translateX(-50%) scale(0.6); }
+    23%       { opacity: 1; transform: translateX(-50%) scale(1.16); }
+    28%, 88%  { opacity: 1; transform: translateX(-50%) scale(1); }
+    93%, 100% { opacity: 0; transform: translateX(-50%) scale(1); }
+  }
+  /* 第二拍：奶瓶倾过来，咕咚咕咚 */
+  @keyframes ou-bottle {
+    0%, 28%   { transform: rotate(0)               translate(0, 0);      opacity: 1; }
+    36%, 44%  { transform: rotate(-52deg)          translate(-46%, 34%); opacity: 1; }
+    50%, 100% { transform: rotate(-52deg) scale(0.5) translate(-46%, 34%); opacity: 0; }
+  }
+  /* 第三拍：帽子扣到头顶 */
+  @keyframes ou-cap {
+    0%, 52%   { transform: translate(0, 0)         scale(1);   opacity: 1; }
+    62%       { transform: translate(150%, -128%)  scale(0.8); opacity: 1; }
+    66%, 100% { transform: translate(150%, -128%)  scale(0.5); opacity: 0; }
+  }
+  @keyframes ou-cap2 {
+    0%, 62%   { opacity: 0; transform: translateX(-50%) scale(0.6); }
+    68%       { opacity: 1; transform: translateX(-50%) scale(1.18); }
+    72%, 88%  { opacity: 1; transform: translateX(-50%) scale(1); }
+    93%, 100% { opacity: 0; transform: translateX(-50%) scale(1); }
+  }
+  /* 第四拍：小车开到脚下，载着一起出门 */
+  @keyframes ou-car {
+    0%, 72%   { opacity: 0; transform: translateX(-160%) scale(0.8); }
+    78%, 88%  { opacity: 1; transform: translateX(-50%)  scale(1); }
+    93%, 100% { opacity: 0; transform: translateX(-50%)  scale(1); }
+  }
+  @keyframes ou-kid {
+    0%, 84%   { transform: translateX(0); opacity: 1; }
+    92%       { transform: translateX(180%); opacity: 1; }
+    93%, 99%  { transform: translateX(180%); opacity: 0; }
+    100%      { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes ou-spark {
+    0%, 20%   { opacity: 0; transform: translate(0, 0)      scale(0.4); }
+    26%       { opacity: 1; transform: translate(10%, -28%) scale(1.1); }
+    34%, 66%  { opacity: 0; transform: translate(10%, -28%) scale(0.9); }
+    72%       { opacity: 1; transform: translate(10%, -28%) scale(1.1); }
+    80%, 100% { opacity: 0; transform: translate(10%, -50%) scale(0.9); }
+  }
+
   /* ====== Sort preview（分一分：红球黄球轮流落进各自颜色的篮子）====== */
   /* ====== Helper preview（帮帮忙：架子上的苹果先落到小手里，再送进兔子怀里，心形弹出）====== */
   /* 两跳中间刻意停一拍——这款练的就是「一整句里的两件事」，缩略图也要看得出是两步不是一步 */
@@ -1060,8 +1144,25 @@
 <div class="title">COOKIE'S ARCADE</div>
 
 <div class="grid">
+  <!-- 1. outing 出门喽（v0.28 穿衣→喝奶→戴帽→上车 · 连续假装序列首款 + 长按首款）-->
+  <a class="tile" href="games/outing/" data-num="1">
+    <div class="preview outing">
+      <span class="ou-shirt">👕</span>
+      <span class="ou-bottle">🍼</span>
+      <span class="ou-cap">🧢</span>
+      <span class="ou-kid">
+        <span class="ou-cap2">🧢</span>
+        <span class="ou-baby">👶</span>
+        <span class="ou-shirt2">👕</span>
+        <span class="ou-car">🚗</span>
+      </span>
+      <span class="ou-spark">✨</span>
+    </div>
+    <div class="label"><span class="name">出门喽</span><span class="num">01</span></div>
+  </a>
+
   <!-- 1. helper 帮帮忙（v0.27 先拿 X 再给 Y · 两步指令首款）-->
-  <a class="tile" href="games/helper/" data-num="1">
+  <a class="tile" href="games/helper/" data-num="2">
     <div class="preview helper">
       <span class="he-plank"></span>
       <span class="he-item">🍎</span>
@@ -1069,22 +1170,22 @@
       <span class="he-pet">🐰</span>
       <span class="he-heart">❤️</span>
     </div>
-    <div class="label"><span class="name">帮帮忙</span><span class="num">01</span></div>
+    <div class="label"><span class="name">帮帮忙</span><span class="num">02</span></div>
   </a>
 
   <!-- 1. sort 分一分（v0.26 按颜色分进两个篮子 · 颜色配对 + 分类装两个篮首款）-->
-  <a class="tile" href="games/sort/" data-num="2">
+  <a class="tile" href="games/sort/" data-num="3">
     <div class="preview sort">
       <span class="so-ball b1"></span>
       <span class="so-ball b2"></span>
       <span class="so-bin l"></span>
       <span class="so-bin r"></span>
     </div>
-    <div class="label"><span class="name">分一分</span><span class="num">02</span></div>
+    <div class="label"><span class="name">分一分</span><span class="num">03</span></div>
   </a>
 
   <!-- 1. echo 跟着敲（v0.25 兔子敲一段、你敲同样多下 · 有结构的节奏首款）-->
-  <a class="tile" href="games/echo/" data-num="3">
+  <a class="tile" href="games/echo/" data-num="4">
     <div class="preview echo">
       <span class="ec-bunny">🐰</span>
       <span class="ec-dot d1"></span>
@@ -1092,32 +1193,32 @@
       <span class="ec-dot d3"></span>
       <span class="ec-drum">🥁</span>
     </div>
-    <div class="label"><span class="name">跟着敲</span><span class="num">03</span></div>
+    <div class="label"><span class="name">跟着敲</span><span class="num">04</span></div>
   </a>
 
   <!-- 1. train 排排队（v0.24 听指令按序上火车 · 序列记忆首款）-->
-  <a class="tile" href="games/train/" data-num="4">
+  <a class="tile" href="games/train/" data-num="5">
     <div class="preview train">
       <span class="tr-kid k1">🐱</span>
       <span class="tr-kid k2">🐶</span>
       <span class="tr-loco">🚂</span>
       <span class="tr-puff">💨</span>
     </div>
-    <div class="label"><span class="name">排排队</span><span class="num">04</span></div>
+    <div class="label"><span class="name">排排队</span><span class="num">05</span></div>
   </a>
 
   <!-- 1. basket 装一装（v0.23 拖水果进篮数数 · 数量感 + 拖放首款）-->
-  <a class="tile" href="games/basket/" data-num="5">
+  <a class="tile" href="games/basket/" data-num="6">
     <div class="preview basket">
       <span class="bk-fruit">🍎</span>
       <span class="bk-basket">🧺</span>
       <span class="bk-spark">✨</span>
     </div>
-    <div class="label"><span class="name">装一装</span><span class="num">05</span></div>
+    <div class="label"><span class="name">装一装</span><span class="num">06</span></div>
   </a>
 
   <!-- 2. sleep 睡觉觉（v0.22 盖被子哄睡 · 生活三部曲收尾）-->
-  <a class="tile" href="games/sleep/" data-num="6">
+  <a class="tile" href="games/sleep/" data-num="7">
     <div class="preview sleep">
       <span class="sl-moon">🌙</span>
       <span class="sl-star">⭐</span>
@@ -1125,51 +1226,51 @@
       <span class="sl-zzz">💤</span>
       <div class="sl-blanket"></div>
     </div>
-    <div class="label"><span class="name">睡觉觉</span><span class="num">06</span></div>
+    <div class="label"><span class="name">睡觉觉</span><span class="num">07</span></div>
   </a>
 
   <!-- 2. bath 洗澡澡（v0.20 擦除揭示 + 生活自理假装游戏）-->
-  <a class="tile" href="games/bath/" data-num="7">
+  <a class="tile" href="games/bath/" data-num="8">
     <div class="preview bath">
       <span class="bt-bub">🫧</span>
       <span class="bt-pet">🐶</span>
       <span class="bt-mud"></span>
       <span class="bt-shine">✨</span>
     </div>
-    <div class="label"><span class="name">洗澡澡</span><span class="num">07</span></div>
+    <div class="label"><span class="name">洗澡澡</span><span class="num">08</span></div>
   </a>
 
   <!-- 2. feed 喂一喂（v0.18 假装喂食）-->
-  <a class="tile" href="games/feed/" data-num="8">
+  <a class="tile" href="games/feed/" data-num="9">
     <div class="preview feed">
       <span class="fd-food">🐟</span>
       <span class="fd-pet">🐱</span>
       <span class="fd-heart">💛</span>
     </div>
-    <div class="label"><span class="name">喂一喂</span><span class="num">08</span></div>
+    <div class="label"><span class="name">喂一喂</span><span class="num">09</span></div>
   </a>
 
   <!-- 2. shapes 送回家（v0.18 形状配对）-->
-  <a class="tile" href="games/shapes/" data-num="9">
+  <a class="tile" href="games/shapes/" data-num="10">
     <div class="preview shapes">
       <div class="sh-roof"></div>
       <div class="sh-wall"><div class="sh-hole"></div></div>
       <div class="sh-ball"></div>
     </div>
-    <div class="label"><span class="name">送回家</span><span class="num">09</span></div>
+    <div class="label"><span class="name">送回家</span><span class="num">10</span></div>
   </a>
 
   <!-- 3. storybook 谁在门后面（v0.17 敲门躲猫猫交互绘本）-->
-  <a class="tile" href="games/storybook/" data-num="10">
+  <a class="tile" href="games/storybook/" data-num="11">
     <div class="preview storybook">
       <span class="sb-peek"></span>
       <span class="sb-door"></span>
     </div>
-    <div class="label"><span class="name">谁在门后面</span><span class="num">10</span></div>
+    <div class="label"><span class="name">谁在门后面</span><span class="num">11</span></div>
   </a>
 
   <!-- 2. scribble 画彩虹（最新 v0.16 手指拖拽留彩虹轨迹）-->
-  <a class="tile" href="games/scribble/" data-num="11">
+  <a class="tile" href="games/scribble/" data-num="12">
     <div class="preview scribble">
       <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -1186,20 +1287,20 @@
       </svg>
       <span class="sc-hand">🖐️</span>
     </div>
-    <div class="label"><span class="name">画彩虹</span><span class="num">11</span></div>
+    <div class="label"><span class="name">画彩虹</span><span class="num">12</span></div>
   </a>
 
   <!-- 3. peekaboo 躲猫猫（v0.15 掀盖找朋友）-->
-  <a class="tile" href="games/peekaboo/" data-num="12">
+  <a class="tile" href="games/peekaboo/" data-num="13">
     <div class="preview peekaboo">
       <div class="pk-nest"><div class="pk-emo">🐱</div><div class="pk-cover"><span class="knob">🫶</span></div></div>
       <div class="pk-nest"><div class="pk-emo">🐶</div><div class="pk-cover"><span class="knob">🫶</span></div></div>
     </div>
-    <div class="label"><span class="name">躲猫猫</span><span class="num">12</span></div>
+    <div class="label"><span class="name">躲猫猫</span><span class="num">13</span></div>
   </a>
 
   <!-- 4. find 找一找（v0.13 听音指认）-->
-  <a class="tile" href="games/find/" data-num="13">
+  <a class="tile" href="games/find/" data-num="14">
     <div class="preview find">
       <div class="horn">📢</div>
       <div class="frow">
@@ -1207,52 +1308,52 @@
         <div class="mini">🌙</div>
       </div>
     </div>
-    <div class="label"><span class="name">找一找</span><span class="num">13</span></div>
+    <div class="label"><span class="name">找一找</span><span class="num">14</span></div>
   </a>
 
   <!-- 5. words 学说话（v0.12）-->
-  <a class="tile" href="games/words/" data-num="14">
+  <a class="tile" href="games/words/" data-num="15">
     <div class="preview words">
       <div class="wc" data-w="苹果">🍎</div>
       <div class="wc" data-w="宝宝">👶</div>
       <div class="wc" data-w="月亮">🌙</div>
     </div>
-    <div class="label"><span class="name">学说话</span><span class="num">14</span></div>
+    <div class="label"><span class="name">学说话</span><span class="num">15</span></div>
   </a>
 
   <!-- 6. cars 车车（v0.8）-->
-  <a class="tile" href="games/cars/" data-num="15">
+  <a class="tile" href="games/cars/" data-num="16">
     <div class="preview cars">
       <div class="sun-em">☀️</div>
       <div class="car-em c1">🚌</div>
       <div class="car-em c2">🚒</div>
       <div class="car-em c3">🚜</div>
     </div>
-    <div class="label"><span class="name">车车</span><span class="num">15</span></div>
+    <div class="label"><span class="name">车车</span><span class="num">16</span></div>
   </a>
 
   <!-- 7. animals 动物园（v0.7）-->
-  <a class="tile" href="games/animals/" data-num="16">
+  <a class="tile" href="games/animals/" data-num="17">
     <div class="preview animals">
       <div class="quad">🐱</div>
       <div class="quad">🐮</div>
       <div class="quad">🐯</div>
       <div class="quad">🐸</div>
     </div>
-    <div class="label"><span class="name">动物园</span><span class="num">16</span></div>
+    <div class="label"><span class="name">动物园</span><span class="num">17</span></div>
   </a>
 
   <!-- 8. tw-summon 召唤鸟鸟（v0.6 Twirlywoos）-->
-  <a class="tile" href="games/tw-summon/" data-num="17">
+  <a class="tile" href="games/tw-summon/" data-num="18">
     <div class="preview tw tw-summon">
       <div class="tw-bird" data-char="bighoo"></div>
       <div class="tw-bird" data-char="toodloo"></div>
     </div>
-    <div class="label"><span class="name">召唤鸟鸟</span><span class="num">17</span></div>
+    <div class="label"><span class="name">召唤鸟鸟</span><span class="num">18</span></div>
   </a>
 
   <!-- 9. tw-bubbles 戳泡泡 (鸟) -->
-  <a class="tile" href="games/tw-bubbles/" data-num="18">
+  <a class="tile" href="games/tw-bubbles/" data-num="19">
     <div class="preview tw tw-bubbles">
       <div class="tw-bird" data-char="chick"></div>
       <div class="tw-bird" data-char="chickedy"></div>
@@ -1261,30 +1362,30 @@
       <div class="pv-bubble"></div>
       <div class="pv-bubble"></div>
     </div>
-    <div class="label"><span class="name">戳泡泡 (鸟)</span><span class="num">18</span></div>
+    <div class="label"><span class="name">戳泡泡 (鸟)</span><span class="num">19</span></div>
   </a>
 
   <!-- 10. tw-chorus 四鸟合唱 -->
-  <a class="tile" href="games/tw-chorus/" data-num="19">
+  <a class="tile" href="games/tw-chorus/" data-num="20">
     <div class="preview tw tw-chorus">
       <div class="chorus-cell"><div class="tw-bird" data-char="bighoo"></div></div>
       <div class="chorus-cell"><div class="tw-bird" data-char="toodloo"></div></div>
       <div class="chorus-cell"><div class="tw-bird" data-char="chickedy"></div></div>
       <div class="chorus-cell"><div class="tw-bird" data-char="chick"></div></div>
     </div>
-    <div class="label"><span class="name">四鸟合唱</span><span class="num">19</span></div>
+    <div class="label"><span class="name">四鸟合唱</span><span class="num">20</span></div>
   </a>
 
   <!-- 11. tw-mood 彩色心情 -->
-  <a class="tile" href="games/tw-mood/" data-num="20">
+  <a class="tile" href="games/tw-mood/" data-num="21">
     <div class="preview tw tw-mood">
       <div class="tw-bird" data-char="bighoo"></div>
     </div>
-    <div class="label"><span class="name">彩色心情</span><span class="num">20</span></div>
+    <div class="label"><span class="name">彩色心情</span><span class="num">21</span></div>
   </a>
 
   <!-- 12. tw-more More More More -->
-  <a class="tile" href="games/tw-more/" data-num="21">
+  <a class="tile" href="games/tw-more/" data-num="22">
     <div class="preview tw tw-more">
       <div class="tw-bird" data-char="chick"></div>
       <div class="tw-bird" data-char="chickedy"></div>
@@ -1294,11 +1395,11 @@
       <div class="pv-ball"></div>
       <div class="pv-ball"></div>
     </div>
-    <div class="label"><span class="name">More More More</span><span class="num">21</span></div>
+    <div class="label"><span class="name">More More More</span><span class="num">22</span></div>
   </a>
 
   <!-- 13. keyboard 键盘小子（v0.1 经典）-->
-  <a class="tile" href="games/keyboard/" data-num="22">
+  <a class="tile" href="games/keyboard/" data-num="23">
     <div class="preview keyboard">
       <svg class="kb-shape" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <path d="M50,5 A45,45 0 1,1 49.99,5 Z" fill="#ff5252"/>
@@ -1313,31 +1414,31 @@
         <path d="M50,85 C20,65 5,45 5,28 C5,15 15,5 28,5 C38,5 45,12 50,22 C55,12 62,5 72,5 C85,5 95,15 95,28 C95,45 80,65 50,85 Z" fill="#ba68c8"/>
       </svg>
     </div>
-    <div class="label"><span class="name">键盘小子</span><span class="num">22</span></div>
+    <div class="label"><span class="name">键盘小子</span><span class="num">23</span></div>
   </a>
 
   <!-- 14. bubbles 戳泡泡 -->
-  <a class="tile" href="games/bubbles/" data-num="23">
+  <a class="tile" href="games/bubbles/" data-num="24">
     <div class="preview bubbles">
       <div class="bubble"></div><div class="bubble"></div>
       <div class="bubble"></div><div class="bubble"></div>
     </div>
-    <div class="label"><span class="name">戳泡泡</span><span class="num">23</span></div>
+    <div class="label"><span class="name">戳泡泡</span><span class="num">24</span></div>
   </a>
 
   <!-- 15. drums 小鼓机 -->
-  <a class="tile" href="games/drums/" data-num="24">
+  <a class="tile" href="games/drums/" data-num="25">
     <div class="preview drums">
       <div class="pad"></div><div class="pad"></div>
       <div class="pad"></div><div class="pad"></div>
     </div>
-    <div class="label"><span class="name">小鼓机</span><span class="num">24</span></div>
+    <div class="label"><span class="name">小鼓机</span><span class="num">25</span></div>
   </a>
 
   <!-- 16. cascade 变色屏 -->
-  <a class="tile" href="games/cascade/" data-num="25">
+  <a class="tile" href="games/cascade/" data-num="26">
     <div class="preview cascade"></div>
-    <div class="label"><span class="name">变色屏</span><span class="num">25</span></div>
+    <div class="label"><span class="name">变色屏</span><span class="num">26</span></div>
   </a>
 </div>
 

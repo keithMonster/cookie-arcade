@@ -287,6 +287,24 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
     m["helper"]["yay_2.mp3"] = ("text", "真是个小帮手！", SENT_SPEED)
     m["helper"]["yay_3.mp3"] = ("text", "太棒啦，都做对了！", SENT_SPEED)
 
+    # outing 出门喽：穿衣 / 喝奶 / 戴帽 / 上车，四件不同的事做完就出门（连续假装序列首款）
+    # 语音绝不一次说完四步——一次说完就变成记忆测试，那是 helper 的活。
+    # ok_ 只报刚做完的这一件 / go_ 只引导还没做的其中一件（静默 8s 才说）
+    m["outing"] = {
+        "intro.mp3":     ("text", "宝宝要出门啦，帮帮他吧！", SENT_SPEED),
+        "ok_shirt.mp3":  ("text", "衣服穿好啦！", SENT_SPEED),
+        "ok_bottle.mp3": ("text", "咕咚咕咚，奶喝完啦！", SENT_SPEED),
+        "ok_cap.mp3":    ("text", "帽子戴好啦！", SENT_SPEED),
+        "ok_car.mp3":    ("text", "坐上小车车啦！", SENT_SPEED),
+        "go_shirt.mp3":  ("text", "给宝宝穿上衣服吧！", SENT_SPEED),
+        "go_bottle.mp3": ("text", "按住奶瓶，喝奶奶！", SENT_SPEED),
+        "go_cap.mp3":    ("text", "帽子给宝宝戴上！", SENT_SPEED),
+        "go_car.mp3":    ("text", "点点小车车！", SENT_SPEED),
+        "bye_1.mp3":     ("text", "都准备好啦，出发喽！", SENT_SPEED),
+        "bye_2.mp3":     ("text", "拜拜，出门喽！", SENT_SPEED),
+        "next.mp3":      ("text", "又有一个小宝宝要出门啦！", SENT_SPEED),
+    }
+
     return m
 
 
