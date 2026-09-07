@@ -46,7 +46,9 @@ async (page) => {
     await page.mouse.move(r.x+r.width/2,r.y+r.height/2); await page.mouse.down();
     await page.mouse.move(12,100,{steps:8}); await page.mouse.up();
   }
-  check('四次拖偏只辅助能接通的那块', (await state()).filled[0] && !(await state()).filled[1]);
+  check('四次拖偏只提示、不替孩子填洞', !(await state()).filled.some(Boolean));
+  await (await pieceFor(0)).click(); await gapAt(0).click();
+  check('拖偏后仍可用点选明确接路', (await state()).filled[0]);
   await reset();
   for (let i=0;i<2;i++) {
     const index = await page.evaluate(i=>pieces.findIndex(p=>p.type===holes[i].type),i);
@@ -70,7 +72,7 @@ async (page) => {
       const r=el.getBoundingClientRect();return {label:el.getAttribute('aria-label'),x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom};
     }));
     check(`${width}×${height}：目标完整可见且至少44px`,layout.every(r=>r.x>=0 && r.y>=0 && r.right<=width+1 && r.bottom<=height+1 && r.w>=44 && r.h>=44),layout);
-    if (width===390 || width===844 || width===1024 && height===768) await page.screenshot({path:`output/road/road-${width}x${height}.png`});
+    if (width===390 || width===844 || width===1024 && height===768) await page.screenshot({path:`output/playwright/road-${width}x${height}.png`});
   }
   await page.setViewportSize({width:390,height:844});
   const touch = await page.context().newCDPSession(page);

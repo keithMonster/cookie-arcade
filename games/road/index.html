@@ -125,8 +125,9 @@ function ripple(x, y) {
   const dot = document.createElement('i'); dot.className = 'ripple'; dot.style.left = `${x-16}px`; dot.style.top = `${y-16}px`;
   document.body.append(dot); setTimeout(() => dot.remove(), 550); tone(280);
 }
-function clearDrag() {
+function clearDrag(cancelled = true) {
   const old = drag; drag = null;
+  if (cancelled) { selected = null; focusGap = null; refreshHints(); }
   if (!old) return;
   old.ghost?.remove(); old.el.classList.remove('dragging');
   try { old.el.releasePointerCapture(old.id); } catch (_) {}
@@ -141,10 +142,10 @@ function refreshHints() {
 }
 function miss(g, copy = 'mismatch') {
   if (!g || phase !== 'build') return;
-  g.misses++; focusGap = g; bounce(g.el, true); tone(240); refreshHints();
+  g.misses++; bounce(g.el, true); tone(240); refreshHints();
   say(g.misses >= 2 ? 'hint' : copy);
 }
-// 所有输入与辅助完成都经此处，连通条件不靠输入分支各自维护。
+// 只有明确放置才调用；提示不选择目标，也不代替孩子接路。
 function completeStep(piece, gap) {
   if (phase !== 'build' || !pieces.includes(piece) || !holes.includes(gap) || gap.filled) return false;
   if (piece.type !== gap.type) { bounce(piece.el, true); miss(gap); return false; }
@@ -159,16 +160,12 @@ function choose(piece, feedback = true) {
   if (focusGap) completeStep(piece, focusGap);
 }
 function dropOutside(piece, x, y) {
-  piece.misses++; bounce(piece.el, true);
-  const fitting = holes.find(g => !g.filled && g.type === piece.type);
+  bounce(piece.el, true);
   const nearby = holes.filter(g => !g.filled).sort((a,b) => {
     const distance = g => { const r=g.el.getBoundingClientRect(); return Math.hypot(x-r.x-r.width/2,y-r.y-r.height/2); };
     return distance(a)-distance(b);
   });
-  const target = fitting || nearby[0];
-  miss(target, 'place');
-  // 只帮助已经选对路块但反复拖偏的动作，不把选错的路变成答案。
-  if (fitting && piece.misses >= 4) completeStep(piece, fitting);
+  miss(nearby[0], 'place');
 }
 function startDrag(event, piece) {
   if (drag || phase !== 'build' || (event.pointerType === 'mouse' && event.button !== 0)) return;
@@ -187,17 +184,19 @@ function moveDrag(event) {
 }
 function endDrag(event) {
   if (!drag || event.pointerId !== drag.id) return;
-  const old = drag; clearDrag();
+  const old = drag; clearDrag(false);
   if (phase !== 'build') return;
   if (!old.moved) { choose(old.piece, false); return; }
+  selected = null; focusGap = null; refreshHints();
   const gap = holes.find(g => { const r = g.el.getBoundingClientRect(); return !g.filled && event.clientX >= r.left-10 && event.clientX <= r.right+10 && event.clientY >= r.top-10 && event.clientY <= r.bottom+10; });
   if (gap) completeStep(old.piece, gap); else dropOutside(old.piece,event.clientX,event.clientY);
 }
 function tapGap(gap) {
   if (phase !== 'build' || drag) return;
   if (gap.filled) { bounce(gap.el); tone(620); return; }
+  focusGap = gap;
   if (selected) { completeStep(selected, gap); return; }
-  focusGap = gap; refreshHints(); bounce(gap.el); tone(340); say('choose');
+  refreshHints(); bounce(gap.el); tone(340); say('choose');
 }
 function tapCar() {
   bounce(car); tone(320, .18);
@@ -263,7 +262,7 @@ function dealRound() {
   const options = shuffled([...needed, ...shuffled(TYPES.filter(t => !needed.includes(t))).slice(0, 3-needed.length)]);
   options.forEach(type => {
     const el = document.createElement('button'); el.className = 'piece'; el.innerHTML = roadArt(type); el.setAttribute('aria-label',LABELS[type]);
-    const piece = {el,type,misses:0}; pieces.push(piece); tray.append(el);
+    const piece = {el,type}; pieces.push(piece); tray.append(el);
     el.addEventListener('pointerdown', e => startDrag(e,piece));
   });
   refreshHints(); if (begun) say('next');
