@@ -326,6 +326,19 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
         "next.mp3":      ("text", "又有一个小宝宝要出门啦！", SENT_SPEED),
     }
 
+    m["road"] = {
+        "intro.mp3": ("text", "小车要回家啦！选一块小路，把路口接起来吧！", SENT_SPEED),
+        "choose.mp3": ("text", "看看两边的路口，选一块能接上的小路！", SENT_SPEED),
+        "mismatch.mp3": ("text", "咦，路口没接上！看看小路要往哪边拐？", SENT_SPEED),
+        "hint.mp3": ("text", "试试亮起来的这块路，把两边接起来！", SENT_SPEED),
+        "place.mp3": ("text", "把小路放进空空的地方！", SENT_SPEED),
+        "wait.mp3": ("text", "嘟嘟！前面还没接通，再铺一块路吧！", SENT_SPEED),
+        "joined.mp3": ("text", "咔哒！这块路接上啦！", SENT_SPEED),
+        "go.mp3": ("text", "小路接通啦！嘟嘟，回家喽！", SENT_SPEED),
+        "home.mp3": ("text", "到家啦！谢谢你帮我修好小路！", SENT_SPEED),
+        "next.mp3": ("text", "又有一条小路要修啦！", SENT_SPEED),
+    }
+
     return m
 
 

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="../../apple-touch-icon.png" type="image/png">
+<title>修路喽 · Cookie's Arcade</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; }
+body { background: #102c36; color: #fff3d1; font-family: -apple-system, "PingFang SC", sans-serif; touch-action: none; user-select: none; -webkit-user-select: none; }
+button, a { touch-action: none; }
+button { padding: 0; border: 0; cursor: pointer; font: inherit; }
+#back { position: fixed; z-index: 30; top: max(12px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; background: #214450; color: #fff3d1; text-decoration: none; }
+#back svg { width: 24px; height: 24px; }
+main { height: 100%; height: 100dvh; max-width: 1100px; margin: auto; padding: max(72px, calc(env(safe-area-inset-top) + 60px)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 32px; }
+#board { position: relative; width: min(100%, 860px, calc((100dvh - 312px) * 5 / 3)); aspect-ratio: 5 / 3; flex-shrink: 0; border-radius: 28px; background: #83b5a0; box-shadow: 0 16px 36px #061c2866, 0 8px 0 #376b63; isolation: isolate; }
+.cell { position: absolute; width: 20%; height: 33.333333%; }
+.road-art { display: block; width: 100%; height: 100%; pointer-events: none; }
+.gap { border-radius: 20%; background: #537c6c; border: 3px dashed #f1dca1; box-shadow: inset 0 4px 8px #173a3633; transform: scale(.94); }
+.gap.filled { background: transparent; border: 0; box-shadow: none; transform: none; }
+.gap.focus { outline: 4px solid #f9dd83; outline-offset: 1px; }
+.glow { animation: glow 1.1s ease-in-out infinite; }
+@keyframes glow { 50% { filter: drop-shadow(0 0 12px #ffe28b); background-color: #b5d19b; } }
+#tray { display: flex; gap: 24px; padding: 16px 24px; border-radius: 28px; background: #234954; box-shadow: inset 0 2px 0 #46656a, 0 8px 16px #061c2833; }
+.piece { width: clamp(72px, 16vw, 112px); aspect-ratio: 1; border-radius: 24%; background: #a4c8b2; box-shadow: 0 6px 0 #52766a, 0 10px 16px #061c2844; transition: transform .18s, outline .18s; }
+.piece.selected { outline: 4px solid #ffe28b; outline-offset: 4px; transform: translateY(-8px); }
+.piece:focus-visible, #car:focus-visible { outline: 4px solid #ffe28b; outline-offset: 4px; }
+.piece.dragging { opacity: .4; }
+#ghost { position: fixed; z-index: 40; pointer-events: none; opacity: .95; transform: translate(-50%, -50%); }
+.plant { display: grid; place-items: center; font-size: clamp(24px, 5vw, 48px); opacity: .6; pointer-events: none; }
+#home { position: absolute; width: 16%; height: 27%; margin-left: 2%; margin-top: 2%; pointer-events: none; display: grid; place-items: center; }
+.house { position: relative; width: 68%; height: 65%; background: #ffe7ae; border-radius: 8%; box-shadow: 0 5px 0 #537c6c; }
+.house:before { content: ''; position: absolute; top: -38%; left: -16%; width: 132%; height: 58%; background: #ce7661; clip-path: polygon(50% 0, 100% 80%, 94% 100%, 6% 100%, 0 80%); }
+.house:after { content: ''; position: absolute; width: 30%; height: 45%; bottom: 0; left: 35%; border-radius: 50% 50% 0 0; background: #547770; }
+#car { position: absolute; z-index: 10; width: 20%; height: 33.333333%; background: none; transform-origin: center; will-change: left, top; }
+.car-body { position: absolute; width: 68%; height: 40%; top: 30%; left: 16%; border-radius: 24% 36% 36% 24%; background: #ed795e; box-shadow: 0 4px 0 #ba5448, 0 8px 12px #173a3655; }
+.car-body:before { content: ''; position: absolute; inset: 13% 30% 13% 24%; border-radius: 20%; background: #b8ded9; border-right: 7px solid #3a6971; border-left: 5px solid #3a6971; }
+.car-body:after { content: ''; position: absolute; right: 3%; top: 12%; width: 7%; height: 76%; border-radius: 4px; background: #ffe5a1; }
+.wheel { position: absolute; width: 20%; height: 15%; background: #243b44; border-radius: 4px; left: 27%; top: 22%; box-shadow: 0 0 0 1px #42616a; }
+.wheel:nth-child(2) { left: 62%; }
+.wheel:nth-child(3) { top: 64%; }
+.wheel:nth-child(4) { top: 64%; left: 62%; }
+.ripple { position: fixed; pointer-events: none; z-index: 25; width: 32px; height: 32px; border: 4px solid #ffe28b; border-radius: 50%; animation: ripple .5s ease-out forwards; }
+@keyframes ripple { to { transform: scale(2); opacity: 0; } }
+.confetti { position: fixed; pointer-events: none; z-index: 25; width: 12px; height: 16px; border-radius: 4px; animation: confetti 1.5s ease-out forwards; }
+@keyframes confetti { to { transform: translate(var(--dx), var(--dy)) rotate(240deg); opacity: 0; } }
+@media (max-width: 480px) { main { gap: 32px; } #tray { padding: 16px; gap: 16px; } .gap { border-width: 2px; } }
+@media (max-height: 740px) and (orientation: landscape) {
+  main { flex-direction: row; gap: 24px; padding-top: max(64px, env(safe-area-inset-top)); padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+  #board { width: min(calc(100% - 144px), calc((100dvh - 88px) * 5 / 3)); }
+  #tray { flex-direction: column; gap: 12px; padding: 12px; }
+  .piece { width: clamp(56px, 15vh, 80px); }
+}
+@media (prefers-reduced-motion: reduce) { .glow { animation-duration: 2s; } .piece { transition: none; } }
+</style>
+</head>
+<body>
+<a id="back" href="../../" aria-label="返回游戏台"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M5 12h14"/></svg></a>
+<main><div id="board" aria-label="给小车接通回家的路"></div><div id="tray" aria-label="三块可以选择的小路"></div></main>
+<script>
+'use strict';
+const board = document.querySelector('#board'), tray = document.querySelector('#tray');
+const ROUTES = [
+  {path: [[0,2],[1,2],[1,1],[2,1],[3,1],[4,1]], holes: [1,3]},
+  {path: [[0,0],[1,0],[1,1],[2,1],[3,1],[3,2],[4,2]], holes: [2,4]},
+  {path: [[0,1],[1,1],[1,0],[2,0],[3,0],[3,1],[4,1]], holes: [1,4]},
+  {path: [[0,2],[1,2],[2,2],[2,1],[2,0],[3,0],[4,0]], holes: [2,4]},
+  {path: [[0,0],[1,0],[2,0],[2,1],[3,1],[4,1]], holes: [1,3]},
+  {path: [[0,1],[1,1],[1,2],[2,2],[3,2],[3,1],[4,1]], holes: [1,4]}
+];
+const PORTS = {N:[50,0], E:[100,50], S:[50,100], W:[0,50]};
+const TYPES = ['EW','NS','EN','ES','NW','SW'];
+const LABELS = {EW:'横着的小路',NS:'竖着的小路',EN:'向上和右边拐的小路',ES:'向下和右边拐的小路',NW:'向上和左边拐的小路',SW:'向下和左边拐的小路'};
+const voice = new Audio(); voice.preload = 'auto'; voice.volume = .78;
+let audioContext, speechTimer, speechToken = 0, begun = false;
+let round = 0, routeIndex = -1, path = [], holes = [], pieces = [], selected = null, focusGap = null;
+let phase = 'build', drag = null, car, driveFrame = 0, nextTimer = 0, lastInput = Date.now();
+function shuffled(list) { return [...list].sort(() => Math.random() - .5); }
+function direction(a, b) { return b[0] > a[0] ? 'E' : b[0] < a[0] ? 'W' : b[1] > a[1] ? 'S' : 'N'; }
+function typeAt(points, i) {
+  return [i ? direction(points[i], points[i-1]) : 'W', i < points.length-1 ? direction(points[i], points[i+1]) : 'E'].sort().join('');
+}
+function roadArt(type) {
+  const [a,b] = type.split('').map(p => PORTS[p]);
+  const d = `M${a} Q50,50 ${b}`;
+  return `<svg class="road-art" viewBox="0 0 100 100" aria-hidden="true"><path d="${d}" fill="none" stroke="#53716e" stroke-width="46"/><path d="${d}" fill="none" stroke="#f8df9e" stroke-width="3" stroke-dasharray="9 9"/></svg>`;
+}
+function locate(el, point) { el.style.left = `${point[0]*20}%`; el.style.top = `${point[1]*100/3}%`; }
+function tone(freq = 420, duration = .12) {
+  if (!audioContext || audioContext.state !== 'running') return;
+  const oscillator = audioContext.createOscillator(), gain = audioContext.createGain();
+  oscillator.type = 'sine'; oscillator.frequency.value = freq;
+  gain.gain.setValueAtTime(.12, audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(.001, audioContext.currentTime + duration);
+  oscillator.connect(gain).connect(audioContext.destination); oscillator.start(); oscillator.stop(audioContext.currentTime + duration);
+}
+function stopSpeech() {
+  speechToken++; clearTimeout(speechTimer); voice.onended = voice.onerror = null; voice.pause();
+}
+function say(name) {
+  if (!begun) return;
+  stopSpeech(); const token = speechToken;
+  const done = () => { if (token === speechToken) { clearTimeout(speechTimer); voice.pause(); } };
+  voice.onended = voice.onerror = done; voice.src = `audio/${name}.mp3`;
+  speechTimer = setTimeout(done, 6000);
+  voice.play().catch(done);
+}
+function input() {
+  lastInput = Date.now();
+  if (!audioContext) { const AudioCtx = window.AudioContext || window.webkitAudioContext; if (AudioCtx) audioContext = new AudioCtx(); }
+  if (audioContext?.state === 'suspended') audioContext.resume().catch(() => {});
+  if (!begun) {
+    begun = true;
+    // 当前触点若已给出具体提示，就不用再抢播通用开场。
+    queueMicrotask(() => { if (!voice.src) say('intro'); });
+  }
+}
+function bounce(el, wrong = false) {
+  el.animate(wrong ? [{translate:'0'},{translate:'-8px',rotate:'-4deg'},{translate:'8px',rotate:'4deg'},{translate:'0'}] : [{scale:1},{scale:1.12},{scale:1}], {duration:380});
+}
+function ripple(x, y) {
+  const dot = document.createElement('i'); dot.className = 'ripple'; dot.style.left = `${x-16}px`; dot.style.top = `${y-16}px`;
+  document.body.append(dot); setTimeout(() => dot.remove(), 550); tone(280);
+}
+function clearDrag() {
+  const old = drag; drag = null;
+  if (!old) return;
+  old.ghost?.remove(); old.el.classList.remove('dragging');
+  try { old.el.releasePointerCapture(old.id); } catch (_) {}
+}
+function refreshHints() {
+  holes.forEach(g => { g.el.classList.toggle('glow', !g.filled && g.misses >= 2); g.el.classList.toggle('focus', !g.filled && focusGap === g); });
+  pieces.forEach(p => {
+    p.el.classList.toggle('selected', p === selected);
+    p.el.setAttribute('aria-pressed', String(p === selected));
+    p.el.classList.toggle('glow', holes.some(g => !g.filled && g.misses >= 2 && g.type === p.type));
+  });
+}
+function miss(g, copy = 'mismatch') {
+  if (!g || phase !== 'build') return;
+  g.misses++; focusGap = g; bounce(g.el, true); tone(240); refreshHints();
+  say(g.misses >= 2 ? 'hint' : copy);
+}
+// 所有输入与辅助完成都经此处，连通条件不靠输入分支各自维护。
+function completeStep(piece, gap) {
+  if (phase !== 'build' || !pieces.includes(piece) || !holes.includes(gap) || gap.filled) return false;
+  if (piece.type !== gap.type) { bounce(piece.el, true); miss(gap); return false; }
+  gap.filled = true; gap.el.className = 'cell gap filled'; gap.el.innerHTML = roadArt(piece.type);
+  gap.el.setAttribute('aria-label', '已经接好的小路');
+  selected = null; focusGap = null; refreshHints(); bounce(gap.el); tone(660);
+  if (holes.every(g => g.filled)) driveHome(); else say('joined');
+  return true;
+}
+function choose(piece, feedback = true) {
+  selected = piece; if (feedback) { bounce(piece.el); tone(460); } refreshHints();
+  if (focusGap) completeStep(piece, focusGap);
+}
+function dropOutside(piece, x, y) {
+  piece.misses++; bounce(piece.el, true);
+  const fitting = holes.find(g => !g.filled && g.type === piece.type);
+  const nearby = holes.filter(g => !g.filled).sort((a,b) => {
+    const distance = g => { const r=g.el.getBoundingClientRect(); return Math.hypot(x-r.x-r.width/2,y-r.y-r.height/2); };
+    return distance(a)-distance(b);
+  });
+  const target = fitting || nearby[0];
+  miss(target, 'place');
+  // 只帮助已经选对路块但反复拖偏的动作，不把选错的路变成答案。
+  if (fitting && piece.misses >= 4) completeStep(piece, fitting);
+}
+function startDrag(event, piece) {
+  if (drag || phase !== 'build' || (event.pointerType === 'mouse' && event.button !== 0)) return;
+  event.preventDefault(); input(); selected = piece; refreshHints(); tone(420); bounce(piece.el);
+  drag = {id:event.pointerId, el:piece.el, piece, x:event.clientX, y:event.clientY, moved:false, ghost:null};
+  try { piece.el.setPointerCapture(event.pointerId); } catch (_) {}
+}
+function moveDrag(event) {
+  if (!drag || event.pointerId !== drag.id) return;
+  if (!drag.moved && Math.hypot(event.clientX-drag.x, event.clientY-drag.y) > 10) {
+    drag.moved = true; drag.ghost = drag.el.cloneNode(true); drag.ghost.id = 'ghost';
+    drag.ghost.className = 'piece'; drag.ghost.removeAttribute('aria-pressed'); drag.ghost.tabIndex = -1;
+    drag.ghost.style.width = `${drag.el.getBoundingClientRect().width}px`; document.body.append(drag.ghost); drag.el.classList.add('dragging');
+  }
+  if (drag.ghost) { drag.ghost.style.left = `${event.clientX}px`; drag.ghost.style.top = `${event.clientY}px`; }
+}
+function endDrag(event) {
+  if (!drag || event.pointerId !== drag.id) return;
+  const old = drag; clearDrag();
+  if (phase !== 'build') return;
+  if (!old.moved) { choose(old.piece, false); return; }
+  const gap = holes.find(g => { const r = g.el.getBoundingClientRect(); return !g.filled && event.clientX >= r.left-10 && event.clientX <= r.right+10 && event.clientY >= r.top-10 && event.clientY <= r.bottom+10; });
+  if (gap) completeStep(old.piece, gap); else dropOutside(old.piece,event.clientX,event.clientY);
+}
+function tapGap(gap) {
+  if (phase !== 'build' || drag) return;
+  if (gap.filled) { bounce(gap.el); tone(620); return; }
+  if (selected) { completeStep(selected, gap); return; }
+  focusGap = gap; refreshHints(); bounce(gap.el); tone(340); say('choose');
+}
+function tapCar() {
+  bounce(car); tone(320, .18);
+  if (phase !== 'build' || drag) return;
+  const gap = holes.find(g => !g.filled);
+  if (gap) miss(gap, 'wait');
+}
+function confetti() {
+  const rect = car.getBoundingClientRect();
+  for (let i=0; i<20; i++) {
+    const bit = document.createElement('i'); bit.className = 'confetti';
+    bit.style.cssText = `left:${rect.x+rect.width/2}px;top:${rect.y+rect.height/2}px;background:${['#ffe28b','#ee947b','#c2e0d7'][i%3]};--dx:${(Math.random()-.5)*320}px;--dy:${(Math.random()-.65)*300}px`;
+    document.body.append(bit); setTimeout(() => bit.remove(), 1600);
+  }
+}
+function nextAfterCelebration(token) {
+  const started = performance.now();
+  const advance = () => {
+    if (token !== round) return;
+    if (!voice.paused && performance.now()-started < 6500) { nextTimer = setTimeout(advance, 200); return; }
+    dealRound();
+  };
+  nextTimer = setTimeout(advance, 3200);
+}
+function driveHome() {
+  phase = 'drive'; clearDrag(); pieces.forEach(p => { p.el.disabled = true; });
+  const token = round; let started = null;
+  const frame = now => {
+    if (token !== round) return;
+    if (started === null) { started = now; say('go'); }
+    const progress = Math.min((now-started)/600, path.length-1), i = Math.min(Math.floor(progress), path.length-2), f = progress-i;
+    const a = path[i], b = path[i+1]; locate(car, [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f]);
+    car.style.rotate = `${Math.atan2(b[1]-a[1], b[0]-a[0])*180/Math.PI}deg`;
+    if (progress < path.length-1) { driveFrame = requestAnimationFrame(frame); return; }
+    phase = 'celebrate'; confetti(); say('home'); tone(784, .25);
+    nextAfterCelebration(token);
+  };
+  driveFrame = requestAnimationFrame(frame);
+}
+function dealRound() {
+  round++; clearTimeout(nextTimer); cancelAnimationFrame(driveFrame); clearDrag(); stopSpeech();
+  selected = null; focusGap = null; phase = 'build'; lastInput = Date.now();
+  const candidates = ROUTES.map((_,i) => i).filter(i => i !== routeIndex);
+  routeIndex = round === 1 ? 0 : candidates[Math.floor(Math.random()*candidates.length)];
+  const layout = ROUTES[routeIndex]; path = layout.path; holes = []; pieces = []; board.replaceChildren(); tray.replaceChildren();
+  for (let y=0;y<3;y++) for (let x=0;x<5;x++) {
+    if (path.some(p => p[0] === x && p[1] === y)) continue;
+    const plant = document.createElement('div'); plant.className = 'cell plant'; plant.textContent = (x+y)%3 ? '🌼' : '🌳'; locate(plant,[x,y]); board.append(plant);
+  }
+  path.forEach((point,i) => {
+    const isGap = layout.holes.includes(i), el = document.createElement(isGap ? 'button' : 'div');
+    el.className = isGap ? 'cell gap' : 'cell'; locate(el,point); board.append(el);
+    if (!isGap) { el.innerHTML = roadArt(typeAt(path,i)); return; }
+    const gap = {el, type:typeAt(path,i), filled:false, misses:0}; holes.push(gap);
+    el.setAttribute('aria-label', `第${holes.length}处缺口`);
+    el.addEventListener('pointerdown', e => { e.preventDefault(); input(); tapGap(gap); });
+  });
+  const home = document.createElement('div'); home.id = 'home'; home.innerHTML = '<div class="house"></div>'; locate(home,path[path.length-1]); board.append(home);
+  car = document.createElement('button'); car.id = 'car'; car.setAttribute('aria-label','小车');
+  car.innerHTML = '<i class="wheel"></i><i class="wheel"></i><i class="wheel"></i><i class="wheel"></i><span class="car-body"></span>'; locate(car,path[0]); board.append(car);
+  car.addEventListener('pointerdown', e => { e.preventDefault(); input(); tapCar(); });
+  const needed = [...new Set(holes.map(g => g.type))];
+  const options = shuffled([...needed, ...shuffled(TYPES.filter(t => !needed.includes(t))).slice(0, 3-needed.length)]);
+  options.forEach(type => {
+    const el = document.createElement('button'); el.className = 'piece'; el.innerHTML = roadArt(type); el.setAttribute('aria-label',LABELS[type]);
+    const piece = {el,type,misses:0}; pieces.push(piece); tray.append(el);
+    el.addEventListener('pointerdown', e => startDrag(e,piece));
+  });
+  refreshHints(); if (begun) say('next');
+}
+document.addEventListener('pointermove', moveDrag);
+document.addEventListener('pointerup', endDrag);
+document.addEventListener('pointercancel', e => { if (drag?.id === e.pointerId) clearDrag(); });
+document.addEventListener('lostpointercapture', e => { if (drag?.id === e.pointerId) clearDrag(); });
+document.addEventListener('pointerdown', e => {
+  if (e.target.closest('#back')) return;
+  input();
+  if (!e.target.closest('button')) ripple(e.clientX,e.clientY);
+});
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === 'Escape') { location.href = '../../'; return; }
+  if (e.key.toLowerCase() === 'f') { if (document.fullscreenElement) document.exitFullscreen?.(); else document.documentElement.requestFullscreen?.().catch(() => {}); return; }
+  if (e.key === 'Tab') return;
+  if (e.repeat) { e.preventDefault(); return; }
+  e.preventDefault(); input();
+  const focused = document.activeElement;
+  if ((e.key === 'Enter' || e.key === ' ') && focused?.id === 'back') { focused.click(); return; }
+  if (drag) { tone(320); return; }
+  if (phase !== 'build') { bounce(car); tone(480); return; }
+  if (e.key === 'Enter' || e.key === ' ') {
+    const piece = pieces.find(p => p.el === focused), gap = holes.find(g => g.el === focused);
+    if (piece) choose(piece); else if (gap) tapGap(gap); else tapCar();
+  } else if (/^[123]$/.test(e.key)) choose(pieces[Number(e.key)-1]);
+  else if (e.key.toLowerCase() === 'a') tapGap(holes[0]);
+  else if (e.key.toLowerCase() === 'b') tapGap(holes[1]);
+  else { ripple(innerWidth/2,innerHeight/2); }
+});
+document.addEventListener('visibilitychange', () => {
+  clearDrag();
+  if (document.hidden) stopSpeech(); else { lastInput = Date.now(); if (begun && phase === 'build') say('choose'); }
+});
+window.addEventListener('blur', clearDrag);
+window.addEventListener('resize', clearDrag);
+window.addEventListener('pagehide', () => { round++; clearTimeout(nextTimer); cancelAnimationFrame(driveFrame); stopSpeech(); clearDrag(); });
+window.addEventListener('pageshow', e => { if (e.persisted) dealRound(); });
+setInterval(() => {
+  if (!begun || document.hidden || drag || phase !== 'build' || Date.now()-lastInput < 9000) return;
+  const gap = holes.find(g => !g.filled); if (gap) { bounce(gap.el); tone(300); say('choose'); }
+  lastInput = Date.now();
+}, 1000);
+dealRound();
+</script>
+</body>
+</html>
