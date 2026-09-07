@@ -96,23 +96,32 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* ====== Outing preview（出门喽：衣服落上身 → 奶瓶倾过来 → 帽子扣头顶 → 小车载着开出门）====== */
-  /* 四拍各一个不同动作 —— 这款的存在理由就是「四件不一样的事」，缩略图必须看得出不是同一个动作重复 */
+  /* ====== Outing preview（出门喽 2.0：鞋子被脚弹回来 → 袜子发光穿上 → 鞋子才穿得进去 → 看窗外拿伞 → 出门）====== */
+  /* 这一款的存在理由是「先 A 才能 B」，缩略图必须演出那一次「被拦住」——
+     只演几件事依次做完，就跟一代画成一模一样了。tile 是宽扁的（约 480×170），
+     所以四件东西横着分列宝宝两侧、窗户挂在左边墙上，中间留给宝宝。 */
   .preview.outing {
-    background: linear-gradient(180deg, #fff8ec 0%, #ffeed5 64%, #e0b585 64%, #cb9760 100%);
+    background: linear-gradient(180deg, #fff8ec 0%, #ffeed5 62%, #e0b585 62%, #cb9760 100%);
     position: relative;
     overflow: hidden;
   }
-  .preview.outing > span {
-    position: absolute;
-    line-height: 1;
+  .preview.outing > span { position: absolute; line-height: 1; }
+  /* 墙上那扇窗：这一轮的条件写在这儿（缩略图固定下雨，所以该拿的是伞、不是旁边那顶帽子） */
+  .preview.outing .ou-win {
+    left: 9%; top: 12px;
+    width: 50px; height: 34px;
+    border-radius: 4px;
+    border: 3px solid #c98a4e;
+    background: linear-gradient(180deg, #a9bfcd, #7c93a6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
   }
   .preview.outing .ou-kid {
-    left: 40%;
-    bottom: 14%;
-    width: 20%;
-    height: 46%;
-    animation: ou-kid 5.6s ease-in infinite;
+    left: calc(50% - 17px);
+    bottom: 6%;
+    width: 34px;
+    height: 66%;
+    animation: ou-kid 7s ease-in infinite;
   }
   .preview.outing .ou-kid > span {
     position: absolute;
@@ -120,64 +129,83 @@
     line-height: 1;
     transform: translateX(-50%);
   }
-  .preview.outing .ou-baby   { top: 16%; font-size: 30px; z-index: 3; }
-  .preview.outing .ou-cap2   { top: -8%; font-size: 17px; z-index: 4; opacity: 0; animation: ou-cap2 5.6s ease-out infinite; }
-  .preview.outing .ou-shirt2 { top: 62%; font-size: 20px; z-index: 2; opacity: 0; animation: ou-shirt2 5.6s ease-out infinite; }
-  .preview.outing .ou-car    { top: 88%; font-size: 28px; z-index: 1; opacity: 0; animation: ou-car 5.6s ease-out infinite; }
-
-  .preview.outing .ou-shirt  { left: 10%; top: 14%; font-size: 20px; animation: ou-shirt 5.6s cubic-bezier(0.5, 0, 0.3, 1.1) infinite; }
-  .preview.outing .ou-bottle { right: 10%; top: 16%; font-size: 20px; animation: ou-bottle 5.6s ease-in-out infinite; }
-  .preview.outing .ou-cap    { left: 12%; bottom: 16%; font-size: 19px; animation: ou-cap 5.6s cubic-bezier(0.5, 0, 0.3, 1.1) infinite; }
-  .preview.outing .ou-spark  { left: 46%; top: 18%; font-size: 15px; opacity: 0; animation: ou-spark 5.6s ease-out infinite; }
-
-  /* 第一拍：衣服拖上身 */
-  @keyframes ou-shirt {
-    0%, 6%    { transform: translate(0, 0)       scale(1);   opacity: 1; }
-    17%       { transform: translate(150%, 96%)  scale(0.8); opacity: 1; }
-    21%, 100% { transform: translate(150%, 96%)  scale(0.5); opacity: 0; }
+  .preview.outing .ou-baby  { top: 2%;  font-size: 28px; z-index: 3; }
+  /* 一截小身子：光一个脑袋 + 一双脚丫悬在下面，缩略图里会看成两个不相干的东西 */
+  .preview.outing .ou-torso {
+    top: 32%; width: 22px; height: 34px; z-index: 1;
+    border-radius: 9px 9px 6px 6px;
+    background: linear-gradient(180deg, #ffe6cf, #f2bd91);
   }
-  @keyframes ou-shirt2 {
-    0%, 17%   { opacity: 0; transform: translateX(-50%) scale(0.6); }
-    23%       { opacity: 1; transform: translateX(-50%) scale(1.16); }
-    28%, 88%  { opacity: 1; transform: translateX(-50%) scale(1); }
+  .preview.outing .ou-feet  { top: 74%; font-size: 13px; z-index: 2; letter-spacing: 1px; }
+  .preview.outing .ou-sock2 { top: 72%; font-size: 12px; z-index: 3; opacity: 0; letter-spacing: 1px;
+                              animation: ou-sock2 7s ease-out infinite; }
+  .preview.outing .ou-shoe2 { top: 90%; font-size: 13px; z-index: 4; opacity: 0; letter-spacing: 1px;
+                              animation: ou-shoe2 7s ease-out infinite; }
+  .preview.outing .ou-umb2  { left: 104%; top: 32%; font-size: 16px; z-index: 4; opacity: 0;
+                              animation: ou-umb2 7s ease-out infinite; }
+  .preview.outing .ou-car   { top: 108%; font-size: 24px; z-index: 1; opacity: 0;
+                              animation: ou-car 7s ease-out infinite; }
+
+  /* 地上四件：鞋（先撞一次墙）/ 袜（发光后被穿上）/ 伞（对的那个）/ 帽（干扰项，一直躺着） */
+  .preview.outing .ou-shoe { left: calc(50% - 96px); top: 30%;    font-size: 19px;
+                             animation: ou-shoe 7s cubic-bezier(0.5, 0, 0.3, 1.1) infinite; }
+  .preview.outing .ou-sock { left: calc(50% - 58px); bottom: 12%; font-size: 18px;
+                             animation: ou-sock 7s cubic-bezier(0.5, 0, 0.3, 1.1) infinite; }
+  .preview.outing .ou-cap  { left: calc(50% + 46px); top: 30%;    font-size: 18px; opacity: 0.85; }
+  .preview.outing .ou-umb  { left: calc(50% + 86px); bottom: 12%; font-size: 19px;
+                             animation: ou-umb 7s cubic-bezier(0.5, 0, 0.3, 1.1) infinite; }
+
+  /* 第一拍：鞋子冲向脚丫，滑下来（被拦住了）；第三拍：袜子在了，这次真穿进去 */
+  @keyframes ou-shoe {
+    0%, 5%    { transform: translate(0, 0)      scale(1);   opacity: 1; }
+    13%       { transform: translate(84px, 46px) scale(0.9); opacity: 1; }
+    19%       { transform: translate(70px, 70px) scale(0.9) rotate(-30deg); opacity: 1; }
+    26%, 52%  { transform: translate(0, 0)      scale(1);   opacity: 1; }
+    60%       { transform: translate(84px, 52px) scale(0.9); opacity: 1; }
+    64%, 100% { transform: translate(84px, 52px) scale(0.5); opacity: 0; }
+  }
+  /* 第二拍：袜子先发光（该先做的那件），再被穿上 */
+  @keyframes ou-sock {
+    0%, 28%   { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255, 226, 110, 0)); opacity: 1; }
+    34%, 40%  { transform: scale(1.3);  filter: drop-shadow(0 0 9px rgba(255, 226, 110, 1)); opacity: 1; }
+    48%       { transform: translate(48px, -6px) scale(0.9); filter: none; opacity: 1; }
+    52%, 100% { transform: translate(48px, -6px) scale(0.5); filter: none; opacity: 0; }
+  }
+  @keyframes ou-sock2 {
+    0%, 48%   { opacity: 0; transform: translateX(-50%) scale(0.6); }
+    54%       { opacity: 1; transform: translateX(-50%) scale(1.25); }
+    58%, 88%  { opacity: 1; transform: translateX(-50%) scale(1); }
     93%, 100% { opacity: 0; transform: translateX(-50%) scale(1); }
   }
-  /* 第二拍：奶瓶倾过来，咕咚咕咚 */
-  @keyframes ou-bottle {
-    0%, 28%   { transform: rotate(0)               translate(0, 0);      opacity: 1; }
-    36%, 44%  { transform: rotate(-52deg)          translate(-46%, 34%); opacity: 1; }
-    50%, 100% { transform: rotate(-52deg) scale(0.5) translate(-46%, 34%); opacity: 0; }
-  }
-  /* 第三拍：帽子扣到头顶 */
-  @keyframes ou-cap {
-    0%, 52%   { transform: translate(0, 0)         scale(1);   opacity: 1; }
-    62%       { transform: translate(150%, -128%)  scale(0.8); opacity: 1; }
-    66%, 100% { transform: translate(150%, -128%)  scale(0.5); opacity: 0; }
-  }
-  @keyframes ou-cap2 {
+  @keyframes ou-shoe2 {
     0%, 62%   { opacity: 0; transform: translateX(-50%) scale(0.6); }
-    68%       { opacity: 1; transform: translateX(-50%) scale(1.18); }
-    72%, 88%  { opacity: 1; transform: translateX(-50%) scale(1); }
+    67%       { opacity: 1; transform: translateX(-50%) scale(1.25); }
+    71%, 88%  { opacity: 1; transform: translateX(-50%) scale(1); }
     93%, 100% { opacity: 0; transform: translateX(-50%) scale(1); }
   }
-  /* 第四拍：小车开到脚下，载着一起出门 */
+  /* 第四拍：窗外在下雨，所以拿走的是伞、不是旁边那顶帽子 */
+  @keyframes ou-umb {
+    0%, 70%   { transform: translate(0, 0)        scale(1);   opacity: 1; }
+    77%       { transform: translate(-52px, -30px) scale(0.9); opacity: 1; }
+    81%, 100% { transform: translate(-52px, -30px) scale(0.5); opacity: 0; }
+  }
+  @keyframes ou-umb2 {
+    0%, 77%   { opacity: 0; transform: scale(0.6); }
+    81%       { opacity: 1; transform: scale(1.25); }
+    84%, 88%  { opacity: 1; transform: scale(1); }
+    93%, 100% { opacity: 0; transform: scale(1); }
+  }
+  /* 第五拍：小车开到脚下，载着一起出门 */
   @keyframes ou-car {
-    0%, 72%   { opacity: 0; transform: translateX(-160%) scale(0.8); }
-    78%, 88%  { opacity: 1; transform: translateX(-50%)  scale(1); }
-    93%, 100% { opacity: 0; transform: translateX(-50%)  scale(1); }
+    0%, 84%   { opacity: 0; transform: translateX(-160%) scale(0.8); }
+    88%, 91%  { opacity: 1; transform: translateX(-50%)  scale(1); }
+    94%, 100% { opacity: 0; transform: translateX(-50%)  scale(1); }
   }
   @keyframes ou-kid {
-    0%, 84%   { transform: translateX(0); opacity: 1; }
-    92%       { transform: translateX(180%); opacity: 1; }
-    93%, 99%  { transform: translateX(180%); opacity: 0; }
-    100%      { transform: translateX(0); opacity: 1; }
-  }
-  @keyframes ou-spark {
-    0%, 20%   { opacity: 0; transform: translate(0, 0)      scale(0.4); }
-    26%       { opacity: 1; transform: translate(10%, -28%) scale(1.1); }
-    34%, 66%  { opacity: 0; transform: translate(10%, -28%) scale(0.9); }
-    72%       { opacity: 1; transform: translate(10%, -28%) scale(1.1); }
-    80%, 100% { opacity: 0; transform: translate(10%, -50%) scale(0.9); }
+    0%, 89%   { transform: translateX(0);    opacity: 1; }
+    94%       { transform: translateX(420%); opacity: 1; }
+    95%, 99%  { transform: translateX(420%); opacity: 0; }
+    100%      { transform: translateX(0);    opacity: 1; }
   }
 
   /* ====== Sort preview（分一分：红球黄球轮流落进各自颜色的篮子）====== */
@@ -1144,19 +1172,23 @@
 <div class="title">COOKIE'S ARCADE</div>
 
 <div class="grid">
-  <!-- 1. outing 出门喽（v0.28 穿衣→喝奶→戴帽→上车 · 连续假装序列首款 + 长按首款）-->
+  <!-- 1. outing 出门喽（v0.29 先 A 才能 B + 看天气选东西 · 依赖推理 / 条件判断首款）-->
   <a class="tile" href="games/outing/" data-num="1">
     <div class="preview outing">
-      <span class="ou-shirt">👕</span>
-      <span class="ou-bottle">🍼</span>
+      <span class="ou-win">🌧️</span>
+      <span class="ou-shoe">👟</span>
+      <span class="ou-sock">🧦</span>
+      <span class="ou-umb">☂️</span>
       <span class="ou-cap">🧢</span>
       <span class="ou-kid">
-        <span class="ou-cap2">🧢</span>
         <span class="ou-baby">👶</span>
-        <span class="ou-shirt2">👕</span>
+        <span class="ou-torso"></span>
+        <span class="ou-feet">🦶</span>
+        <span class="ou-sock2">🧦🧦</span>
+        <span class="ou-shoe2">👟👟</span>
+        <span class="ou-umb2">☂️</span>
         <span class="ou-car">🚗</span>
       </span>
-      <span class="ou-spark">✨</span>
     </div>
     <div class="label"><span class="name">出门喽</span><span class="num">01</span></div>
   </a>

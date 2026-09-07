@@ -287,19 +287,40 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
     m["helper"]["yay_2.mp3"] = ("text", "真是个小帮手！", SENT_SPEED)
     m["helper"]["yay_3.mp3"] = ("text", "太棒啦，都做对了！", SENT_SPEED)
 
-    # outing 出门喽：穿衣 / 喝奶 / 戴帽 / 上车，四件不同的事做完就出门（连续假装序列首款）
-    # 语音绝不一次说完四步——一次说完就变成记忆测试，那是 helper 的活。
-    # ok_ 只报刚做完的这一件 / go_ 只引导还没做的其中一件（静默 8s 才说）
+    # outing 出门喽 2.0：先 A 才能 B（依赖推理）+ 看窗外天气选东西（条件判断）
+    # 语音绝不一次说完全部步骤——一次说完就变成记忆测试，那是 helper 的活。
+    # 三类各司其职，别混：
+    #   ok_   报刚做完的这一件（不预告下一步）
+    #   go_   静默 8s 时引导「现在能做的」其中一件（被前置挡住的一句都不说）
+    #   hint_ 顺序 / 条件错了当场给的那句信息——说的是「还缺什么」，不是「你错了」
     m["outing"] = {
         "intro.mp3":     ("text", "宝宝要出门啦，帮帮他吧！", SENT_SPEED),
-        "ok_shirt.mp3":  ("text", "衣服穿好啦！", SENT_SPEED),
-        "ok_bottle.mp3": ("text", "咕咚咕咚，奶喝完啦！", SENT_SPEED),
-        "ok_cap.mp3":    ("text", "帽子戴好啦！", SENT_SPEED),
-        "ok_car.mp3":    ("text", "坐上小车车啦！", SENT_SPEED),
-        "go_shirt.mp3":  ("text", "给宝宝穿上衣服吧！", SENT_SPEED),
-        "go_bottle.mp3": ("text", "按住奶瓶，喝奶奶！", SENT_SPEED),
-        "go_cap.mp3":    ("text", "帽子给宝宝戴上！", SENT_SPEED),
-        "go_car.mp3":    ("text", "点点小车车！", SENT_SPEED),
+        # 开局与换轮先播天气：这一轮该拿帽子还是雨伞，答案就在这一句和那扇窗里
+        "weather_sun.mp3":  ("text", "看看窗外，今天是大晴天！", SENT_SPEED),
+        "weather_rain.mp3": ("text", "看看窗外，今天下雨啦！", SENT_SPEED),
+        "ok_shirt.mp3":    ("text", "衣服穿好啦！", SENT_SPEED),
+        "ok_sock.mp3":     ("text", "袜子穿好啦！", SENT_SPEED),
+        "ok_shoe.mp3":     ("text", "鞋子穿好啦！", SENT_SPEED),
+        "ok_bottle.mp3":   ("text", "咕咚咕咚，奶喝完啦！", SENT_SPEED),
+        "ok_towel.mp3":    ("text", "嘴巴擦干净啦！", SENT_SPEED),
+        "ok_cap.mp3":      ("text", "帽子戴好啦！", SENT_SPEED),
+        "ok_umbrella.mp3": ("text", "小雨伞拿好啦！", SENT_SPEED),
+        "ok_car.mp3":      ("text", "坐上小车车啦！", SENT_SPEED),
+        "go_shirt.mp3":    ("text", "给宝宝穿上衣服吧！", SENT_SPEED),
+        "go_sock.mp3":     ("text", "给宝宝穿上小袜子！", SENT_SPEED),
+        "go_shoe.mp3":     ("text", "袜子穿好啦，穿鞋子吧！", SENT_SPEED),
+        "go_bottle.mp3":   ("text", "按住奶瓶，喝奶奶！", SENT_SPEED),
+        "go_towel.mp3":    ("text", "奶喝完啦，擦擦小嘴巴！", SENT_SPEED),
+        "go_cap.mp3":      ("text", "帽子给宝宝戴上！", SENT_SPEED),
+        "go_umbrella.mp3": ("text", "下雨啦，拿上小雨伞！", SENT_SPEED),
+        "go_weather.mp3":  ("text", "看看窗外，要拿什么呀？", SENT_SPEED),
+        "go_car.mp3":      ("text", "点点小车车！", SENT_SPEED),
+        # 顺序 / 条件不对时的信息反馈（无惩罚音，只把还缺的那一件说出来）
+        "hint_sock_first.mp3": ("text", "鞋子穿不上，先穿袜子呀！", SENT_SPEED),
+        "hint_milk_first.mp3": ("text", "先喝奶奶，再擦嘴巴！", SENT_SPEED),
+        "hint_rain.mp3":       ("text", "外面下雨啦，要拿什么呀？", SENT_SPEED),
+        "hint_sun.mp3":        ("text", "今天大太阳，要戴什么呀？", SENT_SPEED),
+        "hint_car_wait.mp3":   ("text", "等一等，还没准备好呢！", SENT_SPEED),
         "bye_1.mp3":     ("text", "都准备好啦，出发喽！", SENT_SPEED),
         "bye_2.mp3":     ("text", "拜拜，出门喽！", SENT_SPEED),
         "next.mp3":      ("text", "又有一个小宝宝要出门啦！", SENT_SPEED),

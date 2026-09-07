@@ -39,9 +39,9 @@
     position: fixed;
     right: 0;
     bottom: 0;
-    width: 13vmin;
-    height: 42vmin;
-    border-radius: 8vmin 0 0 0;
+    width: 11vmin;
+    height: 36vmin;
+    border-radius: 7vmin 0 0 0;
     background: linear-gradient(100deg, #c98a4e, #a96c34);
     box-shadow: inset 0.8vmin 0 0 rgba(255, 255, 255, 0.28), -1.2vmin 0 2.4vmin rgba(90, 50, 10, 0.18);
     z-index: 1;
@@ -50,10 +50,10 @@
   .door::after {
     content: '';
     position: absolute;
-    left: 2.4vmin;
+    left: 2.2vmin;
     top: 52%;
-    width: 2vmin;
-    height: 2vmin;
+    width: 1.8vmin;
+    height: 1.8vmin;
     border-radius: 50%;
     background: #ffe08a;
     box-shadow: 0 0 0 0.4vmin rgba(120, 70, 20, 0.25);
@@ -63,7 +63,8 @@
 
   /* 舞台：inset 用 safe-area 真正缩进（padding 缩不动绝对定位的孩子——
      它们的包含块是 padding box，加 padding 不挪原点，喇叭会被顶到屏幕外）。
-     四件东西一律以画面中心为锚用 vmin 排，横屏也不会被拉成一字长蛇。 */
+     八件东西排左右两列各四行：横排用 max()/min() 夹一道 vmin 上限，
+     iPad 横屏不会被拉成两条贴边的长队；竖屏用百分比自然收窄。 */
   .field {
     position: fixed;
     top: env(safe-area-inset-top, 0px);
@@ -73,14 +74,71 @@
     z-index: 2;
   }
 
-  /* ===== 顶部喇叭：戳一下听一句还没做的事（零文字 UI，只有图形）===== */
-  .ask {
+  /* ===== 窗户：这一轮的天气条件就写在这儿，帽子还是雨伞全看它 ===== */
+  .window {
     position: absolute;
     left: 50%;
-    top: 2vmin;
+    top: 2.5%;
     transform: translateX(-50%);
-    width: 20vmin;
-    height: 12vmin;
+    width: 25vmin;
+    height: 17vmin;
+    border-radius: 1.8vmin;
+    border: 1.4vmin solid #c98a4e;
+    box-shadow: 0 1vmin 1.6vmin rgba(90, 50, 10, 0.2), inset 0 0 2vmin rgba(255, 255, 255, 0.5);
+    overflow: hidden;
+    cursor: pointer;
+    z-index: 6;
+  }
+  .window.sunny { background: linear-gradient(180deg, #cdefff, #8ed3f6); }
+  .window.rainy { background: linear-gradient(180deg, #a9bfcd, #7c93a6); }
+  /* 窗棂：十字压在天气图案下面，看着才像一扇窗 */
+  .window .bar-v, .window .bar-h { position: absolute; background: #c98a4e; z-index: 1; }
+  .window .bar-v { left: 50%; top: 0; width: 1.1vmin; height: 100%; transform: translateX(-50%); }
+  .window .bar-h { top: 50%; left: 0; height: 1.1vmin; width: 100%; transform: translateY(-50%); }
+  .window .wx {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 9.5vmin;
+    line-height: 1;
+    z-index: 3;
+    filter: drop-shadow(0 0.6vmin 0.6vmin rgba(60, 40, 10, 0.25));
+  }
+  .window.sunny .wx { animation: wx-shine 3.4s ease-in-out infinite; }
+  @keyframes wx-shine {
+    0%, 100% { transform: translate(-50%, -50%) scale(1)    rotate(0); }
+    50%      { transform: translate(-50%, -50%) scale(1.12) rotate(8deg); }
+  }
+  .window .rain { display: none; position: absolute; inset: 0; z-index: 2; }
+  .window.rainy .rain { display: block; }
+  .window .rain i {
+    position: absolute;
+    top: -20%;
+    width: 0.7vmin;
+    height: 3.6vmin;
+    border-radius: 0.4vmin;
+    background: rgba(255, 255, 255, 0.8);
+    animation: rain-fall 820ms linear infinite;
+  }
+  @keyframes rain-fall {
+    0%   { transform: translateY(0)    rotate(9deg); opacity: 0; }
+    18%  { opacity: 1; }
+    100% { transform: translateY(24vmin) rotate(9deg); opacity: 0; }
+  }
+  /* 播报天气 / 戳窗户：整扇窗弹一下，把注意力拉过去 */
+  .window.tell { animation: win-pop 700ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes win-pop {
+    0%, 100% { transform: translateX(-50%) scale(1); }
+    45%      { transform: translateX(-50%) scale(1.16); }
+  }
+
+  /* ===== 右上喇叭：戳一下听一句「现在能做的事」（零文字 UI，只有图形）===== */
+  .ask {
+    position: absolute;
+    right: 1.5%;
+    top: 2%;
+    width: 18vmin;
+    height: 13vmin;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -88,7 +146,7 @@
     z-index: 30;
   }
   .ask .horn {
-    font-size: clamp(28px, 7.5vmin, 62px);
+    font-size: clamp(26px, 7vmin, 58px);
     line-height: 1;
     filter: drop-shadow(0 0.8vmin 0.8vmin rgba(120, 70, 20, 0.2));
   }
@@ -105,9 +163,9 @@
     left: 50%;
     top: 50%;
     width: 34vmin;
-    height: 40vmin;
+    height: 38vmin;
     margin-left: -17vmin;
-    margin-top: -20vmin;
+    margin-top: -19vmin;
     z-index: 10;
     cursor: pointer;
     will-change: transform;
@@ -119,10 +177,36 @@
     transform: translate(-50%, -50%);
     filter: drop-shadow(0 1vmin 0.8vmin rgba(120, 70, 20, 0.24));
   }
-  .baby .face  { top: 32%; font-size: 21vmin; z-index: 3; }
-  .baby .cap   { top: 7%;  font-size: 11vmin; z-index: 4; opacity: 0; }
-  .baby .shirt { top: 66%; font-size: 14vmin; z-index: 2; opacity: 0; }
-  .baby .ride  { top: 88%; font-size: 20vmin; z-index: 1; opacity: 0; }
+  .baby .face   { top: 29%; font-size: 19vmin; z-index: 5; }
+  .baby .cap    { top: 4%;  font-size: 10vmin; z-index: 6; }
+  .baby .torso  { top: 63%; width: 15vmin; height: 12vmin; z-index: 2; filter: none; }
+  .baby .shirt  { top: 63%; font-size: 14vmin; z-index: 3; }
+  .baby .legs   { top: 86%; width: 13.5vmin; height: 6vmin; z-index: 2; filter: none; }
+  .baby .sock   { top: 88%; font-size: 5.4vmin; z-index: 3; letter-spacing: 0.6vmin; }
+  .baby .shoe   { top: 96%; font-size: 6.4vmin; z-index: 4; letter-spacing: 0.4vmin; }
+  .baby .hand   { left: 88%; top: 52%; font-size: 11vmin; z-index: 6; }
+  .baby .ride   { top: 106%; font-size: 18vmin; z-index: 1; }
+  /* 一截连着脑袋和脚丫的小身子，衣服正好盖在它上面 */
+  .baby .torso {
+    border-radius: 5vmin 5vmin 3.4vmin 3.4vmin;
+    background: linear-gradient(180deg, #ffe6cf, #f6c9a3);
+    box-shadow: inset 0 0.5vmin 0 rgba(255, 255, 255, 0.6), 0 0.8vmin 0.8vmin rgba(120, 70, 20, 0.18);
+  }
+  /* 身上这几件默认全是空的：穿上 / 戴上 / 坐进去时才由 .on 亮出来 */
+  .baby .worn, .baby .ride { opacity: 0; }
+  /* 光脚丫：袜子和鞋子得有个落点，不然「穿到脚上」这件事看不见 */
+  .baby .legs::before, .baby .legs::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 5.6vmin;
+    height: 6vmin;
+    border-radius: 2.4vmin 2.4vmin 2.9vmin 2.9vmin;
+    background: linear-gradient(180deg, #ffdfc4, #f4c096);
+    box-shadow: inset 0 0.4vmin 0 rgba(255, 255, 255, 0.6), 0 0.8vmin 0.8vmin rgba(120, 70, 20, 0.2);
+  }
+  .baby .legs::before { left: 0; }
+  .baby .legs::after  { right: 0; }
   /* 穿上 / 戴上 / 坐进去：从上方轻轻落位 */
   .baby .worn.on, .baby .ride.on { animation: put-on 620ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
   @keyframes put-on {
@@ -138,11 +222,34 @@
     60%      { transform: translateY(0)      rotate(5deg); }
     85%      { transform: translateY(-1vmin) rotate(-2deg); }
   }
+  /* 拿错东西：摇头（信息，不是惩罚——没有难听的声音）*/
+  .baby.shake { animation: baby-shake 640ms ease-in-out; }
+  @keyframes baby-shake {
+    0%, 100% { transform: rotate(0); }
+    20%      { transform: rotate(-7deg); }
+    50%      { transform: rotate(7deg); }
+    80%      { transform: rotate(-4deg); }
+  }
+  /* 光脚穿鞋：晃脚丫「鞋子穿不上」*/
+  .baby.kick .legs { animation: legs-kick 700ms ease-in-out; }
+  @keyframes legs-kick {
+    0%, 100% { transform: translate(-50%, -50%) rotate(0); }
+    22%      { transform: translate(-50%, -56%) rotate(-13deg); }
+    55%      { transform: translate(-50%, -50%) rotate(12deg); }
+    80%      { transform: translate(-50%, -54%) rotate(-6deg); }
+  }
   /* 喝奶时轻轻仰头 */
   .baby.drinking .face { animation: baby-drink 900ms ease-in-out infinite alternate; }
   @keyframes baby-drink {
     0%   { transform: translate(-50%, -50%) rotate(0); }
     100% { transform: translate(-50%, -52%) rotate(-7deg); }
+  }
+  /* 擦嘴：小脸左右蹭两下再亮一下 */
+  .baby.wipe .face { animation: face-wipe 760ms ease-in-out; }
+  @keyframes face-wipe {
+    0%, 100% { transform: translate(-50%, -50%) rotate(0)      scale(1); }
+    25%      { transform: translate(-53%, -50%) rotate(-6deg)  scale(1.05); }
+    60%      { transform: translate(-47%, -50%) rotate(6deg)   scale(1.05); }
   }
   /* 出门：连人带车往右开出画面 */
   .baby.drive { animation: baby-drive 1700ms cubic-bezier(0.5, 0, 0.75, 0.3) forwards; }
@@ -152,13 +259,13 @@
     100% { transform: translate(120vw, 0)  rotate(2deg); }
   }
 
-  /* ===== 四件东西 ===== */
+  /* ===== 八件东西 ===== */
   .item {
     position: absolute;
-    width: 20vmin;
-    height: 20vmin;
-    margin-left: -10vmin;
-    margin-top: -10vmin;
+    width: 19vmin;
+    height: 19vmin;
+    margin-left: -9.5vmin;
+    margin-top: -9.5vmin;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -168,17 +275,31 @@
     will-change: transform;
   }
   .item .art {
-    font-size: 14vmin;
+    font-size: 12vmin;
     line-height: 1;
     display: block;
     filter: drop-shadow(0 1vmin 0.9vmin rgba(120, 70, 20, 0.26));
     will-change: transform;
   }
-  /* 待操作时轻轻摇——「我可以动」的暗示 */
+  /* 顺序有先后，但「能做的事」始终不止一件——只有还做不了的才不摇 */
   .item.sway .art { animation: art-sway 3s ease-in-out infinite; }
   @keyframes art-sway {
     0%, 100% { transform: rotate(-5deg) translateY(0); }
     50%      { transform: rotate(5deg)  translateY(-1.2vmin); }
+  }
+  /* 同一步错第 2 次：该先做的那件持续脉冲发光，直到它被做掉（不是闪两下就没）*/
+  .item.glow .art { animation: item-glow 1100ms ease-in-out infinite; }
+  @keyframes item-glow {
+    0%, 100% { transform: scale(1);    filter: drop-shadow(0 0 0.5vmin rgba(255, 214, 80, 0.55)); }
+    50%      { transform: scale(1.15); filter: drop-shadow(0 0 3vmin   rgba(255, 226, 110, 1)); }
+  }
+  /* 车按早了：还没做完的一起晃一下 */
+  .item.jiggle .art { animation: item-jiggle 760ms ease-in-out; }
+  @keyframes item-jiggle {
+    0%, 100% { transform: translateX(0)       rotate(0); }
+    20%      { transform: translateX(-1.6vmin) rotate(-10deg); }
+    55%      { transform: translateX(1.6vmin)  rotate(10deg); }
+    80%      { transform: translateX(-0.8vmin) rotate(-5deg); }
   }
   /* 只点没拖：原地开心跳一下（每次输入必反馈）*/
   .item.hop .art { animation: art-hop 480ms cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -186,16 +307,19 @@
     0%, 100% { transform: translateY(0)       scale(1); }
     40%      { transform: translateY(-3vmin)  scale(1.14); }
   }
-  .item.lift { cursor: grabbing; z-index: 320; }
-  .item.lift .art { animation: none; filter: drop-shadow(0 0 2.6vmin rgba(255, 226, 110, 0.95)); }
-  .item.back { transition: transform 420ms cubic-bezier(0.3, 0.9, 0.4, 1.1); }
-  .item.done { pointer-events: none; }
-  /* 闲置 8s / 戳喇叭：还没做的那件亮两下（一次性，不是持续发光）*/
-  .item.flash { animation: item-flash 900ms ease-in-out 2; }
+  /* 闲置 8s / 戳喇叭：能做的其中一件亮两下（一次性，与持续发光的 glow 分开）*/
+  .item.flash .art { animation: item-flash 900ms ease-in-out 2; }
   @keyframes item-flash {
     0%, 100% { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255, 226, 110, 0)); }
     50%      { transform: scale(1.18); filter: drop-shadow(0 0 3.2vmin rgba(255, 226, 110, 1)); }
   }
+  /* lift 必须排在所有会动的类之后，拿在手里时一律不再自己动 */
+  .item.lift { cursor: grabbing; z-index: 320; }
+  .item.lift .art { animation: none; filter: drop-shadow(0 0 2.6vmin rgba(255, 226, 110, 0.95)); }
+  .item.back { transition: transform 420ms cubic-bezier(0.3, 0.9, 0.4, 1.1); }
+  .item.done { pointer-events: none; }
+  /* 天气拿错太多次：那件不对的悄悄退场，只剩对的（永远以成功收尾）*/
+  .item.gone { pointer-events: none; opacity: 0; transition: opacity 460ms ease; }
   /* 换宝宝：淡出淡入 */
   .item.deal-out { animation: deal-out 320ms ease-in forwards; }
   .item.deal-in  { animation: deal-in  460ms cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
@@ -214,21 +338,21 @@
     display: block;
     /* 用 padding 不用瓶身的 margin-top —— margin 会外溢（margin collapsing），
        父容器顶边跟着下移，奶嘴反而落进瓶身里 */
-    padding-top: 5.4vmin;
+    padding-top: 4.6vmin;
     transform-origin: 50% 16%;
   }
   .bottle {
     position: relative;
     display: block;
-    width: 11.5vmin;
-    height: 17vmin;
-    border-radius: 2.8vmin 2.8vmin 3.4vmin 3.4vmin;
+    width: 10vmin;
+    height: 14.4vmin;
+    border-radius: 2.4vmin 2.4vmin 3vmin 3vmin;
     /* 空的那半是淡蓝玻璃、奶是暖白——两者必须一眼分得出，
        奶量往下掉才是「按着是对的」的那个可见信号 */
     background: linear-gradient(180deg, #b7d6e6, #93bcd2);
     box-shadow:
-      inset 0 0 0 0.6vmin rgba(255, 255, 255, 0.95),
-      0 0 0 0.35vmin rgba(120, 80, 40, 0.16),
+      inset 0 0 0 0.55vmin rgba(255, 255, 255, 0.95),
+      0 0 0 0.32vmin rgba(120, 80, 40, 0.16),
       0 1vmin 1.4vmin rgba(120, 70, 20, 0.24);
     overflow: hidden;
   }
@@ -237,8 +361,8 @@
     left: 50%;
     top: 0.4vmin;
     transform: translateX(-50%);
-    width: 4vmin;
-    height: 4.8vmin;
+    width: 3.5vmin;
+    height: 4.2vmin;
     border-radius: 50% 50% 34% 34%;
     background: #f6cfae;
     box-shadow: 0 0.5vmin 0.8vmin rgba(120, 70, 20, 0.2);
@@ -246,11 +370,11 @@
   .bottle-ring {
     position: absolute;
     left: 50%;
-    top: 3.8vmin;
+    top: 3.3vmin;
     transform: translateX(-50%);
-    width: 7.4vmin;
-    height: 2.4vmin;
-    border-radius: 1.2vmin;
+    width: 6.4vmin;
+    height: 2.1vmin;
+    border-radius: 1.1vmin;
     background: linear-gradient(180deg, #ffd7e6, #f7aec8);
   }
   .milk {
@@ -271,18 +395,42 @@
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 26vmin;
-    height: 26vmin;
-    margin: -13vmin 0 0 -13vmin;
+    width: 24vmin;
+    height: 24vmin;
+    margin: -12vmin 0 0 -12vmin;
     border-radius: 50%;
     background: radial-gradient(circle, rgba(255, 226, 110, 0.6), rgba(255, 226, 110, 0) 68%);
     pointer-events: none;
     animation: halo-grow 1700ms ease-out forwards;
   }
   @keyframes halo-grow {
-    0%   { transform: scale(0.4); opacity: 0.35; }
+    0%   { transform: scale(0.4);  opacity: 0.35; }
     100% { transform: scale(1.15); opacity: 1; }
   }
+
+  /* ===== 毛巾：CSS 画的（emoji 里没有一眼认得出的毛巾）===== */
+  .towel {
+    position: relative;
+    display: block;
+    width: 11.6vmin;
+    height: 9vmin;
+    border-radius: 1.6vmin;
+    background: linear-gradient(180deg, #ffffff, #e9f3fb);
+    box-shadow:
+      inset 0 0 0 0.5vmin rgba(255, 255, 255, 0.95),
+      0 0 0 0.3vmin rgba(120, 80, 40, 0.12),
+      0 1vmin 1.2vmin rgba(120, 70, 20, 0.24);
+    overflow: hidden;
+  }
+  .towel::before, .towel::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1.3vmin;
+  }
+  .towel::before { top: 2.4vmin; background: #7fc4e8; }
+  .towel::after  { top: 5.3vmin; background: #f7aec8; }
 
   /* 庆祝粒子（同 helper）*/
   .spark {
@@ -315,6 +463,32 @@
   }
   #back:active { color: rgba(80, 50, 30, 0.9); }
 
+  /* 竖屏（iPhone）：vmin 跟着窄边走，同样的数值比横屏小一圈——整体放大一档。
+     竖屏纵向不缺地方，缺的是横向，所以只放大尺寸、两列反而再往中间收一点。 */
+  @media (orientation: portrait) {
+    .item      { width: 23vmin; height: 23vmin; margin-left: -11.5vmin; margin-top: -11.5vmin; }
+    .item .art { font-size: 15vmin; }
+    .baby      { width: 38vmin; height: 43vmin; margin-left: -19vmin; margin-top: -21.5vmin; }
+    .baby .face  { font-size: 22vmin; }
+    .baby .cap   { font-size: 12vmin; }
+    .baby .shirt { font-size: 16vmin; }
+    .baby .torso { width: 17vmin; height: 13.6vmin; }
+    .baby .legs  { width: 15vmin; height: 6.8vmin; }
+    .baby .sock  { font-size: 6.2vmin; }
+    .baby .shoe  { font-size: 7.3vmin; }
+    .baby .hand  { font-size: 13vmin; }
+    .baby .ride  { font-size: 21vmin; }
+    .window { width: 30vmin; height: 20vmin; }
+    .window .wx { font-size: 11vmin; }
+    .bottle     { width: 12vmin; height: 17.3vmin; }
+    .bottle-set { padding-top: 5.5vmin; }
+    .bottle-top { width: 4.2vmin; height: 5vmin; }
+    .bottle-ring{ top: 4vmin; width: 7.7vmin; height: 2.5vmin; }
+    .towel      { width: 14vmin; height: 10.8vmin; }
+    .towel::before { top: 2.9vmin; height: 1.6vmin; }
+    .towel::after  { top: 6.4vmin; height: 1.6vmin; }
+  }
+
   #hint {
     position: fixed;
     bottom: 18px;
@@ -336,17 +510,30 @@
 <div class="door" id="door"></div>
 
 <div class="field" id="field">
+  <div class="window sunny" id="win">
+    <span class="bar-v"></span><span class="bar-h"></span>
+    <span class="rain"><i style="left:16%; animation-delay:0ms"></i><i style="left:38%; animation-delay:240ms"></i><i style="left:62%; animation-delay:120ms"></i><i style="left:84%; animation-delay:360ms"></i></span>
+    <span class="wx" id="wx">☀️</span>
+  </div>
+
   <div class="ask" id="ask"><span class="horn">📢</span></div>
 
   <div class="baby" id="baby">
     <span class="ride"       id="ride"></span>
+    <span class="legs"       id="legs"></span>
+    <span class="torso"      id="torso"></span>
     <span class="worn shirt" id="wornShirt"></span>
+    <span class="worn sock"  id="wornSock"></span>
+    <span class="worn shoe"  id="wornShoe"></span>
     <span class="face"       id="face">👶</span>
     <span class="worn cap"   id="wornCap"></span>
+    <span class="worn hand"  id="wornHand"></span>
   </div>
 
-  <div class="item sway" id="itShirt"  style="left:calc(50% - 32vmin); top:calc(50% - 26vmin)"><span class="art"></span></div>
-  <div class="item sway" id="itBottle" style="left:calc(50% + 32vmin); top:calc(50% - 26vmin)">
+  <div class="item sway" id="itShirt"><span class="art"></span></div>
+  <div class="item sway" id="itSock"><span class="art"></span></div>
+  <div class="item sway" id="itShoe"><span class="art"></span></div>
+  <div class="item sway" id="itBottle">
     <span class="art bottle-wrap">
       <span class="bottle-set" id="bottleSet">
         <span class="bottle"><span class="milk" id="milkEl"></span></span>
@@ -355,41 +542,66 @@
       </span>
     </span>
   </div>
-  <div class="item sway" id="itCap" style="left:calc(50% - 32vmin); top:calc(50% + 26vmin)"><span class="art"></span></div>
-  <div class="item sway" id="itCar" style="left:calc(50% + 32vmin); top:calc(50% + 26vmin)"><span class="art"></span></div>
+  <div class="item sway" id="itTowel"><span class="art"><span class="towel"></span></span></div>
+  <div class="item sway" id="itCap"><span class="art"></span></div>
+  <div class="item sway" id="itUmbrella"><span class="art"></span></div>
+  <div class="item sway" id="itCar"><span class="art"></span></div>
 </div>
 
 <a id="back" href="../../">←</a>
-<div id="hint">帮宝宝准备好，就出门啦</div>
+<div id="hint">看看窗外，帮宝宝准备好</div>
 
 <script>
-// ===== 出门喽：穿衣 / 喝奶 / 戴帽 / 上车，四件不同的事做完就出门 =====
-// 全台第一款「连续假装序列」（能力线 #6）——已有的多步游戏都是同一个动作重复
-// （装一装拖 5 个水果、分一分拖 6 个玩具），这一款每一步的动作都不一样：
-// 拖 → 长按 → 拖 → 点。顺序完全不判对错，碰哪件就做哪件。
-// 也是全台第一次用「长按」这个交互（他自己泡奶时长按解锁热水器，比这难）。
+// ===== 出门喽 2.0：先 A 才能 B =====
+// 一代四件事任意顺序、碰哪件都对，对 26 个月的 Cookie 等于零挑战（Keith 原话：
+// 「没有什么逻辑、没有推理、没有顺序」）。二代加两样他生活里真在学的东西：
+//   ① 依赖推理：先穿袜子才穿得上鞋、先喝完奶才擦得了嘴、全都准备好才能上车
+//   ② 条件判断：窗外下雨拿伞、大太阳戴帽——同一个动作，看条件选不同的东西
+// 顺序错了给的是信息不是惩罚：东西滑回去 + 一句话告诉他缺什么，同一步错第 2 次
+// 就让该先做的那件持续发光。全程零失败态，每一轮一定出得了门。
 
-// 四步的定义：key 与 audio/ 文件名一一对应
 // mode: 'drag' 拖到宝宝身上 / 'hold' 按住不放 / 'tap' 点一下
-const STEPS = [
-  { key: 'shirt',  mode: 'drag', slot: 'itShirt'  },
-  { key: 'bottle', mode: 'hold', slot: 'itBottle' },
-  { key: 'cap',    mode: 'drag', slot: 'itCap'    },
-  { key: 'car',    mode: 'tap',  slot: 'itCar'    },
+// needs: 前置依赖（这些做完之前，做它只会得到一句提示）
+// gear: 只有当天天气匹配时才是「要拿的那件」，另一件是这一轮的干扰项
+// last: 收尾那一步（要求前面全部做完）
+const ITEMS = [
+  { key: 'shirt',    mode: 'drag', needs: [] },
+  { key: 'sock',     mode: 'drag', needs: [] },
+  { key: 'shoe',     mode: 'drag', needs: ['sock'] },
+  { key: 'bottle',   mode: 'hold', needs: [] },
+  { key: 'towel',    mode: 'drag', needs: ['bottle'] },
+  { key: 'cap',      mode: 'drag', needs: [], gear: 'sun' },
+  { key: 'umbrella', mode: 'drag', needs: [], gear: 'rain' },
+  { key: 'car',      mode: 'tap',  needs: [], last: true },
 ];
 
-// 换宝宝时整套换皮：角色 + 衣服 + 帽子 + 车（同一批东西看腻了就换个样）
-const BABIES = ['👶', '🐻', '🐰', '🐱', '🐶', '🐼'];
-const SHIRTS = ['👕', '👚', '🧥', '🦺'];
-const CAPS   = ['🧢', '👒', '⛑️', '🎩'];
-const CARS   = ['🚗', '🚙', '🚕', '🛺'];
+// 换宝宝时整套换皮：角色 + 衣服 + 鞋 + 帽子 + 伞 + 车
+const BABIES    = ['👶', '🐻', '🐰', '🐱', '🐶', '🐼'];
+const SHIRTS    = ['👕', '👚', '🧥', '🦺'];
+const SOCKS     = ['🧦'];
+const SHOES     = ['👟', '👞', '🥾'];   // 不收 🩴：拖鞋不用穿袜子，跟这一款的规则打架
+const CAPS      = ['🧢', '👒', '⛑️', '🎩'];
+const UMBRELLAS = ['☂️', '🌂'];
+const CARS      = ['🚗', '🚙', '🚕', '🛺'];
 
-const IDLE_MS      = 8000;   // 静默这么久：还没做的其中一件发光 + 说一句引导
+// 八个落位：左右两列各四行。横排夹一道 vmin 上限，横屏时不会贴到屏幕两边去
+const COL_L = 'max(11%, calc(50% - 34vmin))';
+const COL_R = 'min(89%, calc(50% + 34vmin))';
+// 第一行压到 22%：iPad 竖屏（768×1024 / 834×1194）时右上格正落在右上角喇叭的
+// 热区底下，而 .ask 的 z-index 30 盖过 .item 的 20 —— 娃去拿那件东西，
+// 拿到的是一句语音提示。四行一起重新等距，横屏那三档间距不能因此被压破。
+const ROWS  = ['22%', '43%', '64%', '85%'];
+const SLOTS = [];
+ROWS.forEach(y => { SLOTS.push({ x: COL_L, y: y }); SLOTS.push({ x: COL_R, y: y }); });
+
+const IDLE_MS      = 8000;   // 静默这么久：能做的其中一件亮两下 + 说一句引导
 const HOLD_STEPS   = [1700, 1250, 900];  // 长按阈值：松手早了不惩罚，下次门槛降一档
 const HOLD_ASSIST  = 350;    // 已经试过 3 次：碰一下就算喝完
 const DRAG_THRESH  = 14;     // 2 岁的手指按下去就会蹭，阈值给宽（同 basket/helper）
 const CHAIN_DOG_MS = 5500;   // 语音链看门狗：iOS 被 Siri/锁屏打断时 ended/error 都不来
 const BYE_COUNT    = 2;
+const GLOW_AT      = 2;      // 同一步错到第几次开始持续发光
+const DECOY_OUT_AT = 4;      // 天气拿错到第几次让干扰项退场
 
 // ===== 语音：单 Audio 元素 + 换 src（iOS 解锁后非手势链 play 才可靠）=====
 const qEl = new Audio();
@@ -435,51 +647,77 @@ const fxOn    = () => { tone('triangle', 660, 660, 0.22, 0.16);              // 
 const fxGulp  = () => tone('sine', 210, 130, 0.2, 0.16);                     // 咕咚
 const fxCar   = () => { tone('sawtooth', 90, 190, 0.12, 0.5);                // 引擎
                         tone('square', 520, 660, 0.1, 0.18, 0.12); };
+// 顺序不对 / 拿错东西：两声柔和的下行「咦——」，不是刺耳的错误音
+const fxNope  = () => { tone('sine', 480, 380, 0.13, 0.2);
+                        tone('sine', 380, 300, 0.12, 0.24, 0.16); };
+const fxHonk  = () => { tone('square', 330, 330, 0.12, 0.16);                // 叭叭
+                        tone('square', 300, 300, 0.12, 0.2, 0.22); };
 const fxParty = () => [523, 659, 784, 1047].forEach((f, i) => tone('triangle', f, f, 0.2, 0.36, i * 0.09));
 
 // ===== DOM =====
-const fieldEl  = document.getElementById('field');
-const askEl    = document.getElementById('ask');
-const babyEl   = document.getElementById('baby');
-const faceEl   = document.getElementById('face');
-const rideEl   = document.getElementById('ride');
+const askEl       = document.getElementById('ask');
+const babyEl      = document.getElementById('baby');
+const faceEl      = document.getElementById('face');
+const rideEl      = document.getElementById('ride');
+const winEl       = document.getElementById('win');
+const wxEl        = document.getElementById('wx');
 const wornCapEl   = document.getElementById('wornCap');
 const wornShirtEl = document.getElementById('wornShirt');
-const milkEl   = document.getElementById('milkEl');
-const bottleEl = document.getElementById('bottleSet');
-const doorEl   = document.getElementById('door');
+const wornSockEl  = document.getElementById('wornSock');
+const wornShoeEl  = document.getElementById('wornShoe');
+const wornHandEl  = document.getElementById('wornHand');
+const milkEl      = document.getElementById('milkEl');
+const bottleEl    = document.getElementById('bottleSet');
+const doorEl      = document.getElementById('door');
 
-STEPS.forEach(s => { s.el = document.getElementById(s.slot); s.art = s.el.querySelector('.art'); });
-const byKey = k => STEPS.find(s => s.key === k);
+ITEMS.forEach(it => {
+  it.el = document.getElementById('it' + it.key[0].toUpperCase() + it.key.slice(1));
+  it.art = it.el.querySelector('.art');
+});
+const byKey = k => ITEMS.find(it => it.key === k);
 
 // ===== 状态机 =====
 // idle    = 静候首戳解锁音频（iOS 音频必须在手势里起播）
-// play    = 四件事任意顺序做，顺序不判对错
-// leaving = 四件都做完，小车往门外开 + confetti + 收尾语音
+// play    = 玩：依赖满足的都能做，没满足的做了只会得到提示
+// leaving = 全部准备好，小车往门外开 + confetti + 收尾语音
 // dealing = 换下一个宝宝的进出场动画
-//
-// 每一步自己带 done 标记，completeStep 靠它幂等——两根手指同时把衣服和帽子
-// 拖到宝宝身上、或键盘和手指同时走完最后一步，都只会各自结算一次。
 let phase = 'idle';
-let doneCount = 0;         // 已经判定完成的步数（点下去那一刻就 +1）
-let settled = 0;           // 东西已经真的穿到 / 戴到 / 坐进宝宝身上的步数
+let weather = 'sun';       // 'sun' | 'rain'，每轮随机；决定该拿帽子还是雨伞
 let finished = false;      // 出门只触发一次
 let outSeq = 0;            // 出门/换场那条独立定时器的代次（不挂在语音回调上）
 let idleTimer = null;
 let byeAlt = 0;
 let everDragged = false;   // 成功拖到宝宝身上过一次 = 会拖了，帮忙门槛放宽一档
-// 帮忙标记挂在每一步自己身上（s.assist），不设全局开关：
-// 全局开关会让「拖不好衣服」把奶瓶的长按一并降成碰一下，而四个动作各不相同
-// 正是这一款存在的全部理由。且它只活一轮，dealRound 里清零。
-let totalMiss = 0;         // 全轮累计没成的尝试——分心期反复拖偏也不能把这一轮走死
+let wrongGearMiss = 0;     // 这一轮天气拿错了几次
+let gearNudge = 0;         // 天气那一步被引导过几次（第一次只问「要拿什么呀」，之后才报答案）
 let lastBaby = null;
+let roundSeq = 0;         // 轮次代次：dealRound 一跑就 +1，晚落地的回调靠它认出「我这一跳过期了」
+// 帮忙标记挂在每一件东西自己身上（it.assist），不设全局开关，也不跨步传染：
+// 一代原样抄 basket 的全局 assistMode，结果「拖不好衣服 ⇒ 连长按喝奶也被跳过」，
+// 而四个动作各不相同正是这一款存在的理由。它只活一轮，dealRound 里清零。
+const glowKeys = new Set();   // 正在持续发光的东西（做掉它就熄）
 
 function later(fn, ms) { return setTimeout(fn, ms); }
 function restart(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
 function pick(arr, not) {
   const pool = arr.filter(x => x !== not);
-  return pool[Math.floor(Math.random() * pool.length)];
+  return (pool.length ? pool : arr)[Math.floor(Math.random() * (pool.length ? pool.length : arr.length))];
 }
+
+// ===== 这一轮谁算数 =====
+// 天气不匹配的那件是干扰项：它在场上、能拿起来，但它不是「要做的事」
+function isActive(it) { return !it.gear || it.gear === weather; }
+// 攒到第几次没成就替他做：会拖了就多给一次机会。拖放和长按共用同一把尺，
+// 各写各的会飘（长按那边曾经硬编码 3，会拖之后就跟拖放的 4 对不上）
+function assistLimit() { return everDragged ? 4 : 3; }
+function gearItem() { return ITEMS.find(it => it.gear === weather); }
+function decoyItem() { return ITEMS.find(it => it.gear && it.gear !== weather); }
+// 还差哪几件才轮得到它（返回 key 数组，空数组 = 现在就能做）
+function unmet(it) {
+  if (it.last) return ITEMS.filter(x => isActive(x) && !x.last && !x.done).map(x => x.key);
+  return it.needs.filter(k => !byKey(k).done);
+}
+function activeTasks() { return ITEMS.filter(isActive); }
 
 // ===== 语音链（helper / words / train 同一模式）=====
 let chain = [];
@@ -506,7 +744,21 @@ qEl.addEventListener('error', stepChain);   // mp3 缺失也不卡链，往下�
 // 注意：say() 只管播报。相位切换、引导点亮、换宝宝一律走独立定时器 —— 挂在语音
 // 回调上的话，下一次 say() 一抢占就把那一跳丢了（前两款抓出来的真 bug）。
 
-// ===== 闲置引导：只说还没做的其中一件，绝不一次说完四步 =====
+// ===== 持续发光：只指「该先做的那件」，做掉就熄 =====
+function applyGlow() {
+  ITEMS.forEach(it => it.el.classList.toggle('glow', glowKeys.has(it.key) && !it.done));
+}
+function glowAll(keys) {
+  keys.forEach(k => glowKeys.add(k));
+  applyGlow();
+}
+// 把注意力拉回那扇窗（播天气 / 拿错 / 无事可指时用）
+function popWindow() {
+  restart(winEl, 'tell');
+  later(() => winEl.classList.remove('tell'), 800);
+}
+
+// ===== 闲置引导：只说「现在能做的」，被前置挡住的一句都不提 =====
 function armIdle() {
   clearTimeout(idleTimer);
   idleTimer = setTimeout(() => {
@@ -515,16 +767,24 @@ function armIdle() {
     armIdle();
   }, IDLE_MS);
 }
-function nudge() {
+function nudge(fromTap) {
   // 正拿在手里 / 正按着的那件不点它：flash 的 keyframes 优先级高于 inline transform，
   // 一手拖东西一手戳喇叭时东西会当场跳一下
-  const todo = STEPS.filter(s => !s.done &&
-    !s.el.classList.contains('lift') && !s.el.classList.contains('holding'));
-  if (!todo.length) return;
-  const s = todo[Math.floor(Math.random() * todo.length)];
-  restart(s.el, 'flash');
-  later(() => s.el.classList.remove('flash'), 1900);
-  say(['go_' + s.key + '.mp3']);
+  const todo = activeTasks().filter(it => !it.done && !unmet(it).length &&
+    !it.el.classList.contains('lift') && !it.el.classList.contains('holding'));
+  if (!todo.length) {
+    // 能做的那件正拿在他自己手上（一手按奶瓶一手戳喇叭）：没什么可指的，
+    // 但「每次输入必反馈」是台上的底线——给一声轻响 + 把窗户弹一下，别是死的。
+    // 只有他主动戳才响；8s 闲置那条静默跳过，免得他按着奶瓶时被每 8s 叮一次
+    if (fromTap) { fxSoft(); popWindow(); }
+    return;
+  }
+  const it = todo[Math.floor(Math.random() * todo.length)];
+  restart(it.el, 'flash');
+  later(() => it.el.classList.remove('flash'), 1900);
+  // 天气那一步：第一次只把他的眼睛引到窗户上，让他自己判断；再问一次才报答案
+  if (it.gear && gearNudge++ === 0) { say(['go_weather.mp3']); return; }
+  say(['go_' + it.key + '.mp3']);
 }
 
 // ===== 粒子 =====
@@ -555,18 +815,30 @@ function setXY(el, dx, dy, extra) {
   el.style.transform = 'translate(' + dx + 'px,' + dy + 'px)' + (extra || '');
 }
 function resetXY(el) { el._dx = 0; el._dy = 0; el.style.transform = ''; }
+function slideBack(el, it) {
+  el.style.transition = '';
+  el.classList.add('back');
+  resetXY(el);
+  later(() => { el.classList.remove('back'); if (!it.done) el.classList.add('sway'); }, 440);
+}
 
 // ===== 完成一步（幂等）=====
-function completeStep(s) {
-  if (s.done || phase === 'leaving' || phase === 'dealing') return;
-  s.done = true;
-  doneCount++;
+function completeStep(it) {
+  if (it.done || phase === 'leaving' || phase === 'dealing') return;
+  // 这两行是「哪些东西现在能被做掉」的唯一咽喉点：拖放 / 长按 / 键盘 / 降级帮忙
+  // 以后再加任何入口都必须从这儿过。分散到各入口去判，早晚漏一条路——
+  // 实证：assist 只挡了 unmet 没挡 isActive，大晴天把雨伞往空地拖偏三次就把伞塞进手里了。
+  if (unmet(it).length) return;    // 顺序：前置没满足绝不放行
+  if (!isActive(it)) return;       // 条件：这一轮天气不要的那件，怎么弄都不该被做掉
+  it.done = true;
   clearTimeout(idleTimer);
-  s.el.classList.remove('sway', 'lift', 'flash', 'hop', 'holding');
-  s.el.classList.add('done');
+  glowKeys.delete(it.key);
+  applyGlow();
+  it.el.classList.remove('sway', 'lift', 'flash', 'hop', 'holding', 'glow', 'jiggle');
+  it.el.classList.add('done');
   // 走降级路径替他喝完时，奶量刚被 cancelHold 退回满格——飞走前先把它喝干净，
   // 别让一支满奶瓶飞到宝宝嘴边还说「奶喝完啦」
-  if (s.key === 'bottle') {
+  if (it.key === 'bottle') {
     // 别的路（键盘 / 降级）判完成时，手指可能还按在奶瓶上：咕咚声会一直响到阈值烧完
     clearTimeout(holdTimer); holdTimer = null;
     clearInterval(gulpTimer); gulpTimer = null;
@@ -575,53 +847,100 @@ function completeStep(s) {
     milkEl.style.height = '8%';
     babyEl.classList.remove('drinking');
   }
+  // 天气选对了，那件不对的就没用了，让它安静退场
+  if (it.gear) fadeDecoy();
 
   // 东西飞到宝宝身上再消失
-  const a = s.el.getBoundingClientRect();
+  const a = it.el.getBoundingClientRect();
   const b = babyEl.getBoundingClientRect();
   const dx = (b.left + b.width / 2) - (a.left + a.width / 2);
   const dy = (b.top + b.height * 0.5) - (a.top + a.height / 2);
-  s.el.style.transition = 'transform 460ms cubic-bezier(0.5, 0, 0.3, 1.1), opacity 460ms ease-in';
-  setXY(s.el, (s.el._dx || 0) + dx, (s.el._dy || 0) + dy, ' scale(0.35)');
-  s.el.style.opacity = '0';
+  it.el.style.transition = 'transform 460ms cubic-bezier(0.5, 0, 0.3, 1.1), opacity 460ms ease-in';
+  setXY(it.el, (it.el._dx || 0) + dx, (it.el._dy || 0) + dy, ' scale(0.35)');
+  it.el.style.opacity = '0';
 
+  const seq = roundSeq;
   later(() => {
-    if (s.key === 'shirt') { wornShirtEl.textContent = s.emoji; restart(wornShirtEl, 'on'); }
-    if (s.key === 'cap')   { wornCapEl.textContent = s.emoji;   restart(wornCapEl, 'on'); }
-    if (s.key === 'car')   { rideEl.textContent = s.emoji;      restart(rideEl, 'on'); fxCar(); }
-    if (s.key !== 'car') fxOn();
-    restart(babyEl, 'wiggle');
+    // 这一跳晚 420ms 落地，中间可能已经换了宝宝——上一轮的衣服绝不能穿到下一个身上
+    if (seq !== roundSeq) return;
+    if (it.key === 'shirt')    { wornShirtEl.textContent = it.emoji; restart(wornShirtEl, 'on'); }
+    if (it.key === 'sock')     { wornSockEl.textContent  = it.emoji + it.emoji; restart(wornSockEl, 'on'); }
+    if (it.key === 'shoe')     { wornShoeEl.textContent  = it.emoji + it.emoji; restart(wornShoeEl, 'on'); }
+    if (it.key === 'cap')      { wornCapEl.textContent   = it.emoji; restart(wornCapEl, 'on'); }
+    if (it.key === 'umbrella') { wornHandEl.textContent  = it.emoji; restart(wornHandEl, 'on'); }
+    if (it.key === 'towel')    { restart(babyEl, 'wipe'); }
+    if (it.key === 'car')      { rideEl.textContent = it.emoji; restart(rideEl, 'on'); fxCar(); }
+    if (it.key !== 'car') fxOn();
+    if (it.key !== 'towel') restart(babyEl, 'wiggle');
     sparkle(babyEl);
-    say(['ok_' + s.key + '.mp3']);        // 只说这一步的名字，不预告下一步
-    settled++;
-    // 用 settled 不用 doneCount：两步隔得近时，先落地那步的回调会看到 doneCount 已满，
-    // 于是小车在后一件衣服还没穿上身就开走了
-    if (settled >= STEPS.length) leave();
-    else armIdle();
+    // 出门这一跳也押在这个 420ms 回调里、不在上面同步触发：小车得先真的飞到宝宝脚下、
+    // 人真的坐进去了，门才开、彩纸才撒。同步 leave 会让宝宝在空车位上被开走。
+    if (it.last) { leave(); return; }
+    say(['ok_' + it.key + '.mp3']);        // 只说这一步的名字，不预告下一步
+    armIdle();
   }, 420);
 }
 
 // ===== 没成一次：不是失败，只是还没成。攒够就替他做（照 basket 抄）=====
 // 「只点没拖」和「拖偏了没到」都算，别只数点击——只数点会留死路：
 // 娃反复戳同一件东西，每次都滑回原地，这一轮永远出不了门。
-function registerMiss(s) {
-  s.miss = (s.miss || 0) + 1;
-  totalMiss++;
-  const limit = everDragged ? 4 : 3;
-  if (s.assist || s.miss >= limit || totalMiss >= 6) {
-    if (!everDragged && s.mode === 'drag') {
-      // 帮忙只在「拖」这一族里传染：拖不好衣服 ⇒ 帽子也放宽，但不碰奶瓶和小车
-      STEPS.forEach(x => { if (x.mode === 'drag') x.assist = true; });
-    } else {
-      s.assist = true;               // 长按只帮它自己
-    }
-    completeStep(s);
+// 但抄进来的这条有两个前提要单独钉住：**前置没满足、或这一轮压根不该拿的那件，一律不替他做**——
+// 替他穿上没袜子的鞋 / 把晴天的雨伞塞进他手里，等于把这一款唯一要教的东西直接跳过去了。
+function registerMiss(it) {
+  it.miss = (it.miss || 0) + 1;
+  // 与 completeStep 开头那两条同源：还做不了 / 这一轮压根不该做的，攒再多次也不替他做
+  if (unmet(it).length || !isActive(it)) return false;
+  if (it.assist || it.miss >= assistLimit()) {
+    it.assist = true;                // 只帮它自己，不传染给别的步骤
+    completeStep(it);
     return true;
   }
   return false;
 }
 
-// ===== 出门：四件都做完 =====
+// ===== 顺序不对：给信息，不给惩罚 =====
+function blockedFeedback(it, um) {
+  it.blockMiss = (it.blockMiss || 0) + 1;
+  slideBack(it.el, it);
+  fxNope();
+  if (it.key === 'shoe') { restart(babyEl, 'kick'); say(['hint_sock_first.mp3']); }
+  else                   { restart(babyEl, 'shake'); say(['hint_milk_first.mp3']); }
+  // 第 2 次错：该先做的那件持续发光，直到它被做掉
+  if (it.blockMiss >= GLOW_AT) glowAll(um);
+  armIdle();
+}
+
+// ===== 天气拿错：同一个动作，条件变了答案就变 =====
+function wrongGearPick(it) {
+  wrongGearMiss++;
+  slideBack(it.el, it);
+  restart(babyEl, 'shake');
+  fxNope();
+  say([weather === 'rain' ? 'hint_rain.mp3' : 'hint_sun.mp3']);
+  popWindow();
+  if (wrongGearMiss >= GLOW_AT) glowAll([gearItem().key]);
+  // 错到第 4 次：干扰项退场，只剩发着光的那件（永远以成功收尾，且不教错答案）
+  if (wrongGearMiss >= DECOY_OUT_AT) fadeDecoy();
+  armIdle();
+}
+function fadeDecoy() {
+  const d = decoyItem();
+  if (!d || d.el.classList.contains('gone')) return;
+  d.el.classList.add('gone');
+}
+
+// ===== 车按早了：没做完的一起晃给他看 =====
+function carTooEarly(c, um) {
+  c.blockMiss = (c.blockMiss || 0) + 1;
+  fxHonk();
+  say(['hint_car_wait.mp3']);
+  um.forEach(k => restart(byKey(k).el, 'jiggle'));
+  later(() => um.forEach(k => byKey(k).el.classList.remove('jiggle')), 820);
+  if (c.blockMiss >= GLOW_AT) glowAll(um);
+  armIdle();
+}
+
+// ===== 出门：全部准备好了 =====
 function leave() {
   if (finished) return;
   finished = true;
@@ -629,8 +948,6 @@ function leave() {
   clearTimeout(idleTimer);
   const seq = ++outSeq;
 
-  // 没坐车也能出门（车那一步走的是降级路径时 ride 已经有了；兜底再填一次）
-  if (!rideEl.textContent) { rideEl.textContent = byKey('car').emoji; rideEl.classList.add('on'); }
   doorEl.classList.add('open');
   confetti(babyEl);
   fxParty();
@@ -638,67 +955,95 @@ function leave() {
   later(() => { if (seq === outSeq) restart(babyEl, 'drive'); }, 420);
 
   byeAlt = byeAlt % BYE_COUNT + 1;
-  say(['bye_' + byeAlt + '.mp3']);
+  say(['ok_car.mp3', 'bye_' + byeAlt + '.mp3']);
   // 换宝宝走这条独立定时器，不挂语音回调——语音被抢占也照样换场
-  later(() => { if (seq === outSeq) nextBaby(); }, 3400);
+  later(() => { if (seq === outSeq) nextBaby(); }, 4200);
 }
 
-// ===== 换下一个宝宝：换角色 + 换衣服帽子小车的样子，无限循环 =====
+// ===== 换下一个宝宝：换角色 + 换天气 + 换位置，无限循环 =====
 function nextBaby() {
   if (phase === 'dealing') return;
   phase = 'dealing';
   clearTimeout(idleTimer);
   const seq = ++outSeq;
-  STEPS.forEach(s => { if (!s.done) restart(s.el, 'deal-out'); });
+  ITEMS.forEach(it => { if (!it.done && !it.el.classList.contains('gone')) restart(it.el, 'deal-out'); });
 
   later(() => {
     if (seq !== outSeq) return;
     dealRound();
-    STEPS.forEach((s, i) => {
-      s.el.classList.add('deal-in');
-      s.el.style.animationDelay = (i * 80) + 'ms';
+    ITEMS.forEach((it, i) => {
+      it.el.classList.add('deal-in');
+      it.el.style.animationDelay = (i * 70) + 'ms';
     });
     later(() => {
       if (seq !== outSeq) return;
-      STEPS.forEach(s => { s.el.classList.remove('deal-in'); s.el.style.animationDelay = ''; });
+      ITEMS.forEach(it => { it.el.classList.remove('deal-in'); it.el.style.animationDelay = ''; });
       phase = 'play';
-      say(['next.mp3']);
+      say(['next.mp3', weather === 'rain' ? 'weather_rain.mp3' : 'weather_sun.mp3']);
+      popWindow();
       armIdle();
     }, 900);
   }, 360);
 }
 
-// 摆好一轮：重置四步 + 换皮
+// 摆好一轮：清空所有计数 + 换天气 + 换皮 + 打乱位置
+// 一代的真 bug 就出在这里漏了重置——assist 一旦点亮就跨轮永不恢复，
+// 于是后面每一轮碰一下就自动完成。所有 miss / assist / done / glow 都得在这清零。
 function dealRound() {
-  doneCount = 0;
-  settled = 0;
+  roundSeq++;
   finished = false;
-  totalMiss = 0;
-  babyEl.classList.remove('drive', 'wiggle', 'drinking');
+  // 换轮时手可能还按在奶瓶上：不收住的话，上一轮那只 holdTimer 会在新一轮里把奶替他喝完
+  clearTimeout(holdTimer); holdTimer = null;
+  clearInterval(gulpTimer); gulpTimer = null;
+  holdPtr = null;
+  wrongGearMiss = 0;
+  gearNudge = 0;
+  glowKeys.clear();
+  babyEl.classList.remove('drive', 'wiggle', 'drinking', 'shake', 'kick', 'wipe');
   babyEl.style.transform = '';
   doorEl.classList.remove('open');
-  wornCapEl.textContent = '';   wornCapEl.className = 'worn cap';
-  wornShirtEl.textContent = ''; wornShirtEl.className = 'worn shirt';
-  rideEl.textContent = '';      rideEl.className = 'ride';
+  winEl.classList.remove('tell');
+  [wornCapEl, wornShirtEl, wornSockEl, wornShoeEl, wornHandEl, rideEl].forEach(el => {
+    el.textContent = '';
+    el.classList.remove('on');
+  });
+
+  weather = Math.random() < 0.5 ? 'sun' : 'rain';
+  winEl.className = 'window ' + (weather === 'sun' ? 'sunny' : 'rainy');
+  wxEl.textContent = weather === 'sun' ? '☀️' : '🌧️';
 
   const baby = pick(BABIES, lastBaby);
   lastBaby = baby;
   faceEl.textContent = baby;
-  byKey('shirt').emoji = pick(SHIRTS);
-  byKey('cap').emoji   = pick(CAPS);
-  byKey('car').emoji   = pick(CARS);
-  byKey('bottle').emoji = '🍼';
+  byKey('shirt').emoji    = pick(SHIRTS);
+  byKey('sock').emoji     = pick(SOCKS);
+  byKey('shoe').emoji     = pick(SHOES);
+  byKey('cap').emoji      = pick(CAPS);
+  byKey('umbrella').emoji = pick(UMBRELLAS);
+  byKey('car').emoji      = pick(CARS);
+  byKey('bottle').emoji   = '🍼';
+  byKey('towel').emoji    = '';
 
-  STEPS.forEach(s => {
-    s.done = false;
-    s.miss = 0;
-    s.assist = false;   // 帮忙是「这一轮他手不顺」，不是「这个娃从此不会拖」
-    s.el.className = 'item sway';
-    s.el.style.transition = '';
-    s.el.style.opacity = '';
-    resetXY(s.el);
-    if (s.key !== 'bottle') s.art.textContent = s.emoji;
+  // 位置打乱：同一件东西不总在同一个角落，逼他每轮重新找
+  const slots = SLOTS.slice();
+  for (let i = slots.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = slots[i]; slots[i] = slots[j]; slots[j] = t;
+  }
+  ITEMS.forEach((it, i) => {
+    it.done = false;
+    it.miss = 0;
+    it.blockMiss = 0;
+    it.assist = false;   // 帮忙是「这一轮他手不顺」，不是「这个娃从此不会拖」
+    it.el.className = 'item sway';
+    it.el.style.transition = '';
+    it.el.style.opacity = '';
+    it.el.style.left = slots[i].x;
+    it.el.style.top  = slots[i].y;
+    resetXY(it.el);
+    if (it.key !== 'bottle' && it.key !== 'towel') it.art.textContent = it.emoji;
   });
+  applyGlow();
   resetMilk(true);
 }
 
@@ -710,9 +1055,9 @@ let holdTimer = null;
 let gulpTimer = null;
 
 function holdThreshold() {
-  const s = byKey('bottle');
-  if (s.assist || (s.miss || 0) >= 3) return HOLD_ASSIST;
-  return HOLD_STEPS[Math.min(s.miss || 0, HOLD_STEPS.length - 1)];
+  const it = byKey('bottle');
+  if (it.assist || (it.miss || 0) >= assistLimit()) return HOLD_ASSIST;
+  return HOLD_STEPS[Math.min(it.miss || 0, HOLD_STEPS.length - 1)];
 }
 function resetMilk(instant) {
   milkEl.style.transition = instant ? 'none' : 'height 340ms ease';
@@ -722,11 +1067,11 @@ function resetMilk(instant) {
   if (instant) { void milkEl.offsetWidth; milkEl.style.transition = ''; bottleEl.style.transition = ''; }
 }
 function startHold() {
-  const s = byKey('bottle');
-  if (phase !== 'play' || s.done || holdTimer) return false;
+  const it = byKey('bottle');
+  if (phase !== 'play' || it.done || holdTimer) return false;
   const ms = holdThreshold();
-  s.el.classList.remove('hop', 'flash', 'back');
-  s.el.classList.add('holding');
+  it.el.classList.remove('hop', 'flash', 'back');
+  it.el.classList.add('holding');
   babyEl.classList.add('drinking');
   // 持续视觉：奶量一路往下掉 + 奶瓶倾斜（按着是对的，看得见）
   milkEl.style.transition = 'height ' + ms + 'ms linear';
@@ -739,7 +1084,7 @@ function startHold() {
   holdTimer = setTimeout(() => {
     holdTimer = null;
     endHold(true);
-    completeStep(s);
+    completeStep(it);
   }, ms);
   clearTimeout(idleTimer);
   return true;
@@ -749,35 +1094,41 @@ function endHold(completed) {
   clearTimeout(holdTimer); holdTimer = null;
   clearInterval(gulpTimer); gulpTimer = null;
   holdPtr = null;
-  const s = byKey('bottle');
-  s.el.classList.remove('holding');
+  const it = byKey('bottle');
+  it.el.classList.remove('holding');
   babyEl.classList.remove('drinking');
   if (!completed) resetMilk(false);
 }
-// 松手太早：不算失败，只累计一次没成的尝试（攒够就替他喝完），没有惩罚音
-function cancelHold() {
-  const s = byKey('bottle');
+// 松手太早：不算失败，只累计一次没成的尝试（攒够就替他喝完），没有惩罚音。
+// silent=true 是「不是他松的手」——系统收走手势 / 切后台 / 失焦。这一路只收视觉不记账：
+// 记了账，一次来电就能把长按阈值从 1700ms 砍到 350ms，甚至直接替他喝完，
+// 而他从头到尾按得好好的。
+function cancelHold(silent) {
+  const it = byKey('bottle');
   const wasHolding = !!holdTimer;
   // 已经喝完了就别把奶量退回去——喝完后那一下 pointerup 也会走到这里
-  endHold(s.done);
-  if (!wasHolding || s.done) return;
-  restart(s.el, 'hop');
-  later(() => s.el.classList.remove('hop'), 500);
+  endHold(it.done);
+  if (!wasHolding || it.done) return;
+  if (silent) { armIdle(); return; }
+  restart(it.el, 'hop');
+  later(() => it.el.classList.remove('hop'), 500);
   fxSoft();
-  if (!registerMiss(s)) armIdle();
+  if (!registerMiss(it)) armIdle();
 }
 
-// ===== 拖放 / 点按 =====
-function bindItem(s) {
-  const el = s.el;
-  let sx = 0, sy = 0, dragging = false, moved = false, ptr = null;
+// ===== 拖放 / 长按 / 点按 =====
+function bindItem(it) {
+  const el = it.el;
+  // seq 记下「这一把是哪一轮开始拖的」：手一直没离开屏幕、中间换了宝宝的话，
+  // 这一把就作废——不然东西会停在离手几百像素的地方，miss 还记进新一轮的账
+  let sx = 0, sy = 0, dragging = false, moved = false, ptr = null, seq = -1;
 
   el.addEventListener('pointerdown', (e) => {
     hideHint();
     if (phase === 'idle') unlock();          // 首戳既解锁也照常玩，不白按一下（同 basket）
-    if (phase !== 'play' || s.done) { fxSoft(); return; }
+    if (phase !== 'play' || it.done) { fxSoft(); return; }
     e.preventDefault();
-    if (s.mode === 'hold') {
+    if (it.mode === 'hold') {
       if (holdPtr !== null) return;          // 第二根手指按上来：忽略，别重复计时
       try { el.setPointerCapture(e.pointerId); } catch (err) {}
       // 起不来就别占着 holdPtr——占住了这只奶瓶后面谁都按不动
@@ -788,12 +1139,20 @@ function bindItem(s) {
     dragging = true;
     moved = false;
     ptr = e.pointerId;
-    sx = e.clientX; sy = e.clientY;
+    seq = roundSeq;
     try { el.setPointerCapture(e.pointerId); } catch (err) {}
-    el.classList.remove('sway', 'hop', 'back', 'flash');
+    // 拿起前先量一次：下面 setXY(0,0) 会把东西瞬间拽回原位，
+    // 半路截住一件正在滑回去的东西时，那一拽就是手指与东西之间凭空多出来的错位。
+    // 娃刚拖歪立刻再抓一次是最常见的动作，不补这一下他后面怎么拖都送不到宝宝身上。
+    const r0 = el.getBoundingClientRect();
+    el.classList.remove('sway', 'hop', 'back', 'flash', 'jiggle');
     el.style.transition = 'none';
     el.classList.add('lift');
     setXY(el, 0, 0, ' scale(1.16)');
+    const r1 = el.getBoundingClientRect();
+    // 比中心不比左上角：lift 的 scale(1.16) 会改宽高，中心点不受它影响
+    sx = e.clientX + ((r1.left + r1.width / 2) - (r0.left + r0.width / 2));
+    sy = e.clientY + ((r1.top + r1.height / 2) - (r0.top + r0.height / 2));
     fxPick();
     clearTimeout(idleTimer);
   });
@@ -806,9 +1165,10 @@ function bindItem(s) {
   });
 
   function release(e) {
-    if (s.mode === 'hold') {
+    if (it.mode === 'hold') {
       if (holdPtr !== null && e.pointerId !== holdPtr) return;
-      cancelHold();
+      // 和下面拖放那支一样先认 pointercancel：系统收走手势不是他没按住
+      cancelHold(!!(e && e.type === 'pointercancel'));
       return;
     }
     // cancel 也必须认 id：第二根手指落在同一件东西上被忽略、随后被系统收走发 cancel，
@@ -816,17 +1176,29 @@ function bindItem(s) {
     if (!dragging || e.pointerId !== ptr) return;
     dragging = false;
     ptr = null;
+    // 拖到一半换了宝宝：这一把属于上一轮，只把视觉收回原位，一个字都不记进新一轮
+    if (seq !== roundSeq) {
+      el.classList.remove('lift');
+      resetXY(el);
+      if (!it.done) el.classList.add('sway');
+      return;
+    }
     // 先量再摘 lift —— 一摘 lift，.art 的摇摆动画就回来了，量到的会是归位后的矩形
     const r = el.getBoundingClientRect();
     el.classList.remove('lift');
-    if (s.done || phase !== 'play') { slideBack(el); return; }
+    if (it.done || phase !== 'play') { slideBack(el, it); return; }
 
     // 系统收走手势（第二根手指缩放 / 掌根碰到 / 来电）：孩子没做错任何事，
     // 一律滑回原位，不记一次没成
-    if (e && e.type === 'pointercancel') { slideBack(el); armIdle(); return; }
+    if (e && e.type === 'pointercancel') { slideBack(el, it); armIdle(); return; }
 
-    // 点一下就完成的那件（小车）：点了 / 拖了都算数
-    if (s.mode === 'tap') { completeStep(s); return; }
+    // 点一下就上的那件（小车）：点了 / 拖了都算数，但前面没准备好就只有喇叭
+    if (it.mode === 'tap') {
+      const um = unmet(it);
+      if (um.length) { slideBack(el, it); carTooEarly(it, um); return; }
+      completeStep(it);
+      return;
+    }
 
     const b = babyEl.getBoundingClientRect();
     const pad = b.width * 0.34;    // 命中区外扩——2 岁的手不必精准，碰到宝宝就算
@@ -834,36 +1206,34 @@ function bindItem(s) {
     const hit = cx > b.left - pad && cx < b.right + pad && cy > b.top - pad && cy < b.bottom + pad;
     if (moved && hit) {
       everDragged = true;
-      // 会拖了就把「拖」这一族的帮忙收回去，让他接着自己拖
-      STEPS.forEach(x => { if (x.mode === 'drag') x.assist = false; });
-      s.miss = 0;
-      completeStep(s);
+      // 送到宝宝身上了 = 手上功夫没问题，这件的帮忙收回去，让他接着自己拖
+      it.miss = 0;
+      it.assist = false;
+      // 天气不对的那件：动作做对了，判断没做对——摇头 + 再问一遍窗外
+      if (it.gear && it.gear !== weather) { wrongGearPick(it); return; }
+      const um = unmet(it);
+      if (um.length) { blockedFeedback(it, um); return; }
+      completeStep(it);
       return;
     }
     // 没送到宝宝身上——「只点没拖」和「拖了没到」都算一次没成的尝试
-    if (registerMiss(s)) return;
+    if (registerMiss(it)) return;
     if (moved) {
-      slideBack(el);               // 拖偏了：滑回原位（无失败音，纯信息）
+      slideBack(el, it);           // 拖偏了：滑回原位（无失败音，纯信息）
       armIdle();
       return;
     }
     resetXY(el);                   // 只点没拖：原地开心跳一下
     restart(el, 'hop');
     fxSoft();
-    later(() => { el.classList.remove('hop'); el.classList.add('sway'); }, 500);
+    later(() => { el.classList.remove('hop'); if (!it.done) el.classList.add('sway'); }, 500);
     armIdle();
-  }
-  function slideBack(el2) {
-    el2.style.transition = '';
-    el2.classList.add('back');
-    resetXY(el2);
-    later(() => { el2.classList.remove('back'); if (!s.done) el2.classList.add('sway'); }, 440);
   }
 
   el.addEventListener('pointerup', release);
   el.addEventListener('pointercancel', release);
   el.addEventListener('pointerleave', (e) => {
-    if (s.mode !== 'hold') return;
+    if (it.mode !== 'hold') return;
     // 规范要求触摸指针在 pointerup 之后补发一发 pointerleave——不认 id 的话，
     // 另一根手指戳一下奶瓶再抬起，就会掐掉拇指正按着的那口奶
     if (holdPtr === null || e.pointerId !== holdPtr) return;
@@ -874,7 +1244,7 @@ function bindItem(s) {
     if (dragging && e.pointerId === ptr) release(e);
   });
 }
-STEPS.forEach(bindItem);
+ITEMS.forEach(bindItem);
 
 // ===== 首戳解锁（iOS 音频必须在手势里起播）=====
 function unlock() {
@@ -883,17 +1253,27 @@ function unlock() {
   uEl.muted = true;
   uEl.play().then(() => { uEl.pause(); uEl.muted = false; }).catch(() => { uEl.muted = false; });
   phase = 'play';
-  say(['intro.mp3']);
+  // 开场先报天气：这一轮该拿帽子还是雨伞，答案就在这一句和那扇窗里
+  say(['intro.mp3', weather === 'rain' ? 'weather_rain.mp3' : 'weather_sun.mp3']);
+  popWindow();
   armIdle();
 }
 
-// ===== 戳喇叭 = 听一句还没做的事；戳宝宝 = 他笑一下（每次输入必反馈）=====
+// ===== 戳喇叭 = 听一句现在能做的事；戳窗户 = 再报一次天气；戳宝宝 = 他笑一下 =====
 function tapHorn() {
   hideHint();
   if (phase === 'idle') { unlock(); return; }
   if (phase !== 'play') { fxSoft(); return; }
-  nudge();
+  nudge(true);
   armIdle();
+}
+function tapWindow() {
+  hideHint();
+  if (phase === 'idle') { unlock(); return; }
+  fxSoft();
+  popWindow();
+  say([weather === 'rain' ? 'weather_rain.mp3' : 'weather_sun.mp3']);
+  if (phase === 'play') armIdle();
 }
 function tapBaby() {
   hideHint();
@@ -903,13 +1283,14 @@ function tapBaby() {
   if (phase === 'play') armIdle();
 }
 // touchstart 内 preventDefault 抑制 iOS 合成 click（一戳只触发一次）；
-// 只绑在这两个元素上，绝不在 document 上无条件 preventDefault —— bath 曾因此
+// 只绑在这几个元素上，绝不在 document 上无条件 preventDefault —— bath 曾因此
 // 吞掉 #back 的合成 click，返回键在触屏上点不动。
 function bindTap(el, fn) {
   el.addEventListener('click', fn, { passive: true });
   el.addEventListener('touchstart', (e) => { fn(); e.preventDefault(); }, { passive: false });
 }
 bindTap(askEl, tapHorn);
+bindTap(winEl, tapWindow);
 bindTap(babyEl, tapBaby);
 
 // 点画面任何空白处也能解锁音频（只挂 click、不 preventDefault，返回键照常工作）
@@ -921,8 +1302,8 @@ document.addEventListener('click', (e) => {
 }, { passive: true });
 
 // ===== 键盘：三输入全通 =====
-// 按住任意键 ≥300ms = 长按喝奶；短按一下 = 做完下一件还没做的事。
-// 语义和手指那一路一模一样：短按在只剩奶瓶时也算一次「松手太早」，攒够自动喝完。
+// 按住任意键 ≥300ms = 长按喝奶；短按一下 = 做完「下一件现在能做的事」。
+// 键盘这一路同样守依赖：它跳过被前置挡住的步骤，不给一条绕过顺序的后门。
 let keyDownAt = 0, keyArm = null, keyHolding = false;
 document.addEventListener('keydown', (e) => {
   if (e.repeat) return;              // 按住时 OS 的自动重复不是新的一次按键
@@ -957,8 +1338,8 @@ document.addEventListener('keyup', (e) => {
   clearTimeout(keyArm); keyArm = null;
   if (keyHolding) { keyHolding = false; cancelHold(); return; }
   if (phase !== 'play') return;
-  // 短按：做完下一件还没做的事；只剩奶瓶时按 hold 的语义记一次没成
-  const next = STEPS.find(s => !s.done && s.mode !== 'hold');
+  // 短按：做完下一件「现在能做的」；只剩奶瓶时按 hold 的语义记一次没成
+  const next = activeTasks().find(it => !it.done && it.mode !== 'hold' && !unmet(it).length);
   if (next) { completeStep(next); return; }
   const b = byKey('bottle');
   if (!b.done) {
@@ -972,7 +1353,7 @@ document.addEventListener('keyup', (e) => {
 // ===== 回前台 / 失焦：AudioContext 与语音链都可能被挂起；长按一律收住 =====
 function onResume() {
   if (document.visibilityState === 'hidden') {
-    if (holdTimer) cancelHold();     // 切后台时正按着：别让它在看不见的地方偷偷喝完
+    if (holdTimer) cancelHold(true);  // 切后台时正按着：收住，但这不算他没按好
     keyDownAt = 0; clearTimeout(keyArm); keyArm = null;
     return;
   }
@@ -983,7 +1364,7 @@ function onResume() {
 document.addEventListener('visibilitychange', onResume);
 window.addEventListener('pageshow', onResume);
 window.addEventListener('blur', () => {
-  if (holdTimer) cancelHold();
+  if (holdTimer) cancelHold(true);   // 失焦同上：不是他松的手，不记账
   // keyHolding 不清的话，回来第一次短按会被当成「松手太早」白记一次没成
   keyDownAt = 0; keyHolding = false; clearTimeout(keyArm); keyArm = null;
 });
@@ -1004,8 +1385,11 @@ dealRound();
 
 // 空闲预载全部 mp3 进 HTTP 缓存——后续换 src 即播不等网络
 setTimeout(() => {
-  const files = ['intro.mp3', 'next.mp3'];
-  STEPS.forEach(s => files.push('ok_' + s.key + '.mp3', 'go_' + s.key + '.mp3'));
+  const files = ['intro.mp3', 'next.mp3', 'go_weather.mp3',
+                 'weather_sun.mp3', 'weather_rain.mp3',
+                 'hint_sock_first.mp3', 'hint_milk_first.mp3',
+                 'hint_rain.mp3', 'hint_sun.mp3', 'hint_car_wait.mp3'];
+  ITEMS.forEach(it => files.push('ok_' + it.key + '.mp3', 'go_' + it.key + '.mp3'));
   for (let i = 1; i <= BYE_COUNT; i++) files.push('bye_' + i + '.mp3');
   files.forEach(f => fetch('audio/' + f).catch(() => {}));
 }, 600);
