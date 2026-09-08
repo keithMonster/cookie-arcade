@@ -560,7 +560,8 @@
 // 顺序错了给的是信息不是惩罚：东西滑回去 + 一句话告诉他缺什么，同一步错第 2 次
 // 就让该先做的那件持续发光。全程零失败态，每一轮一定出得了门。
 
-// mode: 'drag' 拖到宝宝身上 / 'hold' 按住不放 / 'tap' 点一下
+// mode: 'drag' 拖到宝宝身上 / 'hold' 按住不放喝完，手指挪开就转成拖给宝宝 / 'tap' 点一下
+// 'hold' 的两条路殊途同归：按着喝完，或者把奶瓶送到宝宝嘴边——都从 completeStep 那个咽喉点过
 // needs: 前置依赖（这些做完之前，做它只会得到一句提示）
 // gear: 只有当天天气匹配时才是「要拿的那件」，另一件是这一轮的干扰项
 // last: 收尾那一步（要求前面全部做完）
@@ -598,6 +599,10 @@ const IDLE_MS      = 8000;   // 静默这么久：能做的其中一件亮两下
 const HOLD_STEPS   = [1700, 1250, 900];  // 长按阈值：松手早了不惩罚，下次门槛降一档
 const HOLD_ASSIST  = 350;    // 已经试过 3 次：碰一下就算喝完
 const DRAG_THRESH  = 14;     // 2 岁的手指按下去就会蹭，阈值给宽（同 basket/helper）
+// 奶瓶从「按住喝」转成「拖给宝宝」的阈值：故意比 DRAG_THRESH 宽得多。
+// 按住不放的那 1.7s 里手指本来就会蹭十几像素，用 14 的话一抖就把他正喝着的奶掐掉，
+// 而他自己看不出发生了什么。要转就得是明确挪走了一段，不是抖了一下
+const HOLD_DRAG_THRESH = 34;
 const CHAIN_DOG_MS = 5500;   // 语音链看门狗：iOS 被 Siri/锁屏打断时 ended/error 都不来
 const BYE_COUNT    = 2;
 const GLOW_AT      = 2;      // 同一步错到第几次开始持续发光
@@ -1129,8 +1134,21 @@ function bindItem(it) {
     if (phase !== 'play' || it.done) { fxSoft(); return; }
     e.preventDefault();
     if (it.mode === 'hold') {
-      if (holdPtr !== null) return;          // 第二根手指按上来：忽略，别重复计时
+      if (holdPtr !== null || dragging) return;   // 第二根手指按上来：忽略，别重复计时
       try { el.setPointerCapture(e.pointerId); } catch (err) {}
+      // 一次按下同时备好两条路：手指不动 = 按着喝，手指挪开超过阈值 = 拖给宝宝。
+      // 起点在这儿就量好（含「半路截住正在滑回去的奶瓶」那一下补偿），转拖时才不会跳一下；
+      // lift / scale 留到真动起来才加——按着不动时奶瓶自己浮起来，跟「按住喝」的视觉打架
+      const r0h = el.getBoundingClientRect();
+      el.classList.remove('hop', 'back', 'flash', 'jiggle');
+      el.style.transition = 'none';
+      setXY(el, 0, 0);
+      const r1h = el.getBoundingClientRect();
+      sx = e.clientX + ((r1h.left + r1h.width / 2) - (r0h.left + r0h.width / 2));
+      sy = e.clientY + ((r1h.top + r1h.height / 2) - (r0h.top + r0h.height / 2));
+      moved = false;
+      ptr = e.pointerId;
+      seq = roundSeq;
       // 起不来就别占着 holdPtr——占住了这只奶瓶后面谁都按不动
       if (startHold()) holdPtr = e.pointerId;
       return;
@@ -1158,15 +1176,37 @@ function bindItem(it) {
   });
 
   el.addEventListener('pointermove', (e) => {
-    if (!dragging || e.pointerId !== ptr) return;
+    if (e.pointerId !== ptr) return;
     const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (!dragging) {
+      // 奶已经喝完（长按烧完 / 键盘替他做完）的那一刻手指还在屏上，ptr 还留着：
+      // 这之后的移动是「喝完了手还没抬」，不是「他要改拖」。放行的话会把正飞向宝宝的
+      // 那一下 transition 掐断（奶瓶在 opacity:0 时被拽回手指下 = 凭空消失），
+      // 还会清掉 completeStep 刚武装好的 idleTimer，这一轮再也不会有 8s 引导。
+      // 只挡「还没开始拖」的这一格：已经在拖、中途被 assist 判完成的照旧跟手到松手
+      if (it.done || phase !== 'play') return;
+      // 奶瓶：手指挪出阈值 = 他要把奶瓶送给宝宝，不是没按住。
+      // 静默收掉长按（不记一次没成，奶量直接回满），从这儿起走跟别的东西一模一样的拖放
+      if (it.mode !== 'hold' || Math.abs(dx) + Math.abs(dy) <= HOLD_DRAG_THRESH) return;
+      cancelHold(true);
+      resetMilk(true);        // 没喝到，奶就该是满的：瞬间归位，别让它一路涨着被拖走
+      dragging = true;
+      el.classList.remove('sway');
+      el.style.transition = 'none';
+      el.classList.add('lift');
+      fxPick();
+      clearTimeout(idleTimer);
+    }
     if (Math.abs(dx) + Math.abs(dy) > DRAG_THRESH) moved = true;
     setXY(el, dx, dy, ' scale(1.16)');
   });
 
   function release(e) {
-    if (it.mode === 'hold') {
+    // 已经转成拖动的奶瓶不走这条：它从这里往下跟衣服帽子完全一样
+    if (it.mode === 'hold' && !dragging) {
       if (holdPtr !== null && e.pointerId !== holdPtr) return;
+      if (ptr !== null && e.pointerId !== ptr) return;
+      ptr = null;
       // 和下面拖放那支一样先认 pointercancel：系统收走手势不是他没按住
       cancelHold(!!(e && e.type === 'pointercancel'));
       return;
@@ -1233,7 +1273,7 @@ function bindItem(it) {
   el.addEventListener('pointerup', release);
   el.addEventListener('pointercancel', release);
   el.addEventListener('pointerleave', (e) => {
-    if (it.mode !== 'hold') return;
+    if (it.mode !== 'hold' || dragging) return;   // 已转成拖动：交给 release 那条路收
     // 规范要求触摸指针在 pointerup 之后补发一发 pointerleave——不认 id 的话，
     // 另一根手指戳一下奶瓶再抬起，就会掐掉拇指正按着的那口奶
     if (holdPtr === null || e.pointerId !== holdPtr) return;

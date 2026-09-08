@@ -223,6 +223,7 @@ window.__T = {
   state: function () {
     return JSON.stringify({
       phase: phase, weather: weather, gear: gearItem().key, decoy: decoyItem().key,
+      holdTimer: !!holdTimer, milk: milkEl.style.height, baby: babyEl.className,
       glowKeys: Array.from(glowKeys), wrongGearMiss: wrongGearMiss,
       everDragged: everDragged, finished: finished,
       items: ITEMS.map(function (i) {
@@ -430,6 +431,75 @@ def run(tid):
     ev(tid, "__T.holdUp(); 1")
     check("他自己松手太早 → 照常记一次没成", item(st(), "bottle")["miss"] == 1,
           f"miss={item(st(),'bottle')['miss']}")
+
+    # ------------------- 断言 ⑫：奶瓶除了按住喝，也能拖给宝宝（跟别的东西一个拖法）
+    print("\n⑫ 奶瓶拖给宝宝：手指一动就从长按转成拖放")
+    ev(tid, "__T.reset(); 1")
+    ev(tid, "__T.drag('bottle'); 1")
+    s = st()
+    b = item(s, "bottle")
+    check("拖到宝宝身上 → 奶喝完了", b["done"], f"done={b['done']} cls={b['cls']}")
+    check("转拖时静默收掉长按，不记一次没成", b["miss"] == 0, f"miss={b['miss']}")
+    check("长按计时器已收住（不留一只在新一轮里替他喝完）", not s["holdTimer"])
+    check("holding 类与宝宝的 drinking 都已摘",
+          "holding" not in b["cls"] and "drinking" not in s["baby"],
+          f"cls={b['cls']} baby={s['baby']}")
+    ev(tid, "__T.drag('towel'); 1")
+    check("拖着喝完同样解锁毛巾（依赖仍从 completeStep 那个咽喉点过）",
+          item(st(), "towel")["done"])
+
+    # 拖偏：跟别的东西一样只记一次没成，不会被判成喝完
+    ev(tid, "__T.reset(); 1")
+    ev(tid, "__T.dragAway('bottle'); 1")
+    s = st()
+    b = item(s, "bottle")
+    check("拖偏没送到 → 没喝完，只记一次没成", not b["done"] and b["miss"] == 1,
+          f"done={b['done']} miss={b['miss']}")
+    check("拖偏后奶量退回满格、holding 已摘",
+          b["cls"].find("holding") < 0 and s["milk"] in ("100%", ""),
+          f"milk={s['milk']} cls={b['cls']}")
+    check("拖偏也没留下长按计时器", not s["holdTimer"])
+    # 喝完了手还没抬、又蹭出去：不能把飞向宝宝那一下掐掉，也不能把 8s 引导弄丢
+    ev(tid, "__T.reset(); 1")
+    ev(tid, "__T.holdDown(31); 1")
+    ok = wait_until(lambda: item(st(), "bottle")["done"], timeout=40)
+    time.sleep(0.8)                       # 等 completeStep 那个 420ms 回调把 idle 重新武装好
+    ev(tid, "__T.el('bottle').dispatchEvent(__T.mk('pointermove', 0, 0, 31)); 1")
+    s = st()
+    b = item(s, "bottle")
+    check("长按喝完（前置：真的喝完了）", ok and b["done"], f"done={b['done']}")
+    check("喝完后手指再蹭 → 没被重新拿起（lift 不该回来）", "lift" not in b["cls"], b["cls"])
+    ev(tid, "__T.el('bottle').dispatchEvent(__T.mk('pointerup', 0, 0, 31)); 1")
+    # 引导还在不在，只能等它自己响：clearTimeout 之后 `idleTimer` 变量仍握着那个作废的 handle，
+    # 读 `!!idleTimer` 恒为真 —— 那是个永远不会变红的假报警器，所以这里等真正的 8s nudge
+    check("喝完后手指再蹭 → 8s 引导照常响（idleTimer 没被那一蹭清掉）",
+          wait_until(lambda: any("flash" in i["cls"] for i in st()["items"]),
+                     timeout=16, step=0.3),
+          "等了 16s 没有任何一件东西 flash")
+
+    # 按着不放时手指蹭一下（<HOLD_DRAG_THRESH）：不能把他正喝着的奶掐掉
+    ev(tid, "__T.reset(); 1")
+    ev(tid, """(function(){
+      var el = __T.el('bottle'), r = el.getBoundingClientRect();
+      var fx = r.left + r.width / 2, fy = r.top + r.height / 2;
+      el.dispatchEvent(__T.mk('pointerdown', fx, fy, 21));
+      el.dispatchEvent(__T.mk('pointermove', fx + 9, fy + 8, 21));
+      el.dispatchEvent(__T.mk('pointermove', fx + 6, fy + 11, 21));
+      return 'ok';
+    })()""")
+    s = st()
+    b = item(s, "bottle")
+    check("按住时手指抖十几像素 → 还在喝（没被转成拖动）",
+          "holding" in b["cls"] and "lift" not in b["cls"] and s["holdTimer"],
+          f"cls={b['cls']} holdTimer={s['holdTimer']}")
+    ev(tid, "__T.el('bottle').dispatchEvent(__T.mk('pointerup', 0, 0, 21)); 1")
+
+    # 只点没拖：仍是「松手太早」那条老路，不能因为改动变成一点就完成
+    ev(tid, "__T.reset(); 1")
+    ev(tid, "__T.tap('bottle'); 1")
+    b = item(st(), "bottle")
+    check("只点一下不算喝完（长按语义没被拖放吃掉）", not b["done"] and b["miss"] == 1,
+          f"done={b['done']} miss={b['miss']}")
 
     # --------------------- 断言 ⑩：手一直没离开屏幕，中间换了宝宝
     # 拖到一半换轮是真会发生的（他抓着东西不放，上一轮自己走完了出门流程）。
