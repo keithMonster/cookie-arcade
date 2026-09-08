@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="../../apple-touch-icon.png" type="image/png">
+<title>电梯叮咚 · Cookie's Arcade</title>
+<style>
+:root { color-scheme: dark; --night:hsl(194 44% 13%); --ink:hsl(192 38% 19%); --cream:hsl(43 80% 91%); --gold:hsl(42 90% 68%); --mint:hsl(160 30% 73%); --travel:800ms; --door:460ms; }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { margin:0; width:100%; height:100%; overflow:hidden; overscroll-behavior:none; }
+body { background:var(--night); color:var(--cream); font-family:-apple-system,"PingFang SC",sans-serif; touch-action:none; user-select:none; -webkit-user-select:none; }
+button,a { touch-action:none; }
+button { cursor:pointer; border:0; padding:0; color:inherit; font:inherit; }
+button:focus-visible,a:focus-visible { outline:4px solid var(--cream); outline-offset:4px; }
+svg { display:block; width:100%; height:100%; pointer-events:none; }
+#back { position:fixed; top:max(12px,env(safe-area-inset-top)); left:max(12px,env(safe-area-inset-left)); z-index:20; width:48px; height:48px; border-radius:50%; background:hsl(193 35% 23%); color:var(--cream); display:grid; place-items:center; }
+#back svg { width:24px; height:24px; }
+main { width:min(100%,800px); height:100%; height:100dvh; margin:auto; padding:max(64px,calc(env(safe-area-inset-top) + 56px)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); display:grid; grid-template-areas:"mission" "scene" "controls"; grid-template-rows:80px minmax(0,1fr) 104px; gap:16px; }
+#mission { grid-area:mission; justify-self:center; width:208px; height:80px; position:relative; display:flex; gap:32px; align-items:center; background:transparent; }
+#mission .fox { width:80px; height:80px; flex:none; }
+#thought { position:relative; width:88px; height:80px; flex:none; border-radius:28px; background:var(--cream); box-shadow:0 4px 0 hsl(192 26% 26%),0 12px 24px hsl(194 80% 6% / .25); padding:8px; }
+#thought:before,#thought:after { content:""; position:absolute; border-radius:50%; background:var(--cream); }
+#thought:before { width:12px; height:12px; top:54px; left:-16px; }
+#thought:after { width:8px; height:8px; top:64px; left:-32px; }
+#scene { grid-area:scene; width:100%; max-width:560px; height:100%; max-height:620px; align-self:center; justify-self:center; position:relative; min-height:0; }
+#building { position:absolute; inset:8px 4% 16px; border-radius:32px 32px 16px 16px; background:hsl(164 22% 69%); box-shadow:0 8px 0 hsl(171 28% 32%),0 16px 32px hsl(194 80% 6% / .35); isolation:isolate; }
+#building:before { content:""; position:absolute; left:-3%; right:-3%; top:-8px; height:24px; background:hsl(161 26% 48%); border-radius:16px; box-shadow:0 4px 0 hsl(170 23% 41%); z-index:3; }
+#floors { position:absolute; top:32px; bottom:16px; left:4%; right:4%; }
+.floor { position:absolute; left:0; width:100%; height:33.333333%; border-bottom:6px solid hsl(167 22% 49%); }
+.floor:after { content:""; position:absolute; left:44%; width:12%; height:8px; bottom:8px; border-radius:4px; background:hsl(46 65% 83% / .8); }
+.room { position:absolute; width:36%; height:84%; min-height:44px; right:4%; bottom:8px; background:hsl(43 47% 85%); border-radius:48% 48% 12px 12px; box-shadow:inset 0 0 0 8px hsl(166 25% 54%); padding:8% 7% 1%; }
+.room:after { content:""; position:absolute; left:9%; right:9%; bottom:3%; height:7%; border-radius:50%; background:hsl(166 24% 49% / .45); }
+.resident { position:absolute; width:78%; height:90%; bottom:3%; left:11%; z-index:1; transform-origin:50% 95%; transition:transform 300ms; }
+.room.welcoming .resident { transform:translateX(20%) scale(.78); }
+.pot { position:absolute; bottom:8%; right:47%; width:7%; height:18%; background:hsl(16 48% 64%); border-radius:0 0 24% 24%; }
+.pot:before { content:""; position:absolute; width:70%; height:150%; left:-4%; bottom:72%; border-radius:90% 0 90% 0; background:hsl(164 30% 35%); rotate:-20deg; }
+.pot:after { content:""; position:absolute; width:65%; height:140%; right:-8%; bottom:72%; border-radius:0 90% 0 90%; background:hsl(145 28% 43%); rotate:15deg; }
+#shaft { position:absolute; top:32px; bottom:16px; left:8%; width:34%; background:hsl(179 25% 36%); border-radius:16px 16px 8px 8px; box-shadow:inset 8px 0 hsl(180 27% 29%),inset -8px 0 hsl(180 27% 29%); }
+#shaft:before { content:""; position:absolute; left:48%; width:4%; top:0; bottom:0; background:hsl(163 24% 62%); }
+#lift { position:absolute; left:0; top:0; width:100%; height:33.333333%; transform:translateY(200%); transition:transform var(--travel) cubic-bezier(.45,0,.2,1); z-index:5; }
+#cabin { position:absolute; inset:4px -4px 8px; border-radius:16px 16px 8px 8px; border:8px solid var(--gold); background:hsl(191 35% 24%); box-shadow:0 4px 0 hsl(35 54% 43%),0 8px 16px hsl(194 80% 6% / .25); }
+#cabin:before { content:""; position:absolute; left:24%; right:24%; top:-8px; height:8px; border-radius:0 0 8px 8px; background:hsl(42 100% 86%); box-shadow:0 4px 12px hsl(44 100% 78% / .4); z-index:5; }
+#cabin:after { content:""; position:absolute; left:-8px; right:-8px; bottom:-8px; height:12px; background:hsl(40 58% 60%); border-radius:0 0 8px 8px; }
+#passenger { position:absolute; left:8%; bottom:0; width:84%; height:94%; z-index:2; transition:transform 900ms cubic-bezier(.3,0,.25,1),opacity 300ms; }
+#passenger.visiting { transform:translate(var(--visit-x),var(--visit-y)) scale(.78); }
+#door-track { position:absolute; inset:0; overflow:hidden; border-radius:8px 8px 0 0; z-index:3; pointer-events:none; }
+.door { position:absolute; top:0; width:50%; height:100%; background:hsl(168 20% 78%); transition:transform var(--door) cubic-bezier(.3,0,.25,1); box-shadow:inset -2px 0 hsl(178 17% 46%),inset 3px 0 hsl(155 28% 88%); }
+.door:after { content:""; position:absolute; left:22%; width:56%; height:12%; top:20%; border-radius:8px; background:hsl(179 23% 60%); }
+.door.left { left:0; }
+.door.right { right:0; }
+#lift.open .door.left { transform:translateX(-102%); }
+#lift.open .door.right { transform:translateX(102%); }
+#lift.moving #cabin:before { animation:lamp 600ms ease-in-out infinite; }
+@keyframes lamp { 50% { background:var(--cream); box-shadow:0 0 20px hsl(45 100% 76% / .8); } }
+#controls { grid-area:controls; align-self:center; justify-self:center; display:flex; gap:24px; width:min(100%,480px); justify-content:center; }
+.control-group { display:flex; gap:8px; padding:8px; border-radius:28px; background:hsl(193 31% 22%); box-shadow:inset 0 2px hsl(183 19% 31%),0 8px 16px hsl(194 80% 6% / .25); }
+.control { width:80px; height:80px; border-radius:20px; background:var(--mint); color:var(--ink); box-shadow:0 6px 0 hsl(164 25% 43%),inset 0 2px hsl(151 32% 86%); transition:transform 120ms,background-color 160ms,box-shadow 120ms; padding:16px; position:relative; }
+.control.door-control { background:var(--gold); box-shadow:0 6px 0 hsl(34 54% 42%),inset 0 2px hsl(45 100% 85%); }
+.control:active,.control.pressed { transform:translateY(4px); box-shadow:0 2px 0 hsl(164 25% 43%); }
+.control.door-control:active,.control.door-control.pressed { box-shadow:0 2px 0 hsl(34 54% 42%); }
+.control[aria-disabled="true"] { background:hsl(179 16% 57%); }
+.control.door-control[aria-disabled="true"] { background:hsl(43 44% 63%); }
+.hint { animation:hint 1100ms ease-in-out infinite; }
+@keyframes hint { 50% { box-shadow:0 0 0 5px var(--cream),0 0 24px hsl(44 90% 74% / .65); } }
+.room.hint { animation-name:room-hint; }
+@keyframes room-hint { 50% { filter:drop-shadow(0 0 12px var(--cream)); } }
+.heart { position:fixed; width:16px; height:16px; background:hsl(14 79% 72%); rotate:45deg; pointer-events:none; z-index:15; animation:heart 1100ms ease-out forwards; }
+.heart:before,.heart:after { content:""; position:absolute; width:100%; height:100%; border-radius:50%; background:inherit; }
+.heart:before { left:-50%; }.heart:after { top:-50%; }
+@keyframes heart { to { translate:var(--dx) -96px; opacity:0; scale:.5; } }
+.tap-ring { position:fixed; width:24px; height:24px; border:3px solid var(--gold); border-radius:50%; pointer-events:none; z-index:12; animation:tap-ring 450ms ease-out forwards; }
+@keyframes tap-ring { to { scale:2; opacity:0; } }
+.no-transition #lift,.no-transition .door,.no-transition #passenger { transition:none; }
+@media (max-width:420px) {
+  main { gap:12px; grid-template-rows:72px minmax(0,1fr) 88px; }
+  #mission { height:72px; scale:.9; }
+  #controls { gap:16px; }
+  .control { width:64px; height:64px; padding:12px; border-radius:16px; }
+  .control-group { border-radius:24px; }
+  #cabin { border-width:6px; }
+}
+@media (max-width:350px) { #controls { gap:8px; } .control { width:56px; height:64px; } }
+@media (orientation:landscape) and (max-height:600px) {
+  main { width:min(100%,600px); grid-template-areas:"scene mission" "scene controls"; grid-template-columns:minmax(0,1fr) 160px; grid-template-rows:80px minmax(0,1fr); gap:16px; padding-top:max(64px,calc(env(safe-area-inset-top) + 56px)); }
+  #scene { max-height:520px; max-width:340px; }
+  #mission { scale:.75; transform-origin:50% 50%; }
+  #controls { flex-direction:column; width:auto; gap:16px; }
+  .control { width:64px; height:64px; padding:12px; border-radius:16px; }
+  .control-group { padding:8px; gap:8px; border-radius:24px; }
+  #floors,#shaft { top:24px; bottom:8px; }
+  #cabin { border-width:6px; }
+  .room { box-shadow:inset 0 0 0 6px hsl(166 25% 54%); }
+}
+@media (prefers-reduced-motion:reduce) { :root { --travel:160ms; --door:120ms; } .hint,.room.hint { animation:none; outline:4px solid var(--cream); outline-offset:2px; } #passenger { transition:opacity 150ms; } #lift.moving #cabin:before { animation:none; } }
+@media (orientation:landscape) and (max-height:360px) { main { padding-top:56px; grid-template-rows:64px minmax(0,1fr); } #mission { scale:.65; } #controls { gap:8px; } .control { width:56px; height:56px; } }
+</style>
+</head>
+<body>
+<!-- Functional icons: Lucide, ISC; see LUCIDE-LICENSE. Characters are original SVG illustrations. -->
+<a id="back" href="../../" aria-label="返回游戏台"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M19 12H5"/></svg></a>
+<main>
+  <button id="mission" aria-label="再听一次要去谁家"><span class="fox"></span><span id="thought"></span></button>
+  <div id="scene" aria-label="三层小楼，左边是电梯，右边是朋友的家">
+    <div id="building">
+      <div id="floors"></div>
+      <div id="shaft"><div id="lift" class="open"><div id="cabin"><div id="passenger"></div><div id="door-track"><div class="door left"></div><div class="door right"></div></div></div></div></div>
+    </div>
+  </div>
+  <div id="controls" aria-label="电梯控制">
+    <div class="control-group" role="group" aria-label="移动方向">
+      <button class="control" data-action="up" aria-label="往上一层"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7M12 19V5"/></svg></button>
+      <button class="control" data-action="down" aria-label="往下一层"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14m7-7-7 7-7-7"/></svg></button>
+    </div>
+    <div class="control-group" role="group" aria-label="电梯门">
+      <button class="control door-control" data-action="open" aria-label="打开电梯门"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 7-5 5 5 5m6-10 5 5-5 5"/></svg></button>
+      <button class="control door-control" data-action="close" aria-label="关上电梯门"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m20 17-5-5 5-5M4 17l5-5-5-5"/></svg></button>
+    </div>
+  </div>
+</main>
+<script>
+'use strict';
+const lift = document.querySelector('#lift'), passenger = document.querySelector('#passenger');
+const mission = document.querySelector('#mission'), thought = document.querySelector('#thought');
+const buttons = [...document.querySelectorAll('[data-action]')];
+const FRIENDS = [{id:'bear',name:'小熊',color:'hsl(37 48% 77%)'},{id:'cat',name:'小猫',color:'hsl(16 58% 83%)'},{id:'rabbit',name:'小兔',color:'hsl(149 34% 81%)'}];
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+const voice = new Audio(); voice.preload = 'auto'; voice.volume = .76;
+let audioContext, speechToken = 0, speechTimer = 0, begun = false;
+let round = 0, floor = 0, targetFloor = 1, doors = 'open', phase = 'idle', mistakes = 0, doorMistakes = 0;
+let homes = [], rooms = [], lastInput = Date.now(), successCount = 0, press = null;
+const timers = new Set();
+function shuffled(items) {
+  const result = [...items];
+  for (let i=result.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [result[i],result[j]]=[result[j],result[i]]; }
+  return result;
+}
+function animalArt(kind, coat = 'hsl(194 42% 38%)') {
+  const colors = {bear:'#b58763',cat:'#a4bcc6',rabbit:'#f2e3c8',fox:'#e98e56'};
+  const fur = colors[kind], nose = kind==='rabbit' ? '#c97e7d' : '#473c39';
+  const ears = kind==='rabbit'
+    ? '<ellipse cx="36" cy="26" rx="10" ry="24" fill="#f2e3c8"/><ellipse cx="64" cy="26" rx="10" ry="24" fill="#f2e3c8"/><ellipse cx="36" cy="24" rx="4" ry="15" fill="#dfb4a6"/><ellipse cx="64" cy="24" rx="4" ry="15" fill="#dfb4a6"/>'
+    : kind==='bear'
+      ? '<circle cx="25" cy="36" r="14" fill="#b58763"/><circle cx="75" cy="36" r="14" fill="#b58763"/><circle cx="25" cy="36" r="7" fill="#d9ae86"/><circle cx="75" cy="36" r="7" fill="#d9ae86"/>'
+      : kind==='cat'
+        ? '<path d="m22 49 1-25 21 16m12 0 21-16 1 25" fill="#a4bcc6" stroke="#a4bcc6" stroke-width="6" stroke-linejoin="round"/>'
+        : `<path d="M21 52 18 16 43 38M57 38 82 16 79 52" fill="${fur}" stroke="${fur}" stroke-width="7" stroke-linejoin="round"/><path d="m25 37-2-12 12 14m30 0 12-14-2 12" fill="#d9aaa0"/>`;
+  return `<svg viewBox="0 0 100 120" aria-hidden="true"><ellipse cx="50" cy="114" rx="29" ry="4" fill="#243e4533"/><rect x="27" y="78" width="46" height="36" rx="18" fill="${coat}"/><ellipse cx="26" cy="94" rx="9" ry="15" fill="${fur}"/><ellipse cx="74" cy="94" rx="9" ry="15" fill="${fur}"/>${ears}<ellipse cx="50" cy="58" rx="33" ry="30" fill="${fur}"/><ellipse cx="50" cy="70" rx="22" ry="16" fill="#fff0d4"/><circle cx="37" cy="57" r="3.5" fill="#363b38"/><circle cx="63" cy="57" r="3.5" fill="#363b38"/><ellipse cx="50" cy="68" rx="5" ry="3.5" fill="${nose}"/><path d="M50 71v5m-6 0q6 6 12 0" fill="none" stroke="#634e46" stroke-width="2" stroke-linecap="round"/><ellipse cx="30" cy="69" rx="6" ry="3" fill="#dc9c8780"/><ellipse cx="70" cy="69" rx="6" ry="3" fill="#dc9c8780"/><path d="m41 88 9 5 9-5-3 12H44Z" fill="#f8d786"/></svg>`;
+}
+function stopSpeech() {
+  speechToken++; clearTimeout(speechTimer); voice.onended = voice.onerror = null; voice.pause();
+}
+function say(names) {
+  if (!begun || document.hidden) return;
+  stopSpeech(); const token = speechToken, queue = Array.isArray(names) ? [...names] : [names];
+  const next = () => {
+    if (token!==speechToken) return;
+    clearTimeout(speechTimer); voice.onended=voice.onerror=null; voice.pause();
+    const name = queue.shift(); if (!name) return;
+    let finished = false;
+    const done = () => { if (finished || token!==speechToken) return; finished=true; next(); };
+    voice.onended=voice.onerror=done; voice.src=`audio/${name}.mp3`;
+    speechTimer=setTimeout(done,6000); voice.play().catch(done);
+  };
+  next();
+}
+function input() {
+  lastInput=Date.now(); const first=!begun; begun=true;
+  if (!audioContext) { const Context=window.AudioContext||window.webkitAudioContext; if (Context) audioContext=new Context(); }
+  if (audioContext?.state==='suspended') audioContext.resume().catch(()=>{});
+  return first;
+}
+function tone(frequency=420,duration=.13) {
+  if (audioContext?.state!=='running') return;
+  const oscillator=audioContext.createOscillator(), gain=audioContext.createGain(), now=audioContext.currentTime;
+  oscillator.type='sine'; oscillator.frequency.setValueAtTime(frequency,now);
+  gain.gain.setValueAtTime(.001,now); gain.gain.exponentialRampToValueAtTime(.12,now+.015); gain.gain.exponentialRampToValueAtTime(.001,now+duration);
+  oscillator.connect(gain).connect(audioContext.destination); oscillator.start(now); oscillator.stop(now+duration);
+}
+function later(callback,delay) {
+  const token=round;
+  const timer=setTimeout(()=>{ timers.delete(timer); if (token===round) callback(); },delay);
+  timers.add(timer); return timer;
+}
+function clearTimers() { timers.forEach(clearTimeout); timers.clear(); }
+function bounce(el,wrong=false) {
+  if (reduced.matches) return;
+  el.animate(wrong ? [{translate:'0'},{translate:'-5px'},{translate:'5px'},{translate:'0'}] : [{scale:1},{scale:1.08},{scale:1}],{duration:320});
+}
+function taskName() { return `task_${homes[targetFloor].id}`; }
+function nextAction() { return floor===targetFloor ? 'open' : doors==='open' ? 'close' : floor<targetFloor ? 'up' : 'down'; }
+function render() {
+  lift.style.transform=`translateY(${(2-floor)*100}%)`;
+  lift.classList.toggle('open',doors==='open'); lift.classList.toggle('moving',phase==='moving');
+  const help=mistakes>=2 || (doors==='open' && doorMistakes>=2);
+  buttons.forEach(button=>{
+    button.setAttribute('aria-disabled',String(phase!=='idle'));
+    button.classList.toggle('hint',phase==='idle' && help && button.dataset.action===nextAction());
+  });
+  rooms.forEach((room,index)=>{
+    room.classList.toggle('hint',phase==='idle' && mistakes>=2 && index===targetFloor);
+    room.classList.toggle('welcoming',phase==='success' && index===targetFloor);
+  });
+}
+function miss(name) { if (name==='close_first') doorMistakes++; else mistakes++; bounce(passenger,true); tone(250); render(); return name; }
+function locationHint() { return floor<targetFloor ? 'above' : 'below'; }
+function hearts() {
+  const rect=rooms[targetFloor].getBoundingClientRect();
+  for (let i=0;i<6;i++) {
+    const heart=document.createElement('i'); heart.className='heart';
+    heart.style.cssText=`left:${rect.x+rect.width*.5}px;top:${rect.y+rect.height*.5}px;--dx:${(i-2.5)*16}px;animation-delay:${i*80}ms`;
+    document.body.append(heart); setTimeout(()=>heart.remove(),1700);
+  }
+}
+// 完成只能由玩家开门后的停站检查触发；提示、到站与计错都不调用它。
+function completeStop(token) {
+  if (token!==round || phase!=='idle' || doors!=='open' || floor!==targetFloor) return false;
+  phase='success'; mistakes=0; doorMistakes=0; successCount++; render();
+  const from=passenger.getBoundingClientRect(), to=rooms[targetFloor].getBoundingClientRect();
+  passenger.style.setProperty('--visit-x',`${to.x-from.width*.2-from.x}px`);
+  passenger.style.setProperty('--visit-y',`${to.y+to.height*.2-from.y}px`);
+  passenger.classList.add('visiting'); say('hello'); tone(784,.25);
+  later(()=>{ bounce(rooms[targetFloor]); hearts(); },900);
+  later(()=>dealRound(),3300);
+  return true;
+}
+function operateDoor(open) {
+  if ((doors==='open')===open) { bounce(document.querySelector('#cabin')); return open ? 'door_open' : 'door_closed'; }
+  phase=open?'opening':'closing'; doors=open?'open':'closed'; if (!open) doorMistakes=0; render();
+  const token=round;
+  later(()=>{
+    phase='idle'; render();
+    if (!open) return;
+    if (!completeStop(token)) say(miss(locationHint()));
+  },reduced.matches?160:500);
+  return open?'opening':'closing';
+}
+function move(direction) {
+  if (doors!=='closed') return miss('close_first');
+  const destination=floor+direction;
+  if (destination<0 || destination>2) { bounce(lift,true); return miss(direction>0?'top':'bottom'); }
+  const farther=Math.abs(destination-targetFloor)>Math.abs(floor-targetFloor);
+  phase='moving'; floor=destination;
+  if (!farther) mistakes=0;
+  render();
+  later(()=>{
+    phase='idle'; render(); tone(660,.2);
+    if (farther) say(miss(mistakes>=1?locationHint():'look'));
+  },reduced.matches?200:840);
+  return direction>0?'up':'down';
+}
+function perform(action) {
+  if (!['up','down','open','close'].includes(action) || phase!=='idle') return null;
+  if (action==='open' || action==='close') return operateDoor(action==='open');
+  return move(action==='up'?1:-1);
+}
+function handleAction(action, firstFromPress=false) {
+  const first=input()||firstFromPress, button=buttons.find(b=>b.dataset.action===action);
+  if (!button) return;
+  tone(action==='open'||action==='close'?380:480);
+  if (press) return;
+  button.classList.add('pressed'); later(()=>{if (press?.button!==button) button.classList.remove('pressed');},130);
+  const copy=perform(action);
+  if (copy) say(first?[taskName(),copy]:copy);
+  else if (first) say(taskName());
+}
+function cancelPress() {
+  const old=press; press=null;
+  if (!old) return;
+  old.button.classList.remove('pressed');
+  try {old.button.releasePointerCapture(old.id);} catch (_) {}
+}
+function startPress(event,button) {
+  if (event.pointerType==='mouse'&&event.button!==0) return;
+  event.preventDefault(); const first=input(); tone(400);
+  if (press) return;
+  // 按下时锁住轮次与可操作性，忙态开始的手势不能等停稳后兑现。
+  press={id:event.pointerId,button,rect:button.getBoundingClientRect(),token:round,eligible:phase==='idle',first};
+  button.classList.add('pressed'); button.focus({preventScroll:true});
+  try {button.setPointerCapture(event.pointerId);} catch (_) {}
+}
+function endPress(event) {
+  if (!press||event.pointerId!==press.id) return;
+  const old=press, rect=old.rect; cancelPress();
+  if (!old.eligible||old.token!==round||phase!=='idle') return;
+  if (event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom) return;
+  handleAction(old.button.dataset.action,old.first);
+}
+function buildHomes() {
+  homes=shuffled(FRIENDS); rooms=[];
+  const floors=document.querySelector('#floors'); floors.replaceChildren();
+  homes.forEach((friend,index)=>{
+    const level=document.createElement('div'); level.className='floor'; level.style.top=`${(2-index)*100/3}%`;
+    const room=document.createElement('button'); room.className='room'; room.setAttribute('aria-label',`${friend.name}的家`); room.style.background=friend.color;
+    room.innerHTML=`<span class="resident">${animalArt(friend.id)}</span>`;
+    room.addEventListener('click',()=>{ input(); bounce(room); tone(460); say([`home_${friend.id}`,taskName()]); });
+    level.append(room); const plant=document.createElement('i'); plant.className='pot'; level.append(plant); floors.append(level); rooms.push(room);
+  });
+}
+function dealRound() {
+  round++; cancelPress(); clearTimers(); stopSpeech(); phase='idle'; doors='open'; mistakes=0; doorMistakes=0; lastInput=Date.now();
+  document.body.classList.add('no-transition'); passenger.classList.remove('visiting');
+  buttons.forEach(button=>button.classList.remove('pressed'));
+  const options=[0,1,2].filter(index=>index!==floor);
+  targetFloor=round===1?1:options[Math.floor(Math.random()*options.length)];
+  thought.innerHTML=animalArt(homes[targetFloor].id); mission.setAttribute('aria-label',`小狐狸要找${homes[targetFloor].name}，点这里再听一次`);
+  render(); void lift.offsetWidth; document.body.classList.remove('no-transition');
+  if (begun) say(taskName());
+}
+function repeatTask() { input(); bounce(mission); tone(520); say(taskName()); }
+function ripple(x,y) {
+  const ring=document.createElement('i'); ring.className='tap-ring'; ring.style.left=`${x-12}px`; ring.style.top=`${y-12}px`;
+  document.body.append(ring); setTimeout(()=>ring.remove(),500);
+}
+buttons.forEach(button=>{
+  button.addEventListener('pointerdown',event=>startPress(event,button));
+  button.addEventListener('click',event=>{
+    // 触屏/鼠标由 pointerup 完成；保留辅助技术的无指针激活。
+    if (event.detail!==0||event.pointerType) {event.preventDefault();return;}
+    handleAction(button.dataset.action);
+  });
+});
+document.addEventListener('pointerup',endPress);
+document.addEventListener('pointercancel',event=>{if (press?.id===event.pointerId) cancelPress();});
+document.addEventListener('lostpointercapture',event=>{if (press?.id===event.pointerId) cancelPress();});
+mission.addEventListener('click',repeatTask);
+document.querySelector('#cabin').addEventListener('click',()=>{ repeatTask(); bounce(passenger); });
+document.addEventListener('pointerdown',event=>{
+  if (event.target.closest('a,button,#cabin')) return;
+  const first=input(); ripple(event.clientX,event.clientY); tone(320); if (first) say(taskName());
+});
+document.addEventListener('keydown',event=>{
+  if (event.metaKey||event.ctrlKey||event.altKey) return;
+  if (event.key==='Escape') { location.href='../../'; return; }
+  if (event.key==='Tab') return;
+  if (event.repeat) { event.preventDefault(); return; }
+  if (event.key.toLowerCase()==='f') { event.preventDefault(); if (document.fullscreenElement) document.exitFullscreen?.(); else document.documentElement.requestFullscreen?.().catch(()=>{}); return; }
+  const actions={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'open',ArrowRight:'close',o:'open',c:'close'};
+  const action=actions[event.key];
+  if (action) { event.preventDefault(); handleAction(action); return; }
+  if (event.key==='Enter'||event.key===' ') {
+    const focused=document.activeElement;
+    if (focused?.matches('[data-action]')) {event.preventDefault();handleAction(focused.dataset.action);return;}
+    if (focused?.matches('button,a')) return;
+  }
+  event.preventDefault(); const first=input(); tone(300); ripple(innerWidth/2,innerHeight/2); if (first) say(taskName());
+});
+window.addEventListener('blur',cancelPress);
+window.addEventListener('resize',cancelPress);
+document.addEventListener('visibilitychange',()=>{ cancelPress(); if (document.hidden) stopSpeech(); else { lastInput=Date.now(); if (begun&&phase==='idle') say(taskName()); } });
+window.addEventListener('pagehide',()=>{ round++; cancelPress(); clearTimers(); stopSpeech(); });
+window.addEventListener('pageshow',event=>{ if (event.persisted) dealRound(); });
+setInterval(()=>{
+  if (!begun||document.hidden||phase!=='idle'||Date.now()-lastInput<10000) return;
+  bounce(mission); say(taskName()); lastInput=Date.now();
+},1000);
+document.querySelector('#mission .fox').innerHTML=animalArt('fox'); passenger.innerHTML=animalArt('fox');
+buildHomes(); dealRound();
+</script>
+</body>
+</html>

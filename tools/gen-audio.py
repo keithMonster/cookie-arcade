@@ -339,6 +339,28 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
         "next.mp3": ("text", "又有一条小路要修啦！", SENT_SPEED),
     }
 
+    m["elevator"] = {
+        "task_bear.mp3": ("text", "小狐狸要去找小熊。看看小熊家在哪里呀！", SENT_SPEED),
+        "task_cat.mp3": ("text", "小狐狸要去找小猫。看看小猫家在哪里呀！", SENT_SPEED),
+        "task_rabbit.mp3": ("text", "小狐狸要去找小兔。看看小兔家在哪里呀！", SENT_SPEED),
+        "home_bear.mp3": ("text", "这是小熊的家。", SENT_SPEED),
+        "home_cat.mp3": ("text", "这是小猫的家。", SENT_SPEED),
+        "home_rabbit.mp3": ("text", "这是小兔的家。", SENT_SPEED),
+        "door_open.mp3": ("text", "门已经打开啦。", SENT_SPEED),
+        "door_closed.mp3": ("text", "门关好啦。", SENT_SPEED),
+        "opening.mp3": ("text", "开门喽！", SENT_SPEED),
+        "closing.mp3": ("text", "关门喽！", SENT_SPEED),
+        "up.mp3": ("text", "往上走一层。", SENT_SPEED),
+        "down.mp3": ("text", "往下走一层。", SENT_SPEED),
+        "close_first.mp3": ("text", "先把门关好，电梯才能走哦。", SENT_SPEED),
+        "above.mp3": ("text", "还没到呢，朋友家在上面。", SENT_SPEED),
+        "below.mp3": ("text", "还没到呢，朋友家在下面。", SENT_SPEED),
+        "top.mp3": ("text", "已经到最上面啦。", SENT_SPEED),
+        "bottom.mp3": ("text", "已经到最下面啦。", SENT_SPEED),
+        "hello.mp3": ("text", "叮咚！找到朋友啦！", SENT_SPEED),
+        "look.mp3": ("text", "看看小狐狸要去谁家呀。", SENT_SPEED),
+    }
+
     return m
 
 

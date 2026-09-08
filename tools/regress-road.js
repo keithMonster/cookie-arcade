@@ -112,8 +112,8 @@ async (page) => {
   check('反向样本：拿掉连通判定会把错块放进去', (await state()).filled[0]);
   await page.unroute('**/games/road/');
   await page.goto('http://127.0.0.1:8907/');
-  check('首页27款且修路喽排第一',await page.locator('a.tile').count()===27 && await page.locator('a.tile').first().getAttribute('href')==='games/road/');
-  await page.locator('a.tile').first().click();
+  check('首页28款且包含修路喽',await page.locator('a.tile').count()===28 && await page.locator('a.tile[href="games/road/"]').count()===1);
+  await page.locator('a.tile[href="games/road/"]').click();
   check('首页可进入新游戏',page.url().endsWith('/games/road/'));
   await page.locator('#back').click(); check('返回键回到首页',page.url()==='http://127.0.0.1:8907/');
   check('无页面JS异常',errors.length===0,errors);
