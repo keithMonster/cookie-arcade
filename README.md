@@ -38,6 +38,7 @@ https://keithmonster.github.io/cookie-arcade/
 ## Navigation
 
 - Tap a tile, press `1`–`9` for an exact game, or any other key for a random one
+- Scroll to the bottom and tap any Twirlywoo for a happy hop and its own call. Keyboard: focus a bird with `Tab`, then use `Enter` or `Space`.
 - Inside a game: `Esc` or the top-left corner returns home; `F` toggles fullscreen
 
 ## On iPad

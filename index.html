@@ -49,6 +49,7 @@
   }
   .tile {
     position: relative;
+    z-index: 1;
     border-radius: 18px;
     overflow: hidden;
     cursor: pointer;
@@ -1526,6 +1527,7 @@
   const tiles = document.querySelectorAll('.tile');
   document.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey) return;
+    if (e.target.closest('.tw-idle-bird')) return;
     const idx = parseInt(e.key, 10);
     if (idx >= 1 && idx <= tiles.length) {
       const tile = tiles[idx - 1];

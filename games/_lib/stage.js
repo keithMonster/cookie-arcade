@@ -216,7 +216,7 @@
   /* ========== idle 角色排（瘫倒态/站立切换） ========== */
   .tw-idle-cast {
     position: fixed;
-    z-index: -5;
+    z-index: 0;
     left: 0; right: 0;
     bottom: 4%;      /* 落在台面上 */
     display: flex;
@@ -229,15 +229,45 @@
   .tw-idle-cast .tw-idle-bird {
     height: 22vh;
     aspect-ratio: 200 / 270;
-    transition: transform 1200ms cubic-bezier(0.34, 1.4, 0.64, 1),
-                opacity 800ms ease;
-    will-change: transform;
+    min-width: 44px;
+    min-height: 44px;
+    border: 0;
+    padding: 0;
+    background: none;
+    border-radius: 45%;
+    cursor: pointer;
+    pointer-events: auto;
+    touch-action: pan-y;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tw-idle-cast .tw-idle-bird:focus-visible {
+    outline: 3px solid #b97b35;
+    outline-offset: 4px;
   }
   .tw-idle-cast .tw-idle-bird svg {
     width: 100%;
     height: 100%;
     display: block;
     filter: drop-shadow(0 5px 0 rgba(0, 0, 0, 0.08));
+    pointer-events: none;
+    transform-origin: 50% 95%;
+  }
+  .tw-idle-bird.is-reacting svg {
+    animation: tw-cast-hop 680ms ease-out;
+  }
+  @keyframes tw-cast-hop {
+    0% { transform: scale(1.08, .92); }
+    28% { transform: translateY(var(--tw-hop, -18%)) rotate(var(--tw-tilt, -7deg)) scale(.96, 1.04); }
+    55% { transform: translateY(0) scale(1.06, .94); }
+    76% { transform: translateY(-5%) rotate(calc(var(--tw-tilt, -7deg) * -.5)); }
+    100% { transform: none; }
+  }
+  .tw-idle-bird[data-char="chick"] { --tw-hop: -26%; --tw-tilt: 9deg; }
+  .tw-idle-bird[data-char="chickedy"] { --tw-hop: -22%; --tw-tilt: -10deg; }
+  .tw-idle-bird[data-char="toodloo"] { --tw-hop: -15%; --tw-tilt: 7deg; }
+  .tw-idle-bird[data-char="bighoo"] { --tw-hop: -10%; --tw-tilt: -5deg; }
+  @media (prefers-reduced-motion: reduce) {
+    .tw-idle-bird.is-reacting svg { animation: none; }
   }
   /* 体型梯度：站立时按真实大小排 */
   .tw-idle-cast .tw-idle-bird[data-char="bighoo"]   { height: 26vh; }
@@ -323,7 +353,7 @@
     return stage;
   }
 
-  // 挂载首页 idle 角色排（瘫倒/站立切换）
+  // 挂载首页角色排：点谁谁回应，30s 无操作装睡。
   // 30s 无操作自动切 lying，任意触屏复活
   function mountIdleCast(opts = {}) {
     if (!window.TW || !TW.svg) return null;
@@ -333,10 +363,33 @@
     // 4 角色按真实排序：唧唧 / 啾啾在前（最小），红涂涂 / 蓝呼呼在后
     const order = ['chick', 'chickedy', 'toodloo', 'bighoo'];
     order.forEach(ck => {
-      const bird = document.createElement('div');
+      const bird = document.createElement('button');
+      bird.type = 'button';
       bird.className = 'tw-idle-bird';
       bird.dataset.char = ck;
+      bird.setAttribute('aria-label', TW.CHARS[ck].name);
       bird.innerHTML = TW.svg(ck, { expression: 'idle', noFilter: true });
+      let reactionTimer;
+      let lastCall = -Infinity;
+      bird.addEventListener('click', () => {
+        wake();
+        clearTimeout(reactionTimer);
+        bird.classList.add('is-reacting');
+        bird.innerHTML = TW.svg(ck, { expression: 'cheer', noFilter: true });
+        reactionTimer = setTimeout(() => {
+          bird.classList.remove('is-reacting');
+          bird.innerHTML = TW.svg(ck, { expression: isLying ? 'lying' : 'idle', noFilter: true });
+        }, 720);
+        // 连点始终重播动作，同一只鸟的叫声不叠在一起。
+        const now = performance.now();
+        if (now - lastCall >= TW.CHARS[ck].call.dur * 1000 + 80) {
+          lastCall = now;
+          TW.playCall(ck);
+        }
+      });
+      bird.addEventListener('keydown', e => {
+        if (e.repeat && (e.key === 'Enter' || e.key === ' ')) e.preventDefault();
+      });
       cast.appendChild(bird);
     });
     document.body.appendChild(cast);
@@ -351,6 +404,7 @@
       isLying = lying;
       const birds = cast.querySelectorAll('.tw-idle-bird');
       birds.forEach(b => {
+        if (b.classList.contains('is-reacting')) return;
         const ck = b.dataset.char;
         b.innerHTML = TW.svg(ck, { expression: lying ? 'lying' : 'idle', noFilter: true });
       });
