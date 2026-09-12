@@ -20,6 +20,7 @@ main{height:100%;height:100dvh;max-width:1100px;margin:auto;display:grid;grid-te
 @media(max-width:600px){#bus{left:3%;width:79%;height:31%;top:39%;min-height:125px;border-radius:24px 40px 16px 16px;border-bottom-width:12px}#bus:before{border-width:5px}.wheel{border-width:7px;box-shadow:inset 0 0 0 5px #aac2ac;bottom:-19%}.ticket{width:44px;height:44px;padding:6px;top:-42%;right:-10%}#waiting{width:80px;height:96px;right:1%;bottom:11%}#station{width:72px;height:72px;right:8%;top:12%}#door{border-width:4px}#scene{border-radius:32px}.control{width:80px;height:80px}main{gap:12px;grid-template-rows:minmax(0,1fr) 96px}}
 @media(orientation:landscape) and (max-height:550px){main{grid-template-columns:minmax(0,1fr) 88px;grid-template-rows:minmax(0,1fr);padding-top:64px;gap:16px}#controls{flex-direction:column;gap:16px}.control{width:64px;height:64px;padding:14px;border-radius:20px}#bus{top:30%;height:43%;min-height:100px;width:72%}#waiting{width:72px;height:80px}#station{top:4%;width:60px;height:60px;padding:8px}#station:after{height:65%}.ticket{width:44px;height:44px;top:-37%}#scene{border-radius:24px}}
 @media(prefers-reduced-motion:reduce){#bus,.rider,#waiting,.panel{transition-duration:100ms}.hint{animation:none;outline:4px solid #fff}.bump{animation:none;filter:brightness(1.15)}}
+.rider,#waiting{cursor:grab}.drag-source{opacity:.25!important}.drag-ghost{position:fixed;z-index:20;pointer-events:none;filter:drop-shadow(0 8px 8px #29494b40)}.drop-ready{outline:4px dashed #fff0ce;outline-offset:4px}.drop-ready.drop-over{outline-style:solid;filter:brightness(1.12)}#platform{position:absolute;left:6%;right:25%;bottom:3%;height:18%;min-height:44px;border-radius:24px;background:#fff0ce35;visibility:hidden;pointer-events:none;z-index:5}#platform.drop-ready{visibility:visible}#platform svg{width:40px;margin:auto}
 </style>
 </head>
 <body>
@@ -31,7 +32,7 @@ main{height:100%;height:100dvh;max-width:1100px;margin:auto;display:grid;grid-te
 <div id="bus"><i class="wheel"></i><i class="wheel rear"></i>
 <button class="rider" data-person="0"></button><button class="rider" data-person="1"></button><span id="new-rider"></span>
 <div id="door"><i class="panel left"></i><i class="panel right"></i></div></div>
-<button id="waiting" aria-label="让等车的小动物上车"></button></div>
+<button id="waiting" aria-label="让等车的小动物上车"></button><div id="platform" aria-hidden="true"></div></div>
 <div id="controls">
 <button class="control" id="door-button" aria-label="开关车门" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16M2 20h20M12 2v18M10 12h.01M14 12h.01"/></svg></button>
 <button class="control" id="go" aria-label="开公交车出发"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="2"/><path d="M12 14v8M10 12 2.1 10M14 12l7.9-2"/></svg></button>
@@ -79,7 +80,7 @@ function highlight(){
   (id.startsWith('rider')?riders[leaving]:$('#'+id)).classList.add('hint');
 }
 function miss(name){misses++;say(name);if(misses>=2)highlight();}
-function changed(){revision++;pending=null;misses=0;document.querySelectorAll('.hint').forEach(el=>el.classList.remove('hint'));}
+function changed(){revision++;clearPending();misses=0;document.querySelectorAll('.hint').forEach(el=>el.classList.remove('hint'));}
 function later(fn,ms){clearTimeout(transitionTimer);transitionTimer=setTimeout(()=>{phase='idle';revision++;fn?.();},ms);}
 function action(id){
   if(phase!=='idle'){sound(260);return;}
@@ -108,25 +109,54 @@ function dealRound(){
   if(!passengers.length){passengers=[{kind:'rabbit',dest:stop},{kind:'bear',dest:(stop+1)%3}];if(Math.random()<.5)passengers.reverse();}
   leaving=passengers.findIndex(person=>person.dest===stop);
   waitingPerson={kind:animals.find(kind=>!passengers.some(person=>person.kind===kind)),dest:(stop+2)%3};
-  bus.className='';$('#door-button').setAttribute('aria-pressed','false');$('#station').innerHTML=stopArt(stops[stop]);$('#station').setAttribute('aria-label',`${stopNames[stop]}站，再听一次`);
+  bus.className='';$('#door-button').setAttribute('aria-pressed','false');$('#station').innerHTML=stopArt(stops[stop]);$('#platform').innerHTML=stopArt(stops[stop]);$('#station').setAttribute('aria-label',`${stopNames[stop]}站，再听一次`);
   riders.forEach((el,i)=>{const person=passengers[i];el.className='rider';el.tabIndex=0;el.setAttribute('aria-label',`让去${stopNames[person.dest]}的小动物下车`);el.innerHTML=`<span class="animal">${animalArt(person.kind)}</span><span class="ticket">${stopArt(stops[person.dest])}</span>`;});
   $('#waiting').className='';$('#waiting').tabIndex=0;$('#waiting').innerHTML=animalArt(waitingPerson.kind);$('#new-rider').className='';$('#new-rider').style.left=leaving===0?'8%':'35%';$('#new-rider').innerHTML=`${animalArt(waitingPerson.kind)}<span class="ticket">${stopArt(stops[waitingPerson.dest])}</span>`;
 }
 const targets=[$('#station'),...riders,$('#waiting'),$('#door-button'),$('#go')];
 function idOf(el){return el.classList.contains('rider')?`rider-${el.dataset.person}`:el.id;}
+function clearPending(returnHome=false){
+  const p=pending;pending=null;if(!p)return;
+  p.el.classList.remove('drag-source');document.querySelectorAll('.drop-ready,.drop-over').forEach(el=>el.classList.remove('drop-ready','drop-over'));
+  if(p.el.hasPointerCapture(p.id))p.el.releasePointerCapture(p.id);
+  if(!p.ghost)return;
+  if(!returnHome){p.ghost.remove();return;}
+  p.ghost.style.transition='left 180ms,top 180ms,opacity 180ms';p.ghost.style.left=`${p.box.left}px`;p.ghost.style.top=`${p.box.top}px`;p.ghost.style.opacity='0';
+  setTimeout(()=>p.ghost.remove(),180);
+}
+function inside(el,x,y,pad=0){const r=el.getBoundingClientRect();return x>=r.left-pad&&x<=r.right+pad&&y>=r.top-pad&&y<=r.bottom+pad;}
+function dropTargets(p){return p.el.id==='waiting'?[bus]:[$('#platform'),$('#station')];}
+function movePending(e){
+  const p=pending;if(!p||p.id!==e.pointerId||!p.draggable)return;
+  if(p.revision!==revision||phase!=='idle'){clearPending();return;}
+  if(!p.ghost&&Math.hypot(e.clientX-p.x,e.clientY-p.y)<14)return;
+  if(!p.ghost){
+    p.el.classList.remove('bump');p.box=p.el.getBoundingClientRect();p.ghost=document.createElement('div');p.ghost.className='drag-ghost';p.ghost.setAttribute('aria-hidden','true');p.ghost.innerHTML=p.el.innerHTML;
+    p.ghost.style.width=`${p.box.width}px`;p.ghost.style.height=`${p.box.height}px`;document.body.append(p.ghost);p.el.classList.add('drag-source');dropTargets(p).forEach(el=>el.classList.add('drop-ready'));
+  }
+  p.ghost.style.left=`${p.box.left+e.clientX-p.x}px`;p.ghost.style.top=`${p.box.top+e.clientY-p.y}px`;
+  dropTargets(p).forEach(el=>el.classList.toggle('drop-over',inside(el,e.clientX,e.clientY,12)));
+}
 targets.forEach(el=>{
   el.addEventListener('pointerdown',e=>{
-    if(!e.isPrimary||e.button!==0)return;e.preventDefault();feedback(el);
-    if(phase!=='idle'){pending=null;return;}pending={id:e.pointerId,el,revision,x:e.clientX,y:e.clientY};el.setPointerCapture(e.pointerId);
+    if(!e.isPrimary||e.button!==0||pending)return;e.preventDefault();feedback(el);
+    if(phase!=='idle')return;pending={id:e.pointerId,el,revision,x:e.clientX,y:e.clientY,draggable:el.classList.contains('rider')||el.id==='waiting'};el.setPointerCapture(e.pointerId);
   });
+  el.addEventListener('pointermove',movePending);
   el.addEventListener('pointerup',e=>{
-    if(!pending||pending.id!==e.pointerId||pending.el!==el)return;const p=pending;pending=null;
+    if(!pending||pending.id!==e.pointerId||pending.el!==el)return;movePending(e);const p=pending;if(!p)return;
+    if(p.ghost){
+      const atOrigin=[el,...el.querySelectorAll('.ticket')].some(target=>inside(target,e.clientX,e.clientY));
+      const hit=!atOrigin&&dropTargets(p).some(target=>inside(target,e.clientX,e.clientY,12));
+      clearPending(!hit);if(hit&&p.revision===revision)action(idOf(el));return;
+    }
+    clearPending();
     const areas=[el,...el.querySelectorAll('.ticket')].map(node=>node.getBoundingClientRect());
-    const inside=areas.some(r=>e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom);
-    if(p.revision!==revision||!inside||Math.hypot(e.clientX-p.x,e.clientY-p.y)>36)return;
+    const releasedInside=areas.some(r=>e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom);
+    if(p.revision!==revision||!releasedInside||Math.hypot(e.clientX-p.x,e.clientY-p.y)>36)return;
     action(idOf(el));
   });
-  el.addEventListener('pointercancel',()=>{pending=null;});el.addEventListener('lostpointercapture',()=>{pending=null;});
+  for(const event of ['pointercancel','lostpointercapture'])el.addEventListener(event,e=>{if(pending?.id===e.pointerId&&pending.el===el)clearPending();});
   el.addEventListener('click',e=>{e.preventDefault();if(e.detail===0){feedback(el);action(idOf(el));}});
   el.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();if(!e.repeat){feedback(el);action(idOf(el));}}});
   el.addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter')e.preventDefault();});
@@ -138,9 +168,9 @@ document.addEventListener('keydown',e=>{
   const keys={ArrowLeft:'door-button',ArrowRight:'go','1':'rider-0','2':'rider-1','3':'waiting'};
   const id=keys[e.key];if(id){e.preventDefault();const el=id.startsWith('rider')?riders[Number(id.at(-1))]:$('#'+id);feedback(el);action(id);}
 });
-for(const event of ['blur','resize'])window.addEventListener(event,()=>{pending=null;});
-document.addEventListener('visibilitychange',()=>{pending=null;if(document.hidden)hush();});
-setInterval(()=>{if(started&&!document.hidden&&phase==='idle'&&Date.now()-lastInput>10000){lastInput=Date.now();highlight();say(!unloaded?'look':!boarded?'board_first':doors?'close_first':'ready');}},1200);
+for(const event of ['blur','resize'])window.addEventListener(event,()=>clearPending());
+document.addEventListener('visibilitychange',()=>{clearPending();if(document.hidden)hush();});
+setInterval(()=>{if(started&&!pending&&!document.hidden&&phase==='idle'&&Date.now()-lastInput>10000){lastInput=Date.now();highlight();say(!unloaded?'look':!boarded?'board_first':doors?'close_first':'ready');}},1200);
 dealRound();
 </script>
 </body>
