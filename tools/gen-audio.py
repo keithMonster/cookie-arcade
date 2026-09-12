@@ -361,6 +361,24 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
         "look.mp3": ("text", "看看小狐狸要去谁家呀。", SENT_SPEED),
     }
 
+    m["bus"] = {
+        "stop_park.mp3": ("text", "公园站到啦，谁要在这里下车呀？", SENT_SPEED),
+        "stop_beach.mp3": ("text", "海边站到啦，谁要在这里下车呀？", SENT_SPEED),
+        "stop_home.mp3": ("text", "到家啦，谁要在这里下车呀？", SENT_SPEED),
+        "open.mp3": ("text", "车门打开啦！先下车，再上车。", SENT_SPEED),
+        "close.mp3": ("text", "车门关好啦！", SENT_SPEED),
+        "open_first.mp3": ("text", "车门还关着呢，先开门吧！", SENT_SPEED),
+        "close_first.mp3": ("text", "先关好车门，才能出发哦！", SENT_SPEED),
+        "leave_first.mp3": ("text", "还有朋友要下车呢，先下车，再上车！", SENT_SPEED),
+        "board_first.mp3": ("text", "站台上还有朋友等着上车呢！", SENT_SPEED),
+        "not_yet.mp3": ("text", "我还没到站呢，看看我的小图片！", SENT_SPEED),
+        "bye.mp3": ("text", "到站啦，下车喽，再见！", SENT_SPEED),
+        "aboard.mp3": ("text", "上车啦，坐坐好！", SENT_SPEED),
+        "go.mp3": ("text", "嘀嘀！公交车出发啦！", SENT_SPEED),
+        "look.mp3": ("text", "看看站牌，谁的小图片和站牌一样呀？", SENT_SPEED),
+        "ready.mp3": ("text", "大家坐好啦，可以开车喽！", SENT_SPEED),
+    }
+
     return m
 
 

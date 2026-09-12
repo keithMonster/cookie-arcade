@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="../../apple-touch-icon.png">
+<title>公交来啦 · Cookie's Arcade</title>
+<style>
+:root{color-scheme:light;--ink:#29494b;--cream:#fff0ce;--mint:#9ac6a6;--gold:#f5bc54}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}body{background:#c5ddd5;font-family:-apple-system,"PingFang SC",sans-serif;touch-action:none;user-select:none;-webkit-user-select:none;color:var(--ink)}button,a{touch-action:none}button{border:0;cursor:pointer;font:inherit;color:inherit;padding:0}button:focus-visible,a:focus-visible{outline:4px solid #fff;outline-offset:4px}svg{width:100%;height:100%;display:block;pointer-events:none}
+#back{position:fixed;left:max(12px,env(safe-area-inset-left));top:max(12px,env(safe-area-inset-top));width:48px;height:48px;padding:12px;background:var(--cream);border-radius:50%;z-index:10;color:var(--ink)}
+main{height:100%;height:100dvh;max-width:1100px;margin:auto;display:grid;grid-template-rows:minmax(0,1fr) 104px;gap:16px;padding:max(64px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+#scene{position:relative;min-height:0;isolation:isolate;overflow:hidden;border-radius:48px;background:#dfebd2}#scene:before{content:"";position:absolute;width:96px;height:96px;right:12%;top:7%;border-radius:50%;background:#fff1bd;box-shadow:0 0 0 16px #fff1bd40}.hill{position:absolute;width:80%;height:55%;border-radius:50%;background:#b1cdab;left:-20%;top:24%;z-index:-1}.hill.two{left:50%;top:32%;background:#9bbb9b}#road{position:absolute;inset:70% 0 0;background:#738b82;border-top:12px solid #f4e6c5}#road:after{content:"";position:absolute;left:0;right:0;top:65%;height:8px;background:repeating-linear-gradient(90deg,#e4d8b9 0 48px,transparent 48px 96px)}
+#station{position:absolute;right:5%;top:8%;width:88px;height:88px;background:var(--cream);border-radius:24px;padding:12px;box-shadow:0 6px 0 #789a84,0 12px 24px #29494b20;z-index:2}#station:after{content:"";position:absolute;width:12px;height:130%;background:#527668;left:calc(50% - 6px);top:100%;z-index:-1}#station svg{background:var(--cream);border-radius:16px}
+#bus{position:absolute;left:5%;top:34%;width:75%;height:39%;min-height:140px;max-height:260px;border-radius:40px 56px 24px 24px;background:var(--gold);border-bottom:16px solid #d4983e;box-shadow:0 8px 0 #29494b18;transition:transform 1300ms cubic-bezier(.4,0,.6,1)}#bus:before{content:"";position:absolute;left:5%;right:7%;top:12%;height:57%;border-radius:16px 32px 8px 8px;background:#456b69;border:8px solid #ffdb8c}#bus:after{content:"";position:absolute;right:-2%;top:65%;width:16px;height:24px;border-radius:8px;background:#fff5bf;box-shadow:-16px 0 24px #fff0b0}.wheel{position:absolute;width:17%;aspect-ratio:1;max-width:88px;background:#29494b;border:12px solid #365957;border-radius:50%;bottom:-24%;left:12%;box-shadow:inset 0 0 0 8px #aac2ac}.wheel.rear{left:70%}#bus.driving{transform:translateX(145%)}#bus.arriving{transform:translateX(-145%);transition:none}
+.rider{position:absolute;top:17%;width:24%;height:55%;background:transparent;z-index:2;transition:transform 450ms,opacity 450ms}.rider[data-person="0"]{left:8%}.rider[data-person="1"]{left:35%}.animal{display:block;width:100%;height:100%}.ticket{position:absolute;right:-4%;top:-32%;width:56px;height:56px;padding:8px;border-radius:50%;background:var(--cream);box-shadow:0 3px 0 #dfb76c}.rider.off{transform:translate(-15%,150%);opacity:0;pointer-events:none}
+#waiting{position:absolute;right:3%;bottom:12%;width:100px;height:120px;background:transparent;z-index:4;transition:transform 600ms,opacity 350ms}#waiting.boarded{transform:translate(-190%,-90%);opacity:0;pointer-events:none}#new-rider{position:absolute;left:8%;top:17%;width:24%;height:55%;opacity:0;pointer-events:none}#new-rider.visible{opacity:1}
+#door{position:absolute;left:66%;top:17%;width:22%;height:79%;background:#345a57;border:6px solid #ffdb8c;border-radius:12px 12px 0 0;overflow:hidden;z-index:3}.panel{position:absolute;top:0;width:50%;height:100%;background:#f3d99a;transition:transform 350ms}.panel:after{content:"";position:absolute;inset:12% 18% 35%;border-radius:8px;background:#83aaa0}.panel.left{left:0}.panel.right{right:0;border-left:2px solid #bb995c}#bus.open .panel.left{transform:translateX(-100%)}#bus.open .panel.right{transform:translateX(100%)}
+#controls{display:flex;align-items:center;justify-content:center;gap:32px}.control{width:88px;height:88px;border-radius:24px;padding:20px;background:var(--cream);box-shadow:0 6px 0 #b4a47e,0 12px 24px #29494b20;transition:transform 140ms,background-color 140ms}.control:active{transform:translateY(4px)}#go{background:var(--mint);box-shadow:0 6px 0 #698f78,0 12px 24px #29494b20}#door-button[aria-pressed="true"]{background:#ffe0a0}.hint{animation:glow 1s ease-in-out infinite}.bump{animation:bump 320ms ease-in-out}.spark{position:fixed;width:20px;height:20px;border:3px solid #fff0bc;border-radius:50%;pointer-events:none;z-index:9;animation:spark 500ms forwards}@keyframes glow{50%{filter:drop-shadow(0 0 10px #fff);outline:4px solid #fff5ce;outline-offset:4px}}@keyframes bump{25%{translate:-6px 0}75%{translate:6px 0}}@keyframes spark{to{scale:3;opacity:0}}
+@media(max-width:600px){#bus{left:3%;width:79%;height:31%;top:39%;min-height:125px;border-radius:24px 40px 16px 16px;border-bottom-width:12px}#bus:before{border-width:5px}.wheel{border-width:7px;box-shadow:inset 0 0 0 5px #aac2ac;bottom:-19%}.ticket{width:44px;height:44px;padding:6px;top:-42%;right:-10%}#waiting{width:80px;height:96px;right:1%;bottom:11%}#station{width:72px;height:72px;right:8%;top:12%}#door{border-width:4px}#scene{border-radius:32px}.control{width:80px;height:80px}main{gap:12px;grid-template-rows:minmax(0,1fr) 96px}}
+@media(orientation:landscape) and (max-height:550px){main{grid-template-columns:minmax(0,1fr) 88px;grid-template-rows:minmax(0,1fr);padding-top:64px;gap:16px}#controls{flex-direction:column;gap:16px}.control{width:64px;height:64px;padding:14px;border-radius:20px}#bus{top:30%;height:43%;min-height:100px;width:72%}#waiting{width:72px;height:80px}#station{top:4%;width:60px;height:60px;padding:8px}#station:after{height:65%}.ticket{width:44px;height:44px;top:-37%}#scene{border-radius:24px}}
+@media(prefers-reduced-motion:reduce){#bus,.rider,#waiting,.panel{transition-duration:100ms}.hint{animation:none;outline:4px solid #fff}.bump{animation:none;filter:brightness(1.15)}}
+</style>
+</head>
+<body>
+<!-- Navigation/control paths from Lucide (ISC, LUCIDE-LICENSE). Scene artwork is original. -->
+<a id="back" href="../../" aria-label="返回游戏台"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M19 12H5"/></svg></a>
+<main>
+<div id="scene"><div class="hill"></div><div class="hill two"></div><div id="road"></div>
+<button id="station" aria-label="再听一次到站提示"></button>
+<div id="bus"><i class="wheel"></i><i class="wheel rear"></i>
+<button class="rider" data-person="0"></button><button class="rider" data-person="1"></button><span id="new-rider"></span>
+<div id="door"><i class="panel left"></i><i class="panel right"></i></div></div>
+<button id="waiting" aria-label="让等车的小动物上车"></button></div>
+<div id="controls">
+<button class="control" id="door-button" aria-label="开关车门" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16M2 20h20M12 2v18M10 12h.01M14 12h.01"/></svg></button>
+<button class="control" id="go" aria-label="开公交车出发"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="2"/><path d="M12 14v8M10 12 2.1 10M14 12l7.9-2"/></svg></button>
+</div></main>
+<script>
+'use strict';
+const $=s=>document.querySelector(s), bus=$('#bus'), riders=[...document.querySelectorAll('.rider')];
+const stops=['park','beach','home'], stopNames=['公园','海边','家'], animals=['rabbit','bear','cat'];
+const voice=new Audio();voice.volume=.72;voice.preload='auto';
+let context,voiceTimer,voiceToken=0,started=false,lastInput=Date.now(),revision=0,pending=null;
+let round=0,stop=0,leaving=0,doors=false,unloaded=false,boarded=false,phase='idle',misses=0;
+let transitionTimer,roundTimer;
+let passengers=[],waitingPerson;
+function stopArt(kind){
+  const art={park:'<rect x="28" y="33" width="8" height="24" rx="3" fill="#987650"/><circle cx="22" cy="26" r="15" fill="#73a16d"/><circle cx="41" cy="26" r="16" fill="#558762"/><circle cx="31" cy="15" r="13" fill="#80ac74"/>',beach:'<circle cx="44" cy="16" r="10" fill="#efb34f"/><path d="M4 35q10-12 20 0t20 0t20 0v24H4Z" fill="#73b7c0"/><path d="M4 49q10-12 20 0t20 0t20 0" fill="none" stroke="#e5f1d8" stroke-width="5"/>',home:'<path d="m5 29 27-23 27 23" fill="#d88261"/><rect x="12" y="28" width="40" height="29" rx="4" fill="#edca86"/><rect x="27" y="38" width="13" height="19" rx="3" fill="#7ba294"/>'};
+  return `<svg viewBox="0 0 64 64" aria-hidden="true">${art[kind]}</svg>`;
+}
+function animalArt(kind){
+  const fur={rabbit:'#f8e7c9',bear:'#b88a63',cat:'#a9bec4'}[kind];
+  const ears=kind==='rabbit'?`<ellipse cx="32" cy="24" rx="10" ry="23" fill="${fur}"/><ellipse cx="65" cy="24" rx="10" ry="23" fill="${fur}"/>`:kind==='bear'?`<circle cx="24" cy="33" r="14" fill="${fur}"/><circle cx="75" cy="33" r="14" fill="${fur}"/>`:`<path d="m20 47 2-30 25 23m8 0 24-23 1 30" fill="${fur}"/>`;
+  return `<svg viewBox="0 0 100 120" aria-hidden="true"><rect x="23" y="78" width="55" height="38" rx="20" fill="#648d7d"/>${ears}<ellipse cx="50" cy="58" rx="35" ry="31" fill="${fur}"/><ellipse cx="50" cy="72" rx="23" ry="15" fill="#fff1d5"/><circle cx="37" cy="57" r="3.5" fill="#29494b"/><circle cx="64" cy="57" r="3.5" fill="#29494b"/><ellipse cx="50" cy="69" rx="5" ry="4" fill="#ab7965"/><path d="M43 78q7 6 14 0" fill="none" stroke="#795e50" stroke-width="2"/><circle cx="27" cy="69" r="5" fill="#dfb09b"/><circle cx="73" cy="69" r="5" fill="#dfb09b"/></svg>`;
+}
+function hush(){voiceToken++;clearTimeout(voiceTimer);voice.onended=voice.onerror=null;voice.pause();}
+function say(name){
+  if(!started||document.hidden)return;hush();const token=voiceToken;
+  const done=()=>{if(token===voiceToken){clearTimeout(voiceTimer);voice.pause();voice.onended=voice.onerror=null;}};
+  voice.onended=voice.onerror=done;voice.src=`audio/${name}.mp3`;voiceTimer=setTimeout(done,6000);voice.play().catch(done);
+}
+function sound(freq=420){
+  if(!context)return;const now=context.currentTime,o=context.createOscillator(),g=context.createGain();
+  o.type='sine';o.frequency.setValueAtTime(freq,now);o.frequency.exponentialRampToValueAtTime(freq*.75,now+.18);
+  g.gain.setValueAtTime(.001,now);g.gain.linearRampToValueAtTime(.12,now+.015);g.gain.exponentialRampToValueAtTime(.001,now+.25);
+  o.connect(g);g.connect(context.destination);o.start();o.stop(now+.26);
+}
+function feedback(el){
+  lastInput=Date.now();started=true;const AC=window.AudioContext||window.webkitAudioContext;
+  if(!context&&AC)context=new AC();if(context?.state==='suspended')context.resume().catch(()=>{});sound();
+  el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');
+  const r=el.getBoundingClientRect(),p=document.createElement('i');p.className='spark';p.style.left=`${r.x+r.width/2-10}px`;p.style.top=`${r.y+r.height/2-10}px`;document.body.append(p);setTimeout(()=>p.remove(),550);
+}
+function needed(){return !doors?'door-button':!unloaded?`rider-${leaving}`:!boarded?'waiting':'door-button';}
+function highlight(){
+  document.querySelectorAll('.hint').forEach(el=>el.classList.remove('hint'));
+  const id=unloaded&&boarded&&!doors?'go':needed();
+  (id.startsWith('rider')?riders[leaving]:$('#'+id)).classList.add('hint');
+}
+function miss(name){misses++;say(name);if(misses>=2)highlight();}
+function changed(){revision++;pending=null;misses=0;document.querySelectorAll('.hint').forEach(el=>el.classList.remove('hint'));}
+function later(fn,ms){clearTimeout(transitionTimer);transitionTimer=setTimeout(()=>{phase='idle';revision++;fn?.();},ms);}
+function action(id){
+  if(phase!=='idle'){sound(260);return;}
+  if(id==='station'){say(`stop_${stops[stop]}`);return;}
+  if(id==='door-button'){
+    changed();doors=!doors;phase='door';bus.classList.toggle('open',doors);$('#door-button').setAttribute('aria-pressed',String(doors));
+    say(doors?'open':'close');later(null,400);return;
+  }
+  if(id==='go'){
+    if(!unloaded)return miss('leave_first');if(!boarded)return miss('board_first');if(doors)return miss('close_first');
+    changed();phase='travel';say('go');sound(180);bus.classList.add('driving');
+    roundTimer=setTimeout(()=>{stop=(stop+1)%stops.length;dealRound();bus.classList.add('arriving');void bus.offsetWidth;bus.classList.remove('arriving');phase='arrival';later(()=>say(`stop_${stops[stop]}`),1400);},1500);return;
+  }
+  if(!doors)return miss('open_first');
+  if(id==='waiting'){
+    if(boarded)return;if(!unloaded)return miss('leave_first');
+    changed();boarded=true;passengers[leaving]=waitingPerson;phase='boarding';$('#waiting').classList.add('boarded');$('#waiting').tabIndex=-1;say('aboard');
+    later(()=>$('#new-rider').classList.add('visible'),650);return;
+  }
+  const i=Number(id.split('-')[1]);if(!Number.isInteger(i)||i<0||i>1)return;
+  if(i!==leaving)return miss('not_yet');if(unloaded)return;
+  changed();unloaded=true;phase='leaving';riders[i].classList.add('off');riders[i].tabIndex=-1;say('bye');later(null,500);
+}
+function dealRound(){
+  clearTimeout(transitionTimer);clearTimeout(roundTimer);changed();round++;doors=false;unloaded=false;boarded=false;phase='idle';
+  if(!passengers.length){passengers=[{kind:'rabbit',dest:stop},{kind:'bear',dest:(stop+1)%3}];if(Math.random()<.5)passengers.reverse();}
+  leaving=passengers.findIndex(person=>person.dest===stop);
+  waitingPerson={kind:animals.find(kind=>!passengers.some(person=>person.kind===kind)),dest:(stop+2)%3};
+  bus.className='';$('#door-button').setAttribute('aria-pressed','false');$('#station').innerHTML=stopArt(stops[stop]);$('#station').setAttribute('aria-label',`${stopNames[stop]}站，再听一次`);
+  riders.forEach((el,i)=>{const person=passengers[i];el.className='rider';el.tabIndex=0;el.setAttribute('aria-label',`让去${stopNames[person.dest]}的小动物下车`);el.innerHTML=`<span class="animal">${animalArt(person.kind)}</span><span class="ticket">${stopArt(stops[person.dest])}</span>`;});
+  $('#waiting').className='';$('#waiting').tabIndex=0;$('#waiting').innerHTML=animalArt(waitingPerson.kind);$('#new-rider').className='';$('#new-rider').style.left=leaving===0?'8%':'35%';$('#new-rider').innerHTML=`${animalArt(waitingPerson.kind)}<span class="ticket">${stopArt(stops[waitingPerson.dest])}</span>`;
+}
+const targets=[$('#station'),...riders,$('#waiting'),$('#door-button'),$('#go')];
+function idOf(el){return el.classList.contains('rider')?`rider-${el.dataset.person}`:el.id;}
+targets.forEach(el=>{
+  el.addEventListener('pointerdown',e=>{
+    if(!e.isPrimary||e.button!==0)return;e.preventDefault();feedback(el);
+    if(phase!=='idle'){pending=null;return;}pending={id:e.pointerId,el,revision,x:e.clientX,y:e.clientY};el.setPointerCapture(e.pointerId);
+  });
+  el.addEventListener('pointerup',e=>{
+    if(!pending||pending.id!==e.pointerId||pending.el!==el)return;const p=pending;pending=null;
+    const areas=[el,...el.querySelectorAll('.ticket')].map(node=>node.getBoundingClientRect());
+    const inside=areas.some(r=>e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom);
+    if(p.revision!==revision||!inside||Math.hypot(e.clientX-p.x,e.clientY-p.y)>36)return;
+    action(idOf(el));
+  });
+  el.addEventListener('pointercancel',()=>{pending=null;});el.addEventListener('lostpointercapture',()=>{pending=null;});
+  el.addEventListener('click',e=>{e.preventDefault();if(e.detail===0){feedback(el);action(idOf(el));}});
+  el.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();if(!e.repeat){feedback(el);action(idOf(el));}}});
+  el.addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter')e.preventDefault();});
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){location.href='../../';return;}
+  if(e.key.toLowerCase()==='f'){if(e.repeat)return;if(document.fullscreenElement)document.exitFullscreen?.().catch(()=>{});else document.documentElement.requestFullscreen?.().catch(()=>{});return;}
+  if(e.target.closest('button,a')||e.key==='Tab'||e.repeat)return;
+  const keys={ArrowLeft:'door-button',ArrowRight:'go','1':'rider-0','2':'rider-1','3':'waiting'};
+  const id=keys[e.key];if(id){e.preventDefault();const el=id.startsWith('rider')?riders[Number(id.at(-1))]:$('#'+id);feedback(el);action(id);}
+});
+for(const event of ['blur','resize'])window.addEventListener(event,()=>{pending=null;});
+document.addEventListener('visibilitychange',()=>{pending=null;if(document.hidden)hush();});
+setInterval(()=>{if(started&&!document.hidden&&phase==='idle'&&Date.now()-lastInput>10000){lastInput=Date.now();highlight();say(!unloaded?'look':!boarded?'board_first':doors?'close_first':'ready');}},1200);
+dealRound();
+</script>
+</body>
+</html>
