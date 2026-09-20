@@ -14,6 +14,7 @@ WHY.md 用两张表描述全台每一款的位置（toy→game 轴分布 + 能�
        （public 仓读者看不到 ignored 文件，链过去就是死链）
     6. 首页 index.html 的 tile 集合 == games/ 磁盘目录集合（交付清单第 3 条
        曾是全链唯一没机械兜底的一环：做了游戏没上首页 = 没人能点进去）
+    7. service-worker.js 离线预缓存清单与当前运行时资源完全一致
 
 用法：
     python3 tools/check-docs.py
@@ -128,13 +129,26 @@ def main():
         if no_dir:
             failures.append("首页 tile 指向不存在的目录：" + "、".join(no_dir))
 
+    # 7：离线包必须覆盖当前运行时资源，防新增游戏/语音后忘记刷新 Service Worker。
+    offline_check = subprocess.run(
+        [sys.executable, str(ROOT / "tools" / "gen-offline-cache.py"), "--check"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if offline_check.returncode != 0:
+        failures.append(offline_check.stdout.strip() or offline_check.stderr.strip())
+
     if failures:
         print("✗ 文档一致性检查未通过：")
         for f in failures:
             print(f"  · {f}")
         return 1
 
-    print(f"✓ 文档一致 —— {actual} 款全部在 WHY.md 地图上落位、首页 tile 齐全，链接无死链")
+    print(
+        f"✓ 文档一致 —— {actual} 款全部在 WHY.md 地图上落位、首页 tile 齐全，"
+        "链接无死链，离线清单同步"
+    )
     return 0
 
 

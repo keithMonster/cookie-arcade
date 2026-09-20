@@ -44,7 +44,25 @@ https://keithmonster.github.io/cookie-arcade/
 
 ## On iPad
 
-Open the live URL in Safari → **Share → Add to Home Screen** for a full-screen standalone app. Everything responds to touch.
+Open the live URL in Safari once while online. The arcade installs its complete local
+offline cache in the background; after that the same URL and the Home Screen app can
+open and play all games without a network connection.
+
+For a full-screen standalone app: Safari → **Share → Add to Home Screen**. Everything
+responds to touch. A device that has never completed the first online visit cannot
+bootstrap the arcade while already offline.
+
+## Offline
+
+- `service-worker.js` precaches the home page, PWA metadata/icons, all 29 game pages,
+  shared game code and local media. Existing users keep the previous complete cache
+  until a new complete version has installed.
+- Audio byte-range requests are served from the local cache too, which keeps iOS media
+  playback working when the network is gone.
+- `python3 tools/gen-offline-cache.py` regenerates the versioned asset manifest after
+  runtime files change. `python3 tools/check-docs.py` fails if that manifest is stale.
+- The Service Worker lives at the repository root, so its default scope covers the
+  GitHub Pages subpath and every `games/` route without changing the public URL.
 
 ## Audio
 
