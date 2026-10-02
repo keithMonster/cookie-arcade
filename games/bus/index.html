@@ -16,7 +16,7 @@ main{height:100%;height:100dvh;max-width:1100px;margin:auto;display:grid;grid-te
 .rider{position:absolute;top:17%;width:24%;height:55%;background:transparent;z-index:2;transition:transform 450ms,opacity 450ms}.rider[data-person="0"]{left:8%}.rider[data-person="1"]{left:35%}.animal{display:block;width:100%;height:100%}.ticket{position:absolute;right:-4%;top:-32%;width:56px;height:56px;padding:8px;border-radius:50%;background:var(--cream);box-shadow:0 3px 0 #dfb76c}.rider.off{transform:translate(-15%,150%);opacity:0;pointer-events:none}
 #waiting{position:absolute;right:3%;bottom:12%;width:100px;height:120px;background:transparent;z-index:4;transition:transform 600ms,opacity 350ms}#waiting.boarded{transform:translate(-190%,-90%);opacity:0;pointer-events:none}#new-rider{position:absolute;left:8%;top:17%;width:24%;height:55%;opacity:0;pointer-events:none}#new-rider.visible{opacity:1}
 #door{position:absolute;left:66%;top:17%;width:22%;height:79%;background:#345a57;border:6px solid #ffdb8c;border-radius:12px 12px 0 0;overflow:hidden;z-index:3}.panel{position:absolute;top:0;width:50%;height:100%;background:#f3d99a;transition:transform 350ms}.panel:after{content:"";position:absolute;inset:12% 18% 35%;border-radius:8px;background:#83aaa0}.panel.left{left:0}.panel.right{right:0;border-left:2px solid #bb995c}#bus.open .panel.left{transform:translateX(-100%)}#bus.open .panel.right{transform:translateX(100%)}
-#controls{display:flex;align-items:center;justify-content:center;gap:32px}.control{width:88px;height:88px;border-radius:24px;padding:20px;background:var(--cream);box-shadow:0 6px 0 #b4a47e,0 12px 24px #29494b20;transition:transform 140ms,background-color 140ms}.control:active{transform:translateY(4px)}#go{background:var(--mint);box-shadow:0 6px 0 #698f78,0 12px 24px #29494b20}#door-button[aria-pressed="true"]{background:#ffe0a0}.hint{animation:glow 1s ease-in-out infinite}.bump{animation:bump 320ms ease-in-out}.spark{position:fixed;width:20px;height:20px;border:3px solid #fff0bc;border-radius:50%;pointer-events:none;z-index:9;animation:spark 500ms forwards}@keyframes glow{50%{filter:drop-shadow(0 0 10px #fff);outline:4px solid #fff5ce;outline-offset:4px}}@keyframes bump{25%{translate:-6px 0}75%{translate:6px 0}}@keyframes spark{to{scale:3;opacity:0}}
+#controls{display:flex;align-items:center;justify-content:center;gap:32px}.control{width:88px;height:88px;border-radius:24px;padding:20px;background:var(--cream);box-shadow:0 6px 0 #b4a47e,0 12px 24px #29494b20;transition:transform 140ms,background-color 140ms}.control:active{transform:translateY(4px)}#go{background:var(--mint);box-shadow:0 6px 0 #698f78,0 12px 24px #29494b20}#go[data-ready="false"]{background:#bdcbc3;box-shadow:0 6px 0 #8c9e94,0 12px 24px #29494b20;color:#61776c}#go[data-ready="true"]{background:#66ba83;box-shadow:0 6px 0 #44845a,0 12px 24px #29494b20;color:#173f2b}#door-button[aria-pressed="true"]{background:#ffe0a0}#door-button[data-ready="false"]{background:#d4d6c7;color:#6c8076}.hint{animation:glow 1s ease-in-out infinite}.bump{animation:bump 320ms ease-in-out}.spark{position:fixed;width:20px;height:20px;border:3px solid #fff0bc;border-radius:50%;pointer-events:none;z-index:9;animation:spark 500ms forwards}@keyframes glow{50%{filter:drop-shadow(0 0 10px #fff);outline:4px solid #fff5ce;outline-offset:4px}}@keyframes bump{25%{translate:-6px 0}75%{translate:6px 0}}@keyframes spark{to{scale:3;opacity:0}}
 @media(max-width:600px){#bus{left:3%;width:79%;height:31%;top:39%;min-height:125px;border-radius:24px 40px 16px 16px;border-bottom-width:12px}#bus:before{border-width:5px}.wheel{border-width:7px;box-shadow:inset 0 0 0 5px #aac2ac;bottom:-19%}.ticket{width:44px;height:44px;padding:6px;top:-42%;right:-10%}#waiting{width:80px;height:96px;right:1%;bottom:11%}#station{width:72px;height:72px;right:8%;top:12%}#door{border-width:4px}#scene{border-radius:32px}.control{width:80px;height:80px}main{gap:12px;grid-template-rows:minmax(0,1fr) 96px}}
 @media(orientation:landscape) and (max-height:550px){main{grid-template-columns:minmax(0,1fr) 88px;grid-template-rows:minmax(0,1fr);padding-top:64px;gap:16px}#controls{flex-direction:column;gap:16px}.control{width:64px;height:64px;padding:14px;border-radius:20px}#bus{top:30%;height:43%;min-height:100px;width:72%}#waiting{width:72px;height:80px}#station{top:4%;width:60px;height:60px;padding:8px}#station:after{height:65%}.ticket{width:44px;height:44px;top:-37%}#scene{border-radius:24px}}
 @media(prefers-reduced-motion:reduce){#bus,.rider,#waiting,.panel{transition-duration:100ms}.hint{animation:none;outline:4px solid #fff}.bump{animation:none;filter:brightness(1.15)}}
@@ -73,36 +73,45 @@ function feedback(el){
   el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');
   const r=el.getBoundingClientRect(),p=document.createElement('i');p.className='spark';p.style.left=`${r.x+r.width/2-10}px`;p.style.top=`${r.y+r.height/2-10}px`;document.body.append(p);setTimeout(()=>p.remove(),550);
 }
+function canDepart(){return phase==='idle'&&unloaded&&boarded&&!doors;}
+function syncControls(){
+  const ready=canDepart();
+  // 未就绪仍接收点击，给孩子语音提示；不使用原生 disabled 吞掉输入。
+  $('#door-button').dataset.ready=String(phase==='idle');
+  $('#go').dataset.ready=String(ready);
+  $('#go').classList.toggle('hint',ready);
+}
 function needed(){return !doors?'door-button':!unloaded?`rider-${leaving}`:!boarded?'waiting':'door-button';}
 function highlight(){
   document.querySelectorAll('.hint').forEach(el=>el.classList.remove('hint'));
-  const id=unloaded&&boarded&&!doors?'go':needed();
+  const id=canDepart()?'go':needed();
   (id.startsWith('rider')?riders[leaving]:$('#'+id)).classList.add('hint');
 }
 function miss(name){misses++;say(name);if(misses>=2)highlight();}
 function changed(){revision++;clearPending();misses=0;document.querySelectorAll('.hint').forEach(el=>el.classList.remove('hint'));}
-function later(fn,ms){clearTimeout(transitionTimer);transitionTimer=setTimeout(()=>{phase='idle';revision++;fn?.();},ms);}
+function later(fn,ms){clearTimeout(transitionTimer);transitionTimer=setTimeout(()=>{phase='idle';revision++;fn?.();syncControls();},ms);}
 function action(id){
   if(phase!=='idle'){sound(260);return;}
   if(id==='station'){say(`stop_${stops[stop]}`);return;}
   if(id==='door-button'){
     changed();doors=!doors;phase='door';bus.classList.toggle('open',doors);$('#door-button').setAttribute('aria-pressed',String(doors));
-    say(doors?'open':'close');later(null,400);return;
+    syncControls();say(doors?'open':'close');later(null,400);return;
   }
   if(id==='go'){
+    if(!doors&&(!unloaded||!boarded))return miss('open_first');
     if(!unloaded)return miss('leave_first');if(!boarded)return miss('board_first');if(doors)return miss('close_first');
-    changed();phase='travel';say('go');sound(180);bus.classList.add('driving');
-    roundTimer=setTimeout(()=>{stop=(stop+1)%stops.length;dealRound();bus.classList.add('arriving');void bus.offsetWidth;bus.classList.remove('arriving');phase='arrival';later(()=>say(`stop_${stops[stop]}`),1400);},1500);return;
+    changed();phase='travel';syncControls();say('go');sound(180);bus.classList.add('driving');
+    roundTimer=setTimeout(()=>{stop=(stop+1)%stops.length;dealRound();bus.classList.add('arriving');void bus.offsetWidth;bus.classList.remove('arriving');phase='arrival';syncControls();later(()=>say(`stop_${stops[stop]}`),1400);},1500);return;
   }
   if(!doors)return miss('open_first');
   if(id==='waiting'){
     if(boarded)return;if(!unloaded)return miss('leave_first');
-    changed();boarded=true;passengers[leaving]=waitingPerson;phase='boarding';$('#waiting').classList.add('boarded');$('#waiting').tabIndex=-1;say('aboard');
+    changed();boarded=true;passengers[leaving]=waitingPerson;phase='boarding';syncControls();$('#waiting').classList.add('boarded');$('#waiting').tabIndex=-1;say('aboard');
     later(()=>$('#new-rider').classList.add('visible'),650);return;
   }
   const i=Number(id.split('-')[1]);if(!Number.isInteger(i)||i<0||i>1)return;
   if(i!==leaving)return miss('not_yet');if(unloaded)return;
-  changed();unloaded=true;phase='leaving';riders[i].classList.add('off');riders[i].tabIndex=-1;say('bye');later(null,500);
+  changed();unloaded=true;phase='leaving';syncControls();riders[i].classList.add('off');riders[i].tabIndex=-1;say('bye');later(null,500);
 }
 function dealRound(){
   clearTimeout(transitionTimer);clearTimeout(roundTimer);changed();round++;doors=false;unloaded=false;boarded=false;phase='idle';
@@ -112,6 +121,7 @@ function dealRound(){
   bus.className='';$('#door-button').setAttribute('aria-pressed','false');$('#station').innerHTML=stopArt(stops[stop]);$('#platform').innerHTML=stopArt(stops[stop]);$('#station').setAttribute('aria-label',`${stopNames[stop]}站，再听一次`);
   riders.forEach((el,i)=>{const person=passengers[i];el.className='rider';el.tabIndex=0;el.setAttribute('aria-label',`让去${stopNames[person.dest]}的小动物下车`);el.innerHTML=`<span class="animal">${animalArt(person.kind)}</span><span class="ticket">${stopArt(stops[person.dest])}</span>`;});
   $('#waiting').className='';$('#waiting').tabIndex=0;$('#waiting').innerHTML=animalArt(waitingPerson.kind);$('#new-rider').className='';$('#new-rider').style.left=leaving===0?'8%':'35%';$('#new-rider').innerHTML=`${animalArt(waitingPerson.kind)}<span class="ticket">${stopArt(stops[waitingPerson.dest])}</span>`;
+  syncControls();$('#door-button').classList.add('hint');
 }
 const targets=[$('#station'),...riders,$('#waiting'),$('#door-button'),$('#go')];
 function idOf(el){return el.classList.contains('rider')?`rider-${el.dataset.person}`:el.id;}
@@ -170,7 +180,7 @@ document.addEventListener('keydown',e=>{
 });
 for(const event of ['blur','resize'])window.addEventListener(event,()=>clearPending());
 document.addEventListener('visibilitychange',()=>{clearPending();if(document.hidden)hush();});
-setInterval(()=>{if(started&&!pending&&!document.hidden&&phase==='idle'&&Date.now()-lastInput>10000){lastInput=Date.now();highlight();say(!unloaded?'look':!boarded?'board_first':doors?'close_first':'ready');}},1200);
+setInterval(()=>{if(started&&!pending&&!document.hidden&&phase==='idle'&&Date.now()-lastInput>10000){lastInput=Date.now();highlight();say(canDepart()?'ready':!doors?'open_first':!unloaded?'look':!boarded?'board_first':'close_first');}},1200);
 dealRound();
 </script>
 </body>

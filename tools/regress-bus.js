@@ -7,6 +7,9 @@ async (page) => {
   const settle=()=>page.waitForFunction(()=>phase==='idle');
   const click=async selector=>{await page.locator(selector).click();await settle();};
   await page.reload();await settle();
+  const ready=()=>page.locator('#go').getAttribute('data-ready');
+  check('初始车门可用并提示开门，方向盘未就绪',await page.evaluate(()=>document.querySelector('#door-button').dataset.ready==='true'&&document.querySelector('#door-button').classList.contains('hint'))&&await ready()==='false');
+  const unavailableColor=await page.locator('#go').evaluate(el=>getComputedStyle(el).backgroundColor);
   for(const [width,height] of [[390,844],[320,568],[844,390],[768,1024],[1024,768]]){
     await page.setViewportSize({width,height});
     const boxes=await page.locator('#station,.rider,#waiting,.control,#back').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {id:el.id||el.dataset.person,x:r.x,y:r.y,w:r.width,h:r.height};}));
@@ -18,18 +21,34 @@ async (page) => {
   await click(correct);await click(correct);
   check('闭门不能下车、两错提示开门',await page.evaluate(()=>!unloaded&&!doors&&document.querySelector('#door-button').classList.contains('hint')));
   await click('#go');check('未完成接送不能出发',(await state()).round===1);
+  check('闭门未完成时先提示开门',await page.evaluate(()=>voice.src.endsWith('/open_first.mp3')));
+  await click('#door-button');await click('#door-button');await click('#go');
+  check('只开关门不接送，方向盘保持未就绪',(await state()).round===1&&await ready()==='false');
   await click('#door-button');await click('#waiting');await click('#waiting');
   check('先下后上、提示不代做',await page.evaluate(()=>!unloaded&&!boarded&&riders[leaving].classList.contains('hint')));
   await click(wrong);await click(wrong);check('目的地不符的乘客留在车内',!(await state()).unloaded);
   await page.locator(`${correct} .ticket`).click({position:{x:22,y:8}});await settle();check('点目的地图上半部也能让到站乘客下车',(await state()).unloaded);
   await click('#go');check('不能丢下等车乘客',(await state()).phase==='idle'&&!(await state()).boarded);
   await click('#waiting');await click('#go');check('开门时不能出发',(await state()).doors&&(await state()).round===1);
-  const before=await state();await click('#door-button');await page.locator('#go').click();
+  check('接送完成但门开着仍不亮起',await ready()==='false');
+  await click('#door-button');
+  check('关门完成立即显示就绪并发光',await ready()==='true'&&await page.locator('#go').evaluate(el=>el.classList.contains('hint')));
+  await page.waitForFunction(color=>getComputedStyle(document.querySelector('#go')).backgroundColor!==color,unavailableColor);
+  await page.waitForTimeout(180);
+  check('就绪颜色与未就绪明显不同',await page.locator('#go').evaluate(el=>getComputedStyle(el).backgroundColor)==='rgb(102, 186, 131)');
+  await page.locator('#door-button').click();
+  check('重新开门立即取消就绪与发光',await ready()==='false'&&await page.locator('#go').evaluate(el=>!el.classList.contains('hint')));
+  await settle();
+  const before=await state();await page.locator('#door-button').click();
+  check('关门动画中仍未就绪',await ready()==='false');await settle();
+  check('重新关门后恢复就绪',await ready()==='true');await page.locator('#go').click();
+  check('出发立即熄灭，行驶中车门不可操作',await ready()==='false'&&await page.locator('#door-button').getAttribute('data-ready')==='false');
   await page.locator('#door-button').dispatchEvent('pointerdown',{pointerId:73,isPrimary:true,button:0,clientX:100,clientY:100});
   await page.waitForFunction(old=>round>old&&phase==='idle',before.round);
   await page.locator('#door-button').dispatchEvent('pointerup',{pointerId:73,isPrimary:true,button:0,clientX:100,clientY:100});
   s=await state();
   check('自然换站、在行驶中开始的按压不延迟兑现',s.stop===1&&!s.doors&&!s.unloaded&&!s.boarded);
+  check('下一站重置方向盘与车门提示',await ready()==='false'&&await page.locator('#door-button').getAttribute('data-ready')==='true'&&await page.locator('#door-button').evaluate(el=>el.classList.contains('hint')));
   check('继续乘车的朋友跨站保持身份与目的地',JSON.stringify(s.passengers)===JSON.stringify(before.passengers));
   check('每站恰好一位到站、一位继续乘车',s.passengers.filter(p=>p.dest===s.stop).length===1);
   // 取消事件只能撤销，不能变成点击。
