@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="icon" href="../../apple-touch-icon.png">
+<title>串串珠 · Cookie's Arcade</title>
+<style>
+:root { color-scheme:light; --wood:hsl(34 47% 83%); --ink:hsl(174 31% 24%); --paper:hsl(44 64% 94%); --a:hsl(12 76% 60%); --b:hsl(194 61% 49%); }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { margin:0; width:100%; height:100%; overflow:hidden; overscroll-behavior:none; }
+body { background:hsl(160 25% 77%); font-family:-apple-system,"PingFang SC",sans-serif; user-select:none; -webkit-user-select:none; touch-action:none; }
+button,a { touch-action:none; }
+button { border:0; padding:0; cursor:pointer; background:none; color:var(--ink); }
+button:focus-visible,a:focus-visible { outline:4px solid var(--ink); outline-offset:4px; }
+#back { position:fixed; z-index:30; top:max(12px,env(safe-area-inset-top)); left:max(12px,env(safe-area-inset-left)); width:48px; height:48px; border-radius:50%; background:var(--paper); display:grid; place-items:center; color:var(--ink); }
+#back svg { width:24px; height:24px; }
+main { width:min(100%,960px); height:100%; height:100dvh; margin:auto; padding:max(64px,calc(env(safe-area-inset-top) + 56px)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); display:grid; grid-template-rows:minmax(120px,1fr) minmax(120px,.85fr) minmax(112px,.75fr); gap:24px; }
+#friend { position:relative; width:min(200px,32vh); height:100%; max-height:240px; justify-self:center; align-self:end; }
+.ear { position:absolute; top:3%; width:30%; height:38%; background:hsl(32 48% 54%); border:12px solid hsl(33 52% 66%); border-radius:50%; }
+.ear:first-child { left:3%; }.ear:nth-child(2) { right:3%; }
+.head { position:absolute; top:22%; left:3%; right:3%; bottom:0; border-radius:48% 48% 44% 44%; background:hsl(33 52% 66%); box-shadow:0 8px 0 hsl(32 36% 58%); }
+.eye { position:absolute; top:34%; width:8%; height:10%; border-radius:50%; background:var(--ink); }.eye.left { left:26%; }.eye.right { right:26%; }
+.muzzle { position:absolute; left:27%; top:47%; width:46%; height:38%; border-radius:50%; background:hsl(40 65% 84%); }
+.nose { position:absolute; top:16%; left:36%; width:28%; height:24%; border-radius:40% 40% 50% 50%; background:var(--ink); }
+.smile { position:absolute; top:42%; left:30%; width:40%; height:30%; border-bottom:4px solid var(--ink); border-radius:50%; }
+.cheek { position:absolute; top:54%; width:19%; height:13%; background:hsl(15 64% 68%); border-radius:50%; }.cheek.left { left:6%; }.cheek.right { right:6%; }
+#necklace { position:absolute; bottom:-12px; left:8%; width:84%; height:40%; display:flex; align-items:end; justify-content:center; gap:4px; opacity:0; transform:translateY(20px); transition:opacity 500ms,transform 500ms; }
+#necklace .bead { width:16%; height:auto; aspect-ratio:1; }
+#friend.happy #necklace { opacity:1; transform:translateY(0); }
+#friend.happy .head { animation:rock 900ms ease-in-out infinite; }
+#board { align-self:center; position:relative; width:100%; min-height:112px; padding:32px 12px; border-radius:32px; background:var(--paper); box-shadow:0 8px 0 hsl(37 29% 69%),0 16px 24px hsl(167 24% 32% / .12); }
+#cord { position:absolute; left:3%; right:3%; top:50%; height:8px; margin-top:-4px; background:hsl(35 41% 58%); border-radius:8px; }
+#sequence { position:relative; display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:8px; align-items:center; }
+.slot { position:relative; width:100%; aspect-ratio:1; min-width:0; border-radius:50%; display:grid; place-items:center; }
+.slot.empty { background:var(--paper); border:3px dashed hsl(35 24% 70%); }
+.slot.active { border-color:var(--ink); box-shadow:0 0 0 4px hsl(160 25% 77%); }
+.slot.later { opacity:.45; }
+.bead { display:block; position:relative; width:82%; height:82%; border-radius:50%; background:var(--a); box-shadow:inset 0 -6px 0 hsl(0 0% 0% / .12),inset 0 4px 0 hsl(0 0% 100% / .25),0 4px 4px hsl(30 30% 30% / .12); pointer-events:none; }
+.bead.square { border-radius:24%; background:var(--b); }
+.bead:after { content:""; position:absolute; top:40%; left:40%; width:20%; height:20%; background:var(--paper); border-radius:50%; box-shadow:inset 0 3px 1px hsl(0 0% 0% / .2); }
+#tray { display:flex; align-items:center; justify-content:center; gap:48px; width:min(100%,400px); justify-self:center; border-radius:48px; background:var(--wood); box-shadow:inset 0 4px 0 hsl(34 38% 72%),0 8px 16px hsl(167 24% 32% / .1); padding:16px; }
+.choice { width:96px; height:96px; flex:none; display:grid; place-items:center; border-radius:24px; position:relative; }
+.choice:active { background:hsl(43 60% 92% / .7); }
+.choice.selected { box-shadow:0 0 0 4px var(--ink); background:var(--paper); }
+.hint { animation:glow 1s ease-in-out infinite; }
+.bump { animation:bump 420ms ease; }
+.wobble { animation:wobble 450ms ease; }
+#ghost { position:fixed; z-index:40; pointer-events:none; width:80px; height:80px; transform:translate(-50%,-50%); display:grid; place-items:center; }
+#sparkles { position:fixed; inset:0; pointer-events:none; overflow:hidden; }
+.spark { position:absolute; width:12px; height:12px; border-radius:50%; background:var(--paper); animation:float 1600ms ease-out forwards; }
+@keyframes glow { 50% { box-shadow:0 0 0 8px hsl(44 93% 69% / .8); } }
+@keyframes bump { 50% { transform:translateY(-8px) scale(1.06); } }
+@keyframes wobble { 25%,75% { transform:rotate(-8deg); } 50% { transform:rotate(8deg); } }
+@keyframes rock { 50% { transform:rotate(5deg); } }
+@keyframes float { to { transform:translateY(-160px) rotate(100deg); opacity:0; } }
+@media(max-width:400px) { main { gap:16px; padding-left:12px; padding-right:12px; } #sequence { gap:4px; } #board { padding:24px 8px; } #tray { gap:32px; } .choice { width:80px; height:80px; } }
+@media(max-width:340px) { main { padding-left:8px; padding-right:8px; } #board { padding-left:4px; padding-right:4px; } }
+@media(max-height:500px) and (orientation:landscape) { main { padding-top:16px; padding-left:max(80px,env(safe-area-inset-left)); grid-template-columns:144px 1fr; grid-template-rows:1fr 112px; gap:16px 24px; } #friend { grid-row:1 / 3; width:144px; height:180px; align-self:center; } #board { padding:24px 12px; } #tray { padding:8px; } .choice { width:80px; height:80px; } }
+@media(prefers-reduced-motion:reduce) { *,*:before,*:after { animation-duration:1ms!important; animation-iteration-count:1!important; transition-duration:1ms!important; } .hint { outline:6px solid hsl(44 93% 69%); } }
+</style>
+</head>
+<body>
+<a id="back" href="../../" aria-label="回游戏台"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7m-7 7h14"/></svg></a>
+<main>
+ <button id="friend" aria-label="再听一次怎么玩"><span class="ear"></span><span class="ear"></span><span class="head"><i class="eye left"></i><i class="eye right"></i><span class="muzzle"><i class="nose"></i><i class="smile"></i></span><i class="cheek left"></i><i class="cheek right"></i></span><span id="necklace"></span></button>
+ <section id="board" aria-label="接着前面的样子串珠"><div id="cord"></div><div id="sequence"></div></section>
+ <section id="tray" aria-label="选择珠子"></section>
+</main>
+<div id="sparkles"></div>
+<script>
+'use strict';
+const $=s=>document.querySelector(s), voice=new Audio();
+voice.volume=.7; voice.preload='auto';
+const palettes=[['hsl(12 76% 60%)','hsl(194 61% 49%)'],['hsl(338 61% 59%)','hsl(157 44% 43%)'],['hsl(27 84% 55%)','hsl(207 59% 53%)']];
+let round=0, next=4, start=0, selected=null, misses=0, phase='play', drag=null, context=null;
+let roundTimer=0, voiceTimer=0, lastInput=Date.now(), introduced=false;
+const bead=kind=>`<span class="bead ${kind?'square':''}"></span>`;
+const expected=()=> (start+next)%2;
+function tone(freq=520) {
+ try { context??=new (window.AudioContext||window.webkitAudioContext)(); context.resume().catch(()=>{});
+ const oscillator=context.createOscillator(), gain=context.createGain(); oscillator.type='sine'; oscillator.frequency.value=freq;
+ gain.gain.setValueAtTime(.12,context.currentTime); gain.gain.exponentialRampToValueAtTime(.001,context.currentTime+.18);
+ oscillator.connect(gain); gain.connect(context.destination); oscillator.start(); oscillator.stop(context.currentTime+.2); } catch {}
+}
+function say(name) {
+ clearTimeout(voiceTimer); voice.pause(); voice.src=`audio/${name}.mp3`;
+ voice.play().catch(()=>{}); voiceTimer=setTimeout(()=>voice.pause(),6000);
+}
+function animate(el,name='bump') { el.classList.remove(name); void el.offsetWidth; el.classList.add(name); }
+function input() { lastInput=Date.now(); tone(); if(!introduced) { introduced=true; say('intro'); } }
+function hints() {
+ document.querySelectorAll('.hint').forEach(el=>el.classList.remove('hint'));
+ if(phase==='play'&&misses>=2) { $(`[data-kind="${expected()}"]`).classList.add('hint'); $(`[data-slot="${next}"]`).classList.add('hint'); }
+}
+function select(kind) {
+ selected=kind;
+ document.querySelectorAll('.choice').forEach(el=>el.classList.toggle('selected',Number(el.dataset.kind)===kind));
+}
+function miss(el,name='look') {
+ misses++; select(null); animate(el,'wobble'); tone(240); say(name); hints();
+}
+function completeStep(kind,index) {
+ if(phase!=='play'||!Number.isInteger(kind)||kind<0||kind>1) return;
+ if(index!==next) { miss($('#board'),'next'); return; }
+ if(kind!==expected()) { miss($(`[data-kind="${kind}"]`)); return; }
+ const slot=$(`[data-slot="${next}"]`); slot.className='slot'; slot.innerHTML=bead(kind);
+ slot.setAttribute('aria-label',kind?'方珠':'圆珠'); animate(slot); next++; misses=0; select(null); hints(); tone(760);
+ if(next===6) { finish(); return; }
+ const target=$(`[data-slot="${next}"]`); target.classList.remove('later'); target.classList.add('active'); say('again');
+}
+function finish() {
+ phase='celebrate'; say('done'); $('#friend').classList.add('happy');
+ $('#necklace').innerHTML=Array.from({length:6},(_,i)=>bead((start+i)%2)).join('');
+ for(let i=0;i<16;i++) { const p=document.createElement('i'); p.className='spark'; p.style.left=`${12+Math.random()*76}%`; p.style.top=`${35+Math.random()*35}%`; p.style.background=i%2?'var(--a)':'var(--b)'; $('#sparkles').append(p); }
+ roundTimer=setTimeout(dealRound,5000);
+}
+function clearDrag() {
+ const old=drag; drag=null; $('#ghost')?.remove();
+ if(old) { try { old.el.releasePointerCapture(old.id); } catch {} }
+}
+function dealRound() {
+ clearTimeout(roundTimer); clearDrag(); round++; next=4; start=Math.random()<.5?0:1; misses=0; selected=null; phase='play'; lastInput=Date.now();
+ const colors=palettes[(round-1)%palettes.length]; document.documentElement.style.setProperty('--a',colors[0]); document.documentElement.style.setProperty('--b',colors[1]);
+ $('#friend').classList.remove('happy'); $('#necklace').innerHTML=''; $('#sparkles').innerHTML='';
+ $('#sequence').innerHTML=Array.from({length:6},(_,i)=>`<button class="slot ${i===4?'empty active':i===5?'empty later':''}" data-slot="${i}" aria-label="${i<4?((start+i)%2?'方珠':'圆珠'):'空珠位'}">${i<4?bead((start+i)%2):''}</button>`).join('');
+ const order=Math.random()<.5?[0,1]:[1,0];
+ $('#tray').innerHTML=order.map(kind=>`<button class="choice" data-kind="${kind}" aria-label="${kind?'选择方珠':'选择圆珠'}">${bead(kind)}</button>`).join('');
+ if(introduced) say('next_round');
+}
+function activate(el) {
+ input(); animate(el);
+ if(el.id==='friend') { say(phase==='play'?'intro':'done'); return; }
+ if(phase!=='play') return;
+ if(el.dataset.kind!==undefined) { select(Number(el.dataset.kind)); say('place'); return; }
+ const index=Number(el.dataset.slot);
+ if(index<next) { tone((start+index)%2?660:440); return; }
+ if(selected===null) { animate($('#tray')); say('choose'); return; }
+ completeStep(selected,index);
+}
+document.addEventListener('pointerdown',event=>{
+ const el=event.target.closest('button'); if(!el||!event.isPrimary||event.button!==0||drag) return;
+ event.preventDefault(); input(); animate(el);
+ drag={id:event.pointerId,el,x:event.clientX,y:event.clientY,moved:false,round,phase};
+ try { el.setPointerCapture(event.pointerId); } catch {}
+});
+document.addEventListener('pointermove',event=>{
+ if(!drag||event.pointerId!==drag.id) return;
+ if(Math.hypot(event.clientX-drag.x,event.clientY-drag.y)>12) drag.moved=true;
+ if(!drag.moved||drag.el.dataset.kind===undefined||phase!=='play') return;
+ let ghost=$('#ghost');
+ if(!ghost) { ghost=document.createElement('div'); ghost.id='ghost'; ghost.innerHTML=bead(Number(drag.el.dataset.kind)); document.body.append(ghost); select(null); }
+ ghost.style.left=`${event.clientX}px`; ghost.style.top=`${event.clientY}px`;
+});
+document.addEventListener('pointerup',event=>{
+ if(!drag||event.pointerId!==drag.id) return;
+ const gesture=drag; clearDrag();
+ if(gesture.round!==round||gesture.phase!==phase) return;
+ if(!gesture.moved) { activate(gesture.el); return; }
+ if(gesture.el.dataset.kind===undefined||phase!=='play') return;
+ const slot=document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-slot]');
+ if(!slot) { miss(gesture.el,'place'); return; }
+ completeStep(Number(gesture.el.dataset.kind),Number(slot.dataset.slot));
+});
+function cancel(event) { if(drag&&(!event||event.pointerId===drag.id)) { clearDrag(); select(null); } }
+document.addEventListener('pointercancel',cancel); document.addEventListener('lostpointercapture',cancel);
+window.addEventListener('blur',()=>cancel());
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) { cancel(); voice.pause(); } });
+// 鼠标/触屏由 Pointer Events 处理；原生键盘 click 的 detail 为 0。
+document.addEventListener('click',event=>{ const el=event.target.closest('button'); if(el&&event.detail===0&&!drag) activate(el); });
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape') { location.href='../../'; return; }
+ if(event.key.toLowerCase()==='f') { document.documentElement.requestFullscreen?.().catch(()=>{}); return; }
+ if(event.repeat||drag||!['ArrowLeft','ArrowRight'].includes(event.key)) return;
+ event.preventDefault(); const choices=[...document.querySelectorAll('.choice')]; choices[event.key==='ArrowLeft'?0:1].focus();
+});
+setInterval(()=>{ if(!document.hidden&&phase==='play'&&!drag&&Date.now()-lastInput>8000) { animate($('#board')); lastInput=Date.now(); } },1000);
+window.addEventListener('pagehide',()=>{ clearTimeout(roundTimer); clearTimeout(voiceTimer); voice.pause(); cancel(); });
+window.addEventListener('pageshow',event=>{ if(event.persisted) dealRound(); });
+dealRound();
+</script>
+</body>
+</html>

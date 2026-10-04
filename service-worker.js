@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "000148d7098922a4";
+const CACHE_VERSION = "65bd5c54dbdb4121";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",
@@ -68,6 +68,16 @@ const PRECACHE_PATHS = [
   "./games/bath/audio/dirty_panda.mp3",
   "./games/bath/audio/dirty_rabbit.mp3",
   "./games/bath/index.html",
+  "./games/beads/",
+  "./games/beads/audio/again.mp3",
+  "./games/beads/audio/choose.mp3",
+  "./games/beads/audio/done.mp3",
+  "./games/beads/audio/intro.mp3",
+  "./games/beads/audio/look.mp3",
+  "./games/beads/audio/next.mp3",
+  "./games/beads/audio/next_round.mp3",
+  "./games/beads/audio/place.mp3",
+  "./games/beads/index.html",
   "./games/bubbles/",
   "./games/bubbles/index.html",
   "./games/bus/",

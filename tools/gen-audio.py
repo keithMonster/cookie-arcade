@@ -379,6 +379,17 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
         "ready.mp3": ("text", "大家坐好啦，可以开车喽！", SENT_SPEED),
     }
 
+    m["beads"] = {
+        "intro.mp3": ("text", "给小熊串项链吧！看看前面的珠子，接下来该放哪一个呀？", SENT_SPEED),
+        "place.mp3": ("text", "放到绳子上，接着前面的样子串吧！", SENT_SPEED),
+        "choose.mp3": ("text", "先选一颗珠子，再放到空位上。", SENT_SPEED),
+        "look.mp3": ("text", "再看看前面，圆圆、方方，是轮流来的哦。", SENT_SPEED),
+        "next.mp3": ("text", "先接上前面的空位哦。", SENT_SPEED),
+        "again.mp3": ("text", "接上啦！下一颗呢？", SENT_SPEED),
+        "done.mp3": ("text", "圆圆、方方，串好啦！小熊戴上真好看！", SENT_SPEED),
+        "next_round.mp3": ("text", "再串一条吧！看看这次从哪一颗开始。", SENT_SPEED),
+    }
+
     return m
 
 
