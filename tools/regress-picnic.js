@@ -11,15 +11,27 @@ async (page) => {
   const boxes=await page.locator('#back,.guest,.food').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,hit:el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2))};}));
   check(`${width}x${height} visible 44px targets`,boxes.every(r=>r.x>=0&&r.y>=0&&r.x+r.w<=width+1&&r.y+r.h<=height+1&&r.w>=44&&r.h>=44),boxes);
   check(`${width}x${height} unobstructed`,boxes.every(r=>r.hit),boxes);
-  await page.screenshot({path:`/Users/xuke/githubProject/monster/output/cookie-arcade/picnic-20261005/${width}x${height}.png`});
+  await page.screenshot({path:`/Users/xuke/githubProject/monster/output/cookie-arcade/picnic-feeding-20261005/${width}x${height}.png`});
  }
  await page.setViewportSize({width:768,height:1024});
  await guest(0).click();check('empty hands cannot feed',!(await state()).fed.some(Boolean));
  await food(0).click();await guest(1).click();check('tap gives one cookie',(await state()).fed[1]&&(await state()).used.filter(Boolean).length===1);
+ check('feeding immediately starts chewing',await guest(1).evaluate(el=>el.classList.contains('eating')&&!!el.querySelector('.meal .cookie')));
+ await page.waitForFunction(()=>document.querySelector('[data-guest="1"] .meal').classList.contains('bite-two'));
+ check('cookie visibly loses two bites',await guest(1).locator('.bite-two').count()===1);
+ await page.waitForFunction(()=>document.querySelector('[data-guest="1"]').classList.contains('satisfied'));
+ check('eaten guest keeps crumbs and no whole cookie',await guest(1).locator('.crumbs').count()===1&&await guest(1).locator('.cookie').count()===0);
+ await page.waitForFunction(()=>!document.querySelector('[data-guest="1"] .heart'));
+ await guest(1).click();check('petting gives affection without another serving',await guest(1).locator('.heart').count()>0&&(await state()).used.filter(Boolean).length===1);
  for(let i=0;i<2;i++){await food(1).click();await guest(1).click();}
  check('occupied plate rejects and highlights empty places',(await state()).fed.filter(Boolean).length===1&&(await state()).misses===2&&await page.locator('.hint').count()===2);
- await food(1).dragTo(guest(0));check('native mouse drag feeds only target',(await state()).fed[0]&&(await state()).used[1]);
+ const from=await food(1).boundingBox(),to=await guest(0).boundingBox();
+ await page.mouse.move(from.x+from.width/2,from.y+from.height/2);await page.mouse.down();await page.mouse.move(to.x+to.width/2,to.y+to.height/2,{steps:8});
+ check('approaching hungry rabbit opens mouth before feeding',await guest(0).evaluate(el=>el.classList.contains('ready'))&&!(await state()).fed[0]);
+ await page.mouse.up();check('drop clears anticipation',await page.locator('.ready').count()===0);
+ check('native mouse drag feeds only target',(await state()).fed[0]&&(await state()).used[1]);
  await food(2).tap();await guest(2).tap();check('native touch completes',(await state()).phase==='celebrate');
+ await guest(0).click();check('petting works during celebration',await guest(0).locator('.heart').count()>0);
  check('one spare remains',(await state()).used.filter(x=>!x).length===1);
  const old=(await state()).round;await page.waitForFunction(r=>round>r,old);check('auto next round resets to two guests',(await state()).fed.length===2&&(await state()).misses===0&&(await state()).selected===null);
  await food(0).focus();await page.keyboard.press('Space');await guest(0).focus();await page.keyboard.press('Enter');check('keyboard feeds',(await state()).fed[0]);
@@ -29,12 +41,17 @@ async (page) => {
  await food(0).dispatchEvent('pointerdown',{pointerId:80,isPrimary:true,button:0,clientX:200,clientY:800});
  await food(0).dispatchEvent('pointermove',{pointerId:80,isPrimary:true,clientX:250,clientY:500});
  await food(0).dispatchEvent('pointerup',{pointerId:81,isPrimary:false,clientX:250,clientY:500});check('secondary finger cannot release drag',(await state()).drag);
- await food(0).dispatchEvent('pointercancel',{pointerId:80,isPrimary:true});check('cancel clears ghost without miss',!(await state()).drag&&(await state()).misses===2&&await page.locator('#ghost').count()===0);
+ await page.evaluate(()=>ready(document.querySelector('[data-guest="0"]')));
+ await food(0).dispatchEvent('pointercancel',{pointerId:80,isPrimary:true});check('cancel clears anticipation',await page.locator('.ready').count()===0);check('cancel clears ghost without miss',!(await state()).drag&&(await state()).misses===2&&await page.locator('#ghost').count()===0);
  await food(0).dispatchEvent('pointerdown',{pointerId:90,isPrimary:true,button:0,clientX:200,clientY:800});await reset();await guest(0).dispatchEvent('pointerup',{pointerId:90,isPrimary:true});check('stale release cannot feed new round',!(await state()).fed.some(Boolean));
  await page.evaluate(()=>{window.savedPlay=voice.play;voice.play=()=>Promise.reject(Error('blocked'));});
  for(let i=0;i<(await state()).fed.length;i++){await food(i).click();await guest(i).click();}
+ check('blocked audio does not block chewing',await page.locator('.eating').count()>0);
  check('blocked audio does not block completion',(await state()).phase==='celebrate');const done=(await state()).round;await page.waitForFunction(r=>round>r,done);check('blocked audio does not block next round',(await state()).phase==='play');await page.evaluate(()=>voice.play=window.savedPlay);
  await page.evaluate(()=>{phase='celebrate';window.dispatchEvent(new PageTransitionEvent('pagehide'));window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));});check('bfcache restore resets playable round',(await state()).phase==='play'&&!(await state()).fed.some(Boolean));
+ await food(0).click();await guest(0).click();await reset();
+ await page.waitForTimeout(1700);
+ check('old bite callbacks cannot mutate new guests',await page.locator('.satisfied,.eating,.heart,.crumbs').count()===0);
  for(const file of ['intro','place','choose','already','thanks','done']){const r=await page.request.get(new URL(`audio/${file}.mp3`,page.url()).href);check(`audio ${file}`,r.status()===200&&(await r.body()).length>1024);}
  await guest(0).click();await page.waitForFunction(()=>!voice.paused&&voice.currentTime>0);check('user gesture starts voice',await page.evaluate(()=>!voice.paused));await page.waitForFunction(()=>voice.ended,{},{timeout:7000});check('voice reaches ended',await page.evaluate(()=>voice.ended));
  check('no page errors',errors.length===0,errors);
