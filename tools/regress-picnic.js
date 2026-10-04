@@ -5,22 +5,26 @@ async (page) => {
  const reset=()=>page.evaluate(()=>dealRound());
  const food=i=>page.locator(`[data-food="${i}"]`),guest=i=>page.locator(`[data-guest="${i}"]`);
  await page.reload();await page.waitForSelector('.food');
+ const menus=await page.evaluate(()=>{round=0;const menus=[];for(let i=0;i<8;i++){dealRound();menus.push([...foods]);}round=0;dealRound();return menus;});
+ check('grass and leaves every round; one carrot only every fourth round',menus.every((m,i)=>m.includes('hay')&&m.includes('leaf')&&m.filter(x=>x==='carrot').length===((i+1)%4===0?1:0)));
+ check('grass remains the most common food',menus.flat().filter(x=>x==='hay').length>menus.flat().filter(x=>x==='leaf').length);
+
  for(const [width,height] of [[320,568],[390,844],[844,390],[768,1024],[1024,768]]){
   await page.setViewportSize({width,height});
   if((await state()).fed.length!==3)await reset();
   const boxes=await page.locator('#back,.guest,.food').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,hit:el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2))};}));
   check(`${width}x${height} visible 44px targets`,boxes.every(r=>r.x>=0&&r.y>=0&&r.x+r.w<=width+1&&r.y+r.h<=height+1&&r.w>=44&&r.h>=44),boxes);
   check(`${width}x${height} unobstructed`,boxes.every(r=>r.hit),boxes);
-  await page.screenshot({path:`/Users/xuke/githubProject/monster/output/cookie-arcade/picnic-feeding-20261005/${width}x${height}.png`});
+  await page.screenshot({path:`/Users/xuke/githubProject/monster/output/cookie-arcade/picnic-greens-20261005/${width}x${height}.png`});
  }
  await page.setViewportSize({width:768,height:1024});
  await guest(0).click();check('empty hands cannot feed',!(await state()).fed.some(Boolean));
- await food(0).click();await guest(1).click();check('tap gives one cookie',(await state()).fed[1]&&(await state()).used.filter(Boolean).length===1);
- check('feeding immediately starts chewing',await guest(1).evaluate(el=>el.classList.contains('eating')&&!!el.querySelector('.meal .cookie')));
+ await food(0).click();await guest(1).click();check('tap gives one serving',(await state()).fed[1]&&(await state()).used.filter(Boolean).length===1);
+ check('feeding immediately starts chewing',await guest(1).evaluate(el=>el.classList.contains('eating')&&!!el.querySelector('.meal .snack')));
  await page.waitForFunction(()=>document.querySelector('[data-guest="1"] .meal').classList.contains('bite-two'));
- check('cookie visibly loses two bites',await guest(1).locator('.bite-two').count()===1);
+ check('food visibly loses two bites',await guest(1).locator('.bite-two').count()===1);
  await page.waitForFunction(()=>document.querySelector('[data-guest="1"]').classList.contains('satisfied'));
- check('eaten guest keeps crumbs and no whole cookie',await guest(1).locator('.crumbs').count()===1&&await guest(1).locator('.cookie').count()===0);
+ check('eaten guest keeps crumbs and no whole food',await guest(1).locator('.crumbs').count()===1&&await guest(1).locator('.snack').count()===0);
  await page.waitForFunction(()=>!document.querySelector('[data-guest="1"] .heart'));
  await guest(1).click();check('petting gives affection without another serving',await guest(1).locator('.heart').count()>0&&(await state()).used.filter(Boolean).length===1);
  for(let i=0;i<2;i++){await food(1).click();await guest(1).click();}
@@ -52,6 +56,20 @@ async (page) => {
  await food(0).click();await guest(0).click();await reset();
  await page.waitForTimeout(1700);
  check('old bite callbacks cannot mutate new guests',await page.locator('.satisfied,.eating,.heart,.crumbs').count()===0);
+ for(const kind of ['hay','leaf','carrot']){
+  await page.evaluate(()=>{round=3;dealRound();});
+  const id=await page.evaluate(k=>foods.indexOf(k),kind);
+  const b=await food(id).boundingBox(),g=await guest(0).boundingBox();
+  await page.mouse.move(b.x+b.width/2,b.y+b.height/2);await page.mouse.down();await page.mouse.move(g.x+g.width/2,g.y+g.height/2,{steps:5});
+  check(`${kind} drag keeps correct appearance`,await page.locator(`#ghost .snack.${kind}`).count()===1);
+  await page.mouse.up();
+  check(`${kind} served keeps correct appearance`,await guest(0).locator(`.meal.${kind} .snack.${kind}`).count()===1);
+  await page.waitForFunction(()=>document.querySelector('.bite-two'));
+  await page.screenshot({path:`/Users/xuke/githubProject/monster/output/cookie-arcade/picnic-greens-20261005/eating-${kind}.png`});
+  await page.waitForFunction(()=>document.querySelector('.satisfied'));
+  check(`${kind} can finish eating`,(await state()).fed[0]&&await guest(0).locator('.snack').count()===0);
+ }
+ await reset();
  for(const file of ['intro','place','choose','already','thanks','done']){const r=await page.request.get(new URL(`audio/${file}.mp3`,page.url()).href);check(`audio ${file}`,r.status()===200&&(await r.body()).length>1024);}
  await guest(0).click();await page.waitForFunction(()=>!voice.paused&&voice.currentTime>0);check('user gesture starts voice',await page.evaluate(()=>!voice.paused));await page.waitForFunction(()=>voice.ended,{},{timeout:7000});check('voice reaches ended',await page.evaluate(()=>voice.ended));
  check('no page errors',errors.length===0,errors);

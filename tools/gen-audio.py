@@ -391,12 +391,12 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
     }
 
     m["picnic"] = {
-        "intro.mp3": ("text", "小兔来野餐啦！每只小兔分一块饼干吧。", SENT_SPEED),
+        "intro.mp3": ("text", "小兔爱吃草和菜叶！每只小兔分一份吧。", SENT_SPEED),
         "place.mp3": ("text", "送到小兔的空盘子里吧。", SENT_SPEED),
-        "choose.mp3": ("text", "从篮子里拿一块饼干吧。", SENT_SPEED),
+        "choose.mp3": ("text", "从篮子里拿一份食物吧。", SENT_SPEED),
         "already.mp3": ("text", "我已经有啦！看看谁还没有呀？", SENT_SPEED),
         "thanks.mp3": ("text", "谢谢你！还有谁没拿到呀？", SENT_SPEED),
-        "done.mp3": ("text", "一人一块，都有啦！啊呜，饼干真好吃！", SENT_SPEED),
+        "done.mp3": ("text", "一人一份，都有啦！啊呜，真好吃！", SENT_SPEED),
     }
 
     return m
