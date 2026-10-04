@@ -34,11 +34,12 @@ main{height:100%;height:100dvh;width:min(100%,960px);margin:auto;padding:max(80p
 'use strict';
 const $=s=>document.querySelector(s),voice=new Audio();voice.volume=.7;
 let round=0,phase='play',selected=null,misses=0,drag=null,context=null,roundTimer=0,voiceTimer=0,lastInput=Date.now(),introduced=false;
-let fed=[],used=[],foods=[];
+let fed=[],used=[],foods=[],chewing=[];
 const effects=new Set();
 function later(fn,ms){const current=round;const id=setTimeout(()=>{effects.delete(id);if(current===round)fn();},ms);effects.add(id);}
 function clearEffects(){effects.forEach(clearTimeout);effects.clear();}
-function ready(target=null){document.querySelectorAll(".guest.ready").forEach(el=>el.classList.remove("ready"));if(target&&!fed[Number(target.dataset.guest)])target.classList.add("ready");}
+function canFeed(i){return !chewing[i]&&(!fed[i]||fed.every(Boolean));}
+function ready(target=null){document.querySelectorAll(".guest.ready").forEach(el=>el.classList.remove("ready"));if(target&&canFeed(Number(target.dataset.guest)))target.classList.add("ready");}
 const foodNames={hay:'小草束',leaf:'菜叶',carrot:'一小块胡萝卜'};
 const foodArt={
  hay:'<g fill="none" stroke-linecap="round"><path d="M39 68Q13 36 16 15M39 67Q30 30 26 9M40 68Q37 29 40 8M42 68Q51 29 55 12M42 68Q67 33 65 23" stroke="#688b3c" stroke-width="7"/><path d="M38 66Q25 35 20 28M41 67Q46 30 47 17M43 66Q61 45 66 39" stroke="#9bb453" stroke-width="5"/><path d="M29 56L49 53" stroke="#d5b77a" stroke-width="7"/></g>',
@@ -47,11 +48,11 @@ const foodArt={
 };
 const snack=kind=>`<span class="snack ${kind}" aria-hidden="true"><svg viewBox="0 0 80 80">${foodArt[kind]}</svg></span>`;
 function tone(freq=520){try{context??=new(window.AudioContext||window.webkitAudioContext)();context.resume().catch(()=>{});const o=context.createOscillator(),g=context.createGain();o.frequency.value=freq;g.gain.setValueAtTime(.1,context.currentTime);g.gain.exponentialRampToValueAtTime(.001,context.currentTime+.18);o.connect(g);g.connect(context.destination);o.start();o.stop(context.currentTime+.2);}catch{}}
-function say(name){if(['place','choose','thanks'].includes(name)&&voice.src.endsWith('/intro.mp3')&&!voice.paused&&!voice.ended)return;clearTimeout(voiceTimer);voice.pause();voice.src=`audio/${name}.mp3`;voice.play().catch(()=>{});voiceTimer=setTimeout(()=>voice.pause(),6000);}
+function say(name){if(document.hidden)return;if(['place','choose','thanks'].includes(name)&&voice.src.endsWith('/intro.mp3')&&!voice.paused&&!voice.ended)return;clearTimeout(voiceTimer);voice.pause();voice.src=`audio/${name}.mp3`;voice.play().catch(()=>{});voiceTimer=setTimeout(()=>voice.pause(),6000);}
 function animate(el,name='bump'){el.classList.remove(name);void el.offsetWidth;el.classList.add(name);}
 function input(){lastInput=Date.now();tone();if(!introduced){introduced=true;say('intro');}}
 function select(id){selected=id;document.querySelectorAll('.food').forEach(el=>el.classList.toggle('selected',Number(el.dataset.food)===id));}
-function hints(){document.querySelectorAll('.hint').forEach(el=>el.classList.remove('hint'));if(phase==='play'&&misses>=2){document.querySelectorAll('.guest').forEach((el,i)=>{if(!fed[i])el.classList.add('hint');});}}
+function hints(){document.querySelectorAll('.hint').forEach(el=>el.classList.remove('hint'));if(phase==='play'&&misses>=2){document.querySelectorAll('.guest').forEach((el,i)=>{if(canFeed(i))el.classList.add('hint');});}}
 function miss(el,name){misses++;select(null);animate(el,'wobble');tone(260);say(name);hints();}
 function affection(target){
  if(target.classList.contains('petted'))return;
@@ -59,24 +60,25 @@ function affection(target){
  later(()=>target.classList.remove('petted'),650);later(()=>heart.remove(),1150);
 }
 function eat(target,kind){
- target.classList.add('eating');const meal=target.querySelector('.meal');meal.classList.add(kind);meal.innerHTML=snack(kind);target.style.setProperty('--crumb',kind==='carrot'?'#df7d35':'#688b3c');
+ const guest=Number(target.dataset.guest);chewing[guest]=true;target.classList.remove('satisfied');target.classList.add('eating');const meal=target.querySelector('.meal');meal.className=`meal ${kind}`;meal.innerHTML=snack(kind);target.style.setProperty('--crumb',kind==='carrot'?'#df7d35':'#688b3c');
  [450,950].forEach((ms,i)=>later(()=>{meal.classList.add(i?'bite-two':'bite-one');if(!document.hidden)tone(180+i*70);},ms));
- later(()=>{meal.innerHTML='';target.classList.remove('eating');target.classList.add('satisfied');target.querySelector('.plate').innerHTML='<i class="crumbs"></i>';affection(target);},1550);
+ later(()=>{meal.innerHTML='';target.classList.remove('eating');target.classList.add('satisfied');target.querySelector('.plate').innerHTML='<i class="crumbs"></i>';affection(target);chewing[guest]=false;target.setAttribute('aria-label',`小兔${guest+1}吃完了，可以摸摸或再喂一份`);hints();finish();},1550);
 }
 function completeStep(food,guest){
  if(phase!=='play'||!Number.isInteger(food)||!Number.isInteger(guest)||food<0||food>=used.length||guest<0||guest>=fed.length||used[food])return;
  const target=$(`[data-guest="${guest}"]`);
- if(fed[guest]){miss(target,'already');return;}
+ if(chewing[guest]){animate(target);say('chewing');return;}
+ if(!canFeed(guest)){miss(target,'already');return;}
  fed[guest]=true;used[food]=true;select(null);misses=0;
  const source=$(`[data-food="${food}"]`);source.classList.add('used');source.disabled=true;
- ready();target.classList.add('fed');target.querySelector('.plate').innerHTML='<i class="crumbs"></i>';eat(target,foods[food]);target.setAttribute('aria-label',`小兔${guest+1}已经有食物`);animate(target);hints();tone(780);
- if(fed.every(Boolean))finish();else say('thanks');
+ ready();target.classList.add('fed');target.querySelector('.plate').innerHTML='<i class="crumbs"></i>';eat(target,foods[food]);target.setAttribute('aria-label',`小兔${guest+1}正在嚼食物`);animate(target);hints();tone(780);
+ if(!used.every(Boolean))say('thanks');
 }
-function finish(){phase='celebrate';$('#picnic').classList.add('celebrate');say('done');for(let i=0;i<16;i++){const p=document.createElement('i');p.className='spark';p.style.left=`${12+Math.random()*76}%`;p.style.top=`${35+Math.random()*35}%`;p.style.background=i%2?'var(--cream)':'var(--gold)';$('#sparkles').append(p);}roundTimer=setTimeout(dealRound,5000);}
+function finish(){if(phase!=='play'||!used.every(Boolean)||chewing.some(Boolean))return;clearDrag();select(null);phase='celebrate';$('#picnic').classList.add('celebrate');say('done');for(let i=0;i<16;i++){const p=document.createElement('i');p.className='spark';p.style.left=`${12+Math.random()*76}%`;p.style.top=`${35+Math.random()*35}%`;p.style.background=i%2?'var(--cream)':'var(--gold)';$('#sparkles').append(p);}roundTimer=setTimeout(dealRound,5000);}
 function clearDrag(){ready();const old=drag;drag=null;$('#ghost')?.remove();if(old){try{old.el.releasePointerCapture(old.id);}catch{}}}
 function dealRound(){
  clearTimeout(roundTimer);clearEffects();clearDrag();round++;phase='play';misses=0;selected=null;lastInput=Date.now();
- const count=round%2?3:2;fed=Array(count).fill(false);used=Array(count+1).fill(false);
+ const count=round%2?3:2;fed=Array(count).fill(false);chewing=Array(count).fill(false);used=Array(count+1).fill(false);
  foods=used.map((_,i)=>i===count-1?'leaf':'hay');if(round%4===0)foods[count]='carrot';
  $('#picnic').classList.remove('celebrate');$('#sparkles').innerHTML='';
  const colors=['hsl(45 68% 94%)','hsl(30 40% 78%)','hsl(20 20% 88%)'];
@@ -101,7 +103,7 @@ document.addEventListener('pointercancel',cancel);document.addEventListener('los
 document.addEventListener('visibilitychange',()=>{if(document.hidden){cancel();voice.pause();}});
 document.addEventListener('click',e=>{const el=e.target.closest('button');if(el&&!el.disabled&&e.detail===0&&!drag)activate(el);});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){location.href='../../';return;}if(e.key.toLowerCase()==='f')document.documentElement.requestFullscreen?.().catch(()=>{});});
-setInterval(()=>{if(!document.hidden&&phase==='play'&&!drag&&Date.now()-lastInput>8000){const waiting=[...document.querySelectorAll('.guest:not(.fed)')];if(waiting.length)animate(waiting[Math.floor(Math.random()*waiting.length)],'waiting');animate($('#basket'));lastInput=Date.now();}},1000);
+setInterval(()=>{if(!document.hidden&&phase==='play'&&!drag&&Date.now()-lastInput>8000){const waiting=[...document.querySelectorAll('.guest')].filter((el,i)=>canFeed(i));if(waiting.length)animate(waiting[Math.floor(Math.random()*waiting.length)],'waiting');animate($('#basket'));lastInput=Date.now();}},1000);
 window.addEventListener('pagehide',()=>{clearTimeout(roundTimer);clearTimeout(voiceTimer);clearEffects();voice.pause();cancel();});window.addEventListener('pageshow',e=>{if(e.persisted)dealRound();});dealRound();
 </script>
 </body>
