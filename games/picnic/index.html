@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<link rel="icon" href="../../apple-touch-icon.png">
+<title>野餐分分乐 · Cookie's Arcade</title>
+<style>
+:root{color-scheme:light;--ink:hsl(160 32% 24%);--grass:hsl(143 31% 77%);--cream:hsl(45 68% 94%);--pink:hsl(8 64% 73%);--gold:hsl(36 75% 63%)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}body{background:var(--grass);font-family:-apple-system,"PingFang SC",sans-serif;touch-action:none;user-select:none;-webkit-user-select:none}button{border:0;padding:0;background:none;color:var(--ink);cursor:pointer;touch-action:none}button:focus-visible,a:focus-visible{outline:4px solid var(--ink);outline-offset:4px}#back{position:fixed;z-index:20;top:max(12px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));width:48px;height:48px;background:var(--cream);border-radius:50%;display:grid;place-items:center;color:var(--ink)}#back svg{width:24px;height:24px}
+main{height:100%;height:100dvh;width:min(100%,960px);margin:auto;padding:max(80px,calc(env(safe-area-inset-top) + 64px)) max(24px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left));display:flex;flex-direction:column;justify-content:center;gap:48px}
+#picnic{position:relative;padding:32px 16px 24px;border-radius:40px;background-color:var(--pink);background-image:repeating-linear-gradient(90deg,transparent 0 40px,#fff2 40px 80px),repeating-linear-gradient(0deg,transparent 0 40px,#fff2 40px 80px);box-shadow:0 8px 0 hsl(8 36% 60%),0 20px 32px hsl(150 30% 30% / .12)}#guests{display:flex;justify-content:center;gap:24px}.guest{position:relative;flex:1;max-width:220px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:16px;border-radius:24px}
+.rabbit{position:relative;display:block;width:100%;max-width:160px;aspect-ratio:1 / 1.3;transform-origin:50% 95%}.ears{position:absolute;inset:0}.ears:before,.ears:after{content:'';position:absolute;top:0;width:25%;height:58%;background:var(--fur,var(--cream));border-radius:55% 55% 24% 24%;box-shadow:inset 0 0 0 8px var(--fur,var(--cream)),inset 0 0 0 16px hsl(9 60% 80%)}.ears:before{left:18%;transform:rotate(-12deg)}.ears:after{right:18%;transform:rotate(12deg)}.face{position:absolute;inset:35% 0 0;border-radius:48%;background:var(--fur,var(--cream));box-shadow:0 6px 0 #0001}.eye{position:absolute;top:35%;width:8%;height:12%;background:var(--ink);border-radius:50%}.eye.l{left:26%}.eye.r{right:26%}.nose{position:absolute;top:51%;left:45%;width:10%;height:8%;border-radius:50%;background:hsl(8 53% 62%)}.mouth{position:absolute;top:57%;left:39%;width:22%;height:17%;border-bottom:4px solid var(--ink);border-radius:50%}.cheek{position:absolute;top:52%;width:19%;height:14%;border-radius:50%;background:hsl(8 64% 78%)}.cheek.l{left:8%}.cheek.r{right:8%}
+.plate{display:grid;place-items:center;width:100%;max-width:168px;aspect-ratio:1.5;border-radius:50%;background:hsl(45 68% 94%);border:8px solid hsl(39 39% 84%);box-shadow:0 6px 0 #0001}.plate:empty:after{content:'';width:50%;height:55%;border-radius:50%;border:3px dashed hsl(35 26% 65%)}
+.cookie{position:relative;display:block;width:64px;height:64px;border-radius:50%;background:var(--gold);box-shadow:inset 0 0 0 5px hsl(32 58% 54%),inset 0 -9px 0 hsl(32 58% 54%),0 4px 0 #0001;pointer-events:none}.cookie:before{content:'';position:absolute;width:8px;height:8px;border-radius:50%;background:hsl(23 39% 32%);left:19px;top:16px;box-shadow:20px 8px hsl(23 39% 32%),2px 22px hsl(23 39% 32%),19px 28px hsl(23 39% 32%)}
+#basket{display:flex;justify-content:center;align-items:center;gap:16px;align-self:center;padding:16px 24px 24px;border-radius:24px 24px 40px 40px;background:hsl(35 43% 62%);box-shadow:0 8px 0 hsl(32 31% 49%),0 16px 24px #284c3820}.food{width:80px;height:80px;display:grid;place-items:center;border-radius:24px}.food.selected{background:var(--cream);box-shadow:0 0 0 4px var(--ink)}.food.used{visibility:hidden;pointer-events:none}.guest.fed .eye{height:7%;border-radius:0 0 50% 50%}.hint{outline:5px solid hsl(46 95% 70%);outline-offset:4px;animation:glow 1.2s ease-in-out infinite}.bump{animation:bump .4s}.wobble{animation:wobble .45s}.celebrate .rabbit{animation:bump .7s ease-in-out infinite}.celebrate .cookie{animation:munch 1.6s ease-in forwards}.celebrate .guest:nth-child(2) .rabbit{animation-delay:.2s}.celebrate .guest:nth-child(3) .rabbit{animation-delay:.4s}#ghost{position:fixed;z-index:40;pointer-events:none;transform:translate(-50%,-50%);filter:drop-shadow(0 12px 8px #0002)}#sparkles{position:fixed;inset:0;pointer-events:none}.spark{position:absolute;width:12px;height:12px;background:var(--cream);border-radius:50%;animation:float 1.8s ease-out forwards}
+@keyframes bump{50%{transform:translateY(-12px) rotate(4deg)}}@keyframes wobble{25%,75%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}@keyframes glow{50%{outline-color:hsl(46 95% 85%)}}@keyframes munch{40%{transform:translateY(-16px) rotate(15deg)}70%{transform:scale(.7)}100%{transform:scale(0)}}@keyframes float{to{transform:translateY(-180px) rotate(140deg);opacity:0}}
+@media(max-width:500px){main{padding-left:16px;padding-right:16px;gap:32px}#picnic{padding:24px 12px 16px}#guests{gap:12px}.guest{gap:16px}.plate{border-width:5px}.plate .cookie{transform:scale(.7)}#basket{gap:4px;padding:12px 8px 16px}.food{width:64px;height:72px}.cookie{width:56px;height:56px}.cookie:before{left:15px;top:12px}}
+@media(max-height:500px) and (orientation:landscape){main{padding:16px max(16px,env(safe-area-inset-right)) 16px max(80px,env(safe-area-inset-left));flex-direction:row;gap:24px;align-items:center}#picnic{flex:1;padding:16px}#guests{gap:16px}.rabbit{max-width:104px}.guest{gap:8px}.plate{max-width:120px}.plate .cookie{transform:scale(.7)}#basket{width:160px;flex-wrap:wrap;gap:4px;padding:12px 8px 16px}.food{width:64px;height:72px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:1ms!important;animation-iteration-count:1!important}}
+</style>
+</head>
+<body>
+<a id="back" href="../../" aria-label="回游戏台"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7m-7 7h14"/></svg></a>
+<main><section id="picnic" aria-label="每只小兔一块饼干"><div id="guests"></div></section><section id="basket" aria-label="饼干篮"></section></main><div id="sparkles"></div>
+<script>
+'use strict';
+const $=s=>document.querySelector(s),voice=new Audio();voice.volume=.7;
+let round=0,phase='play',selected=null,misses=0,drag=null,context=null,roundTimer=0,voiceTimer=0,lastInput=Date.now(),introduced=false;
+let fed=[],used=[];
+const cookie=()=>'<span class="cookie"></span>';
+function tone(freq=520){try{context??=new(window.AudioContext||window.webkitAudioContext)();context.resume().catch(()=>{});const o=context.createOscillator(),g=context.createGain();o.frequency.value=freq;g.gain.setValueAtTime(.1,context.currentTime);g.gain.exponentialRampToValueAtTime(.001,context.currentTime+.18);o.connect(g);g.connect(context.destination);o.start();o.stop(context.currentTime+.2);}catch{}}
+function say(name){if(['place','choose','thanks'].includes(name)&&voice.src.endsWith('/intro.mp3')&&!voice.paused&&!voice.ended)return;clearTimeout(voiceTimer);voice.pause();voice.src=`audio/${name}.mp3`;voice.play().catch(()=>{});voiceTimer=setTimeout(()=>voice.pause(),6000);}
+function animate(el,name='bump'){el.classList.remove(name);void el.offsetWidth;el.classList.add(name);}
+function input(){lastInput=Date.now();tone();if(!introduced){introduced=true;say('intro');}}
+function select(id){selected=id;document.querySelectorAll('.food').forEach(el=>el.classList.toggle('selected',Number(el.dataset.food)===id));}
+function hints(){document.querySelectorAll('.hint').forEach(el=>el.classList.remove('hint'));if(phase==='play'&&misses>=2){document.querySelectorAll('.guest').forEach((el,i)=>{if(!fed[i])el.classList.add('hint');});}}
+function miss(el,name){misses++;select(null);animate(el,'wobble');tone(260);say(name);hints();}
+function completeStep(food,guest){
+ if(phase!=='play'||!Number.isInteger(food)||!Number.isInteger(guest)||food<0||food>=used.length||guest<0||guest>=fed.length||used[food])return;
+ const target=$(`[data-guest="${guest}"]`);
+ if(fed[guest]){miss(target,'already');return;}
+ fed[guest]=true;used[food]=true;select(null);misses=0;
+ const source=$(`[data-food="${food}"]`);source.classList.add('used');source.disabled=true;
+ target.classList.add('fed');target.querySelector('.plate').innerHTML=cookie();target.setAttribute('aria-label',`小兔${guest+1}已经有饼干`);animate(target);hints();tone(780);
+ if(fed.every(Boolean))finish();else say('thanks');
+}
+function finish(){phase='celebrate';$('#picnic').classList.add('celebrate');say('done');for(let i=0;i<16;i++){const p=document.createElement('i');p.className='spark';p.style.left=`${12+Math.random()*76}%`;p.style.top=`${35+Math.random()*35}%`;p.style.background=i%2?'var(--cream)':'var(--gold)';$('#sparkles').append(p);}roundTimer=setTimeout(dealRound,5000);}
+function clearDrag(){const old=drag;drag=null;$('#ghost')?.remove();if(old){try{old.el.releasePointerCapture(old.id);}catch{}}}
+function dealRound(){
+ clearTimeout(roundTimer);clearDrag();round++;phase='play';misses=0;selected=null;lastInput=Date.now();
+ const count=round%2?3:2;fed=Array(count).fill(false);used=Array(count+1).fill(false);
+ $('#picnic').classList.remove('celebrate');$('#sparkles').innerHTML='';
+ const colors=['hsl(45 68% 94%)','hsl(30 40% 78%)','hsl(20 20% 88%)'];
+ $('#guests').innerHTML=fed.map((_,i)=>`<button class="guest" data-guest="${i}" aria-label="给小兔${i+1}一块饼干" style="--fur:${colors[(i+round)%3]}"><span class="rabbit"><span class="ears"></span><span class="face"><i class="eye l"></i><i class="eye r"></i><i class="nose"></i><i class="mouth"></i><i class="cheek l"></i><i class="cheek r"></i></span></span><span class="plate"></span></button>`).join('');
+ $('#basket').innerHTML=used.map((_,i)=>`<button class="food" data-food="${i}" aria-label="拿一块饼干">${cookie()}</button>`).join('');
+ if(introduced)say('intro');
+}
+function activate(el){input();animate(el);if(phase!=='play')return;if(el.dataset.food!==undefined){const id=Number(el.dataset.food);if(!used[id]){select(id);say('place');}return;}const guest=Number(el.dataset.guest);if(selected===null){if(fed[guest])say('already');else{say('choose');animate($('#basket'));}return;}completeStep(selected,guest);}
+document.addEventListener('pointerdown',e=>{const el=e.target.closest('button');if(!el||el.disabled||!e.isPrimary||e.button!==0||drag)return;e.preventDefault();input();animate(el);drag={id:e.pointerId,el,x:e.clientX,y:e.clientY,moved:false,round,phase};try{el.setPointerCapture(e.pointerId);}catch{}});
+document.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>12)drag.moved=true;if(!drag.moved||drag.el.dataset.food===undefined||phase!=='play')return;let ghost=$('#ghost');if(!ghost){ghost=document.createElement('div');ghost.id='ghost';ghost.innerHTML=cookie();document.body.append(ghost);select(null);}ghost.style.left=`${e.clientX}px`;ghost.style.top=`${e.clientY}px`;});
+document.addEventListener('pointerup',e=>{if(!drag||e.pointerId!==drag.id)return;const old=drag;clearDrag();if(old.round!==round||old.phase!==phase)return;if(!old.moved){activate(old.el);return;}if(old.el.dataset.food===undefined||phase!=='play')return;const target=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-guest]');if(!target){miss(old.el,'place');return;}completeStep(Number(old.el.dataset.food),Number(target.dataset.guest));});
+function cancel(e){if(drag&&(!e||e.pointerId===drag.id)){clearDrag();select(null);}}
+document.addEventListener('pointercancel',cancel);document.addEventListener('lostpointercapture',cancel);window.addEventListener('blur',()=>cancel());
+document.addEventListener('visibilitychange',()=>{if(document.hidden){cancel();voice.pause();}});
+document.addEventListener('click',e=>{const el=e.target.closest('button');if(el&&!el.disabled&&e.detail===0&&!drag)activate(el);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){location.href='../../';return;}if(e.key.toLowerCase()==='f')document.documentElement.requestFullscreen?.().catch(()=>{});});
+setInterval(()=>{if(!document.hidden&&phase==='play'&&!drag&&Date.now()-lastInput>8000){animate($('#basket'));lastInput=Date.now();}},1000);
+window.addEventListener('pagehide',()=>{clearTimeout(roundTimer);clearTimeout(voiceTimer);voice.pause();cancel();});window.addEventListener('pageshow',e=>{if(e.persisted)dealRound();});dealRound();
+</script>
+</body>
+</html>

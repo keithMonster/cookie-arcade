@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "65bd5c54dbdb4121";
+const CACHE_VERSION = "46d4b5c9e78c7bf3";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",
@@ -359,6 +359,14 @@ const PRECACHE_PATHS = [
   "./games/peekaboo/audio/rabbit.mp3",
   "./games/peekaboo/audio/tiger.mp3",
   "./games/peekaboo/index.html",
+  "./games/picnic/",
+  "./games/picnic/audio/already.mp3",
+  "./games/picnic/audio/choose.mp3",
+  "./games/picnic/audio/done.mp3",
+  "./games/picnic/audio/intro.mp3",
+  "./games/picnic/audio/place.mp3",
+  "./games/picnic/audio/thanks.mp3",
+  "./games/picnic/index.html",
   "./games/road/",
   "./games/road/audio/choose.mp3",
   "./games/road/audio/go.mp3",
