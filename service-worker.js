@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "d1118b1d21f89172";
+const CACHE_VERSION = "5a601851f8ee08b9";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",
@@ -488,6 +488,15 @@ const PRECACHE_PATHS = [
   "./games/tw-summon/audio/reveal_chickedy.mp3",
   "./games/tw-summon/audio/reveal_toodloo.mp3",
   "./games/tw-summon/index.html",
+  "./games/waterwheel/",
+  "./games/waterwheel/audio/again.mp3",
+  "./games/waterwheel/audio/done.mp3",
+  "./games/waterwheel/audio/goal.mp3",
+  "./games/waterwheel/audio/intro.mp3",
+  "./games/waterwheel/audio/join.mp3",
+  "./games/waterwheel/audio/source.mp3",
+  "./games/waterwheel/audio/turn.mp3",
+  "./games/waterwheel/index.html",
   "./games/words/",
   "./games/words/audio/apple.mp3",
   "./games/words/audio/baba.mp3",

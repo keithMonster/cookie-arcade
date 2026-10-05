@@ -400,6 +400,15 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
         "done.mp3": ("text", "都吃完啦！谢谢你，真好吃！", SENT_SPEED),
     }
 
+    m["waterwheel"] = {
+        "intro.mp3": ("text", "转转弯水管，让水流到小水车！", SENT_SPEED),
+        "turn.mp3": ("text", "转一转，再看看水流到哪里。", SENT_SPEED),
+        "join.mp3": ("text", "看看亮亮的两头，把水管接起来。", SENT_SPEED),
+        "source.mp3": ("text", "水从这里来，哗啦啦！", SENT_SPEED),
+        "goal.mp3": ("text", "小水车在等水来呢！", SENT_SPEED),
+        "done.mp3": ("text", "接通啦！小水车转起来，小花也开啦！", SENT_SPEED),
+        "again.mp3": ("text", "水换地方啦，再转转小水管！", SENT_SPEED),
+    }
     return m
 
 

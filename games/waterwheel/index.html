@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="icon" href="../../apple-touch-icon.png">
+<title>转转小水车 · Cookie's Arcade</title>
+<style>
+:root{color-scheme:light;--sky:hsl(190 52% 89%);--tray:hsl(184 43% 77%);--ink:hsl(183 34% 25%);--pipe:hsl(14 77% 65%);--water:hsl(199 75% 48%);--sun:hsl(44 94% 70%)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
+body{background:var(--sky);font-family:-apple-system,"PingFang SC",sans-serif;touch-action:none;user-select:none;-webkit-user-select:none}
+button,a{touch-action:none}button{border:0;padding:0;background:none;cursor:pointer;color:var(--ink)}
+button:focus-visible,a:focus-visible{outline:4px solid var(--ink);outline-offset:4px}
+#back{position:fixed;z-index:20;left:max(12px,env(safe-area-inset-left));top:max(12px,env(safe-area-inset-top));width:48px;height:48px;border-radius:50%;background:hsl(45 67% 95%);color:var(--ink);display:grid;place-items:center}
+#back:before{content:'';position:absolute;inset:-8px}#back svg{width:24px;height:24px}
+main{height:100%;height:100dvh;display:grid;place-items:center;padding:max(72px,calc(env(safe-area-inset-top) + 64px)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+#board{position:relative;width:min(100%,680px,calc(100dvh - 112px - env(safe-area-inset-top) - env(safe-area-inset-bottom)));aspect-ratio:1;background:var(--tray);border-radius:48px;box-shadow:0 12px 0 hsl(183 35% 60%),0 24px 40px hsl(183 34% 25% / .12)}
+#scene{width:100%;height:100%;display:block;overflow:visible;pointer-events:none}
+.lane{fill:none;stroke:hsl(183 32% 51%);stroke-width:42;stroke-linecap:round}.lane-inner{fill:none;stroke:hsl(183 35% 89%);stroke-width:28;stroke-linecap:round}
+.water{fill:none;stroke:var(--water);stroke-width:19;stroke-linecap:round}.shine{fill:none;stroke:hsl(191 100% 86%);stroke-width:5;stroke-linecap:round;stroke-dasharray:8 24;animation:flow .85s linear infinite}
+#rotating{transform-origin:300px 300px}.pipe-shell{fill:none;stroke:hsl(10 55% 46%);stroke-width:60;stroke-linejoin:round}.pipe-top{fill:none;stroke:var(--pipe);stroke-width:48;stroke-linejoin:round}
+.port{fill:hsl(18 79% 79%);stroke:hsl(10 55% 46%);stroke-width:6}.hint-ring{fill:none;stroke:var(--sun);stroke-width:12;opacity:0}
+.hint .hint-ring{animation:hint 1.2s ease-in-out infinite}#grip{fill:hsl(37 64% 90%);stroke:hsl(31 43% 71%);stroke-width:4}
+#dial{position:absolute;left:29%;top:29%;width:42%;height:42%;border-radius:50%;cursor:grab}#dial:active{cursor:grabbing}
+.prop{position:absolute;width:18%;height:18%;min-width:48px;min-height:48px;transform:translate(-50%,-50%);border-radius:50%}.prop svg{width:100%;height:100%;overflow:visible;pointer-events:none}
+#source{left:50%;top:11%}#wheel{left:88%;top:50%}
+#paddles{transform-origin:60px 60px}.success #paddles{animation:spin 2.4s linear infinite}
+#flower{transform-origin:460px 512px}.petals{transform-origin:460px 492px;transform:scale(.12);transition:transform .8s cubic-bezier(.2,.8,.2,1)}.success .petals{transform:scale(1)}
+.flower-stem{stroke:hsl(153 34% 38%);stroke-width:7;stroke-linecap:round}.leaf{fill:hsl(151 41% 43%)}
+#splash{opacity:.85}.drop{fill:var(--water);animation:drop .9s ease-in infinite}.drop:nth-child(2){animation-delay:.3s}.drop:nth-child(3){animation-delay:.6s}
+.tick #grip{fill:var(--sun)}.tap-pop{animation:pop .35s ease-out}.spark{fill:var(--sun);opacity:0}.success .spark{animation:spark 1.8s ease-out infinite}
+@keyframes flow{to{stroke-dashoffset:-32}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes hint{50%{opacity:.95}}
+@keyframes drop{from{transform:translateY(-4px);opacity:0}35%{opacity:1}to{transform:translateY(24px);opacity:0}}
+@keyframes pop{50%{scale:1.08}}@keyframes spark{35%{opacity:1}to{transform:translateY(-20px);opacity:0}}
+@media(max-height:500px) and (orientation:landscape){main{padding:max(16px,env(safe-area-inset-top)) max(80px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(80px,env(safe-area-inset-left))}#board{width:min(100%,calc(100dvh - 56px - env(safe-area-inset-top) - env(safe-area-inset-bottom)));border-radius:32px}}
+@media(prefers-reduced-motion:reduce){.shine,.drop,.success #paddles,.hint .hint-ring,.success .spark{animation:none}.hint .hint-ring{opacity:1}.petals{transition:none}}
+</style>
+</head>
+<body>
+<a id="back" href="../../" aria-label="返回游戏台"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M5 12h14"/></svg></a>
+<main>
+<div id="board">
+ <svg id="scene" viewBox="0 0 600 600" aria-hidden="true">
+  <circle cx="300" cy="300" r="139" fill="hsl(184 38% 70%)"/>
+  <circle cx="300" cy="300" r="124" fill="hsl(43 62% 92%)"/>
+  <path id="supply-base" class="lane"/><path id="supply-inset" class="lane-inner"/>
+  <path id="outlet-base" class="lane"/><path id="outlet-inset" class="lane-inner"/>
+  <path id="supply-water" class="water"/><path id="supply-shine" class="shine"/>
+  <path id="outlet-water" class="water"/><path id="outlet-shine" class="shine"/>
+  <circle id="hint-source" class="hint-ring" r="28"/><circle id="hint-target" class="hint-ring" r="28"/>
+  <g id="rotating">
+   <path class="pipe-shell" d="M300 182V258Q300 300 342 300H418"/>
+   <path class="pipe-top" d="M300 182V258Q300 300 342 300H418"/>
+   <rect class="port" x="270" y="176" width="60" height="24" rx="8"/>
+   <rect class="port" x="400" y="270" width="24" height="60" rx="8"/>
+   <path id="pipe-water" class="water" d="M300 182V258Q300 300 342 300H418"/>
+   <path id="pipe-shine" class="shine" d="M300 182V258Q300 300 342 300H418"/>
+  </g>
+  <circle id="grip" cx="300" cy="300" r="30"/>
+  <circle cx="292" cy="293" r="5" fill="hsl(31 43% 71%)"/><circle cx="308" cy="307" r="5" fill="hsl(31 43% 71%)"/>
+  <g id="splash"><circle class="drop" cx="-12" cy="6" r="5"/><circle class="drop" cx="0" cy="12" r="7"/><circle class="drop" cx="12" cy="4" r="5"/></g>
+  <g id="flower">
+   <ellipse cx="460" cy="552" rx="48" ry="12" fill="hsl(183 35% 63%)"/>
+   <path class="flower-stem" d="M460 545V492"/><ellipse class="leaf" cx="446" cy="529" rx="18" ry="9" transform="rotate(30 446 529)"/><ellipse class="leaf" cx="474" cy="519" rx="18" ry="9" transform="rotate(-30 474 519)"/>
+   <g class="petals" fill="hsl(14 81% 70%)"><circle cx="460" cy="474" r="16"/><circle cx="478" cy="488" r="16"/><circle cx="471" cy="509" r="16"/><circle cx="449" cy="509" r="16"/><circle cx="442" cy="488" r="16"/></g>
+   <circle cx="460" cy="492" r="12" fill="var(--sun)"/>
+   <circle class="spark" cx="417" cy="478" r="5"/><circle class="spark" cx="500" cy="469" r="7"/>
+  </g>
+ </svg>
+ <button id="dial" aria-label="转动弯水管"></button>
+ <button id="source" class="prop" aria-label="水从这里来">
+  <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="53" fill="hsl(43 70% 93%)"/><path d="M35 71V54H83V86" fill="none" stroke="hsl(43 74% 57%)" stroke-width="22" stroke-linejoin="round"/><rect x="39" y="31" width="44" height="12" rx="6" fill="hsl(14 70% 61%)"/><path d="M60 36V53" stroke="hsl(43 56% 43%)" stroke-width="10"/><circle cx="46" cy="58" r="3" fill="var(--ink)"/><circle cx="67" cy="58" r="3" fill="var(--ink)"/></svg>
+ </button>
+ <button id="wheel" class="prop" aria-label="让小水车转起来">
+  <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="53" fill="hsl(43 70% 93%)"/><path d="M39 109L56 62H65L84 109" fill="hsl(32 39% 44%)"/><g id="paddles" fill="hsl(32 55% 62%)" stroke="hsl(26 40% 39%)" stroke-width="3"><circle cx="60" cy="60" r="34" fill="none" stroke-width="10"/><rect x="48" y="12" width="24" height="37" rx="7"/><rect x="48" y="71" width="24" height="37" rx="7"/><rect x="12" y="48" width="37" height="24" rx="7"/><rect x="71" y="48" width="37" height="24" rx="7"/></g><circle cx="60" cy="60" r="14" fill="var(--sun)"/><circle cx="55" cy="58" r="2.5" fill="var(--ink)"/><circle cx="65" cy="58" r="2.5" fill="var(--ink)"/><path d="M55 64Q60 69 65 64" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/></svg>
+ </button>
+</div>
+</main>
+<script>
+'use strict';
+const $=s=>document.querySelector(s), voice=new Audio();
+voice.volume=.7;voice.preload='auto';voice.src='audio/intro.mp3';
+const layouts=[{source:0,target:1},{source:1,target:2},{source:3,target:2},{source:0,target:3}];
+const points=[[300,182],[418,300],[300,418],[182,300]], outer=[[300,66],[530,300],[300,530],[70,300]];
+let round=0,layout=0,orientation=0,angle=0,phase='play',misses=0,drag=null,context=null,introduced=false;
+let roundTimer=0,voiceTimer=0,tickTimer=0,lastInput=Date.now();
+const mod=n=>((n%4)+4)%4;
+const ports=q=>[mod(q),mod(q+1)];
+const connected=q=>ports(q).includes(layouts[layout].source)&&ports(q).includes(layouts[layout].target);
+function tone(freq=480){
+ try{context??=new(window.AudioContext||window.webkitAudioContext)();context.resume().catch(()=>{});
+ const o=context.createOscillator(),g=context.createGain();o.type='sine';o.frequency.setValueAtTime(freq,context.currentTime);o.frequency.exponentialRampToValueAtTime(freq*.7,context.currentTime+.16);
+ g.gain.setValueAtTime(.10,context.currentTime);g.gain.exponentialRampToValueAtTime(.001,context.currentTime+.2);o.connect(g);g.connect(context.destination);o.start();o.stop(context.currentTime+.22);}catch{}
+}
+function say(name){
+ if(document.hidden)return;
+ if(name==='turn'&&voice.src.endsWith('/intro.mp3')&&!voice.paused&&!voice.ended)return;
+ clearTimeout(voiceTimer);voice.pause();const src=`audio/${name}.mp3`;
+ if(voice.getAttribute('src')!==src)voice.src=src;else voice.currentTime=0;
+ voice.play().catch(()=>{});voiceTimer=setTimeout(()=>voice.pause(),6000);
+}
+function feedback(el=$('#dial')){
+ lastInput=Date.now();tone();$('#board').classList.add('tick');clearTimeout(tickTimer);tickTimer=setTimeout(()=>$('#board').classList.remove('tick'),180);
+ if(el!==$('#dial')){el.classList.remove('tap-pop');void el.offsetWidth;el.classList.add('tap-pop');}
+ if(!introduced){introduced=true;say('intro');}
+}
+function line(from,to){return `M${from.join(' ')}L${to.join(' ')}`;}
+function setPath(ids,d){for(const id of ids)$(id).setAttribute('d',d);}
+function renderFlow(moving=false){
+ const {source,target}=layouts[layout], wet=!moving&&ports(orientation).includes(source),done=!moving&&connected(orientation);
+ for(const id of ['#pipe-water','#pipe-shine'])$(id).style.opacity=wet?'1':'0';
+ for(const id of ['#outlet-water','#outlet-shine'])$(id).style.opacity=done?'1':'0';
+ // 水纹必须沿入水口流向出水口，反接弯管时反向播放。
+ $('#pipe-shine').style.animationDirection=source===orientation?'normal':'reverse';
+ const spill=wet?ports(orientation).find(port=>port!==source):source;
+ $('#splash').setAttribute('transform',`translate(${points[spill].join(' ')})`);$('#splash').style.display=done?'none':'';
+}
+function renderAngle(){ $('#rotating').style.transform=`rotate(${angle}deg)`; }
+function hint(){if(phase==='play')$('#board').classList.add('hint');}
+function commitOrientation(next){
+ if(phase!=='play'||!Number.isInteger(next))return;
+ orientation=mod(next);angle=next*90;renderAngle();renderFlow();
+ if(connected(orientation)){
+  phase='celebrate';misses=0;$('#board').classList.remove('hint');$('#board').classList.add('success');tone(760);say('done');roundTimer=setTimeout(dealRound,5200);
+ }else{misses++;if(misses>=2)hint();say(misses>=2?'join':'turn');}
+}
+function clearDrag(restore=false){
+ const old=drag;drag=null;if(!old)return;
+ if(restore){angle=old.start;renderAngle();renderFlow();}
+ try{$('#dial').releasePointerCapture(old.id);}catch{}
+}
+function dealRound(){
+ clearTimeout(roundTimer);clearDrag();round++;layout=(round-1)%layouts.length;misses=0;phase='play';lastInput=Date.now();
+ const options=[0,1,2,3].filter(q=>!connected(q));orientation=options[Math.floor(Math.random()*options.length)];angle=orientation*90;
+ $('#board').classList.remove('hint','success');const {source,target}=layouts[layout];
+ setPath(['#supply-base','#supply-inset','#supply-water','#supply-shine'],line(outer[source],points[source]));
+ setPath(['#outlet-base','#outlet-inset','#outlet-water','#outlet-shine'],line(points[target],outer[target]));
+ for(const [id,side] of [['#source',source],['#wheel',target]]){const p=outer[side];$(id).style.left=`${p[0]/6}%`;$(id).style.top=`${p[1]/6}%`;}
+ for(const [id,side] of [['#hint-source',source],['#hint-target',target]]){$(id).setAttribute('cx',points[side][0]);$(id).setAttribute('cy',points[side][1]);}
+ renderAngle();renderFlow();if(introduced)say('again');
+}
+function pointerAngle(event){const r=$('#dial').getBoundingClientRect();return Math.atan2(event.clientY-r.y-r.height/2,event.clientX-r.x-r.width/2)*180/Math.PI;}
+function radius(event){const r=$('#dial').getBoundingClientRect();return Math.hypot(event.clientX-r.x-r.width/2,event.clientY-r.y-r.height/2);}
+$('#dial').addEventListener('pointerdown',event=>{
+ if(!event.isPrimary||event.button!==0||drag)return;
+ event.preventDefault();feedback();if(phase!=='play')return;
+ drag={id:event.pointerId,start:angle,last:radius(event)>18?pointerAngle(event):null,travel:0,moved:false,x:event.clientX,y:event.clientY,round};
+ try{event.currentTarget.setPointerCapture(event.pointerId);}catch{}
+});
+document.addEventListener('pointermove',event=>{
+ if(!drag||drag.id!==event.pointerId)return;
+ if(Math.hypot(event.clientX-drag.x,event.clientY-drag.y)>12)drag.moved=true;
+ if(radius(event)<18){drag.last=null;return;}
+ const now=pointerAngle(event);
+ if(drag.last!==null){const delta=((now-drag.last+540)%360)-180;drag.travel+=delta;angle=drag.start+drag.travel;renderAngle();if(drag.moved)renderFlow(true);}
+ drag.last=now;
+});
+document.addEventListener('pointerup',event=>{
+ if(!drag||drag.id!==event.pointerId)return;
+ const old=drag;clearDrag();if(old.round!==round||phase!=='play')return;
+ feedback();commitOrientation(old.moved?Math.round(angle/90):Math.round(old.start/90)+1);
+});
+function cancel(event){if(drag&&(!event||event.pointerId===drag.id))clearDrag(true);}
+document.addEventListener('pointercancel',cancel);document.addEventListener('lostpointercapture',cancel);
+$('#dial').addEventListener('click',event=>{if(event.detail===0&&!drag){feedback();commitOrientation(Math.round(angle/90)+1);}});
+for(const id of ['#source','#wheel'])$(id).addEventListener('click',()=>{feedback($(id));say(phase==='celebrate'?'done':id==='#source'?'source':'goal');});
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape'){location.href='../../';return;}
+ if(event.key.toLowerCase()==='f'){document.documentElement.requestFullscreen?.().catch(()=>{});return;}
+ if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)||event.repeat||drag)return;
+ event.preventDefault();feedback();commitOrientation(Math.round(angle/90)+(['ArrowLeft','ArrowUp'].includes(event.key)?-1:1));
+});
+window.addEventListener('blur',()=>cancel());
+document.addEventListener('visibilitychange',()=>{if(document.hidden){cancel();voice.pause();}else lastInput=Date.now();});
+window.addEventListener('pagehide',()=>{cancel();clearTimeout(roundTimer);clearTimeout(voiceTimer);voice.pause();});
+window.addEventListener('pageshow',event=>{if(event.persisted){if(phase==='celebrate')dealRound();else{renderAngle();renderFlow();}}});
+setInterval(()=>{if(!document.hidden&&phase==='play'&&!drag&&Date.now()-lastInput>8000)hint();},2000);
+dealRound();
+// 首句提前加载；其余语音三路预热完整 body，首次触摸仍负责解锁播放器。
+(async()=>{const files=['turn','join','source','goal','done','again'];await Promise.all(Array.from({length:3},async()=>{while(files.length){const file=files.shift();try{const r=await fetch(`audio/${file}.mp3`);if(r.ok)await r.arrayBuffer();}catch{}}}));})();
+</script>
+</body>
+</html>
