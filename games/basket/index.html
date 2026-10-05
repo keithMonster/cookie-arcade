@@ -278,6 +278,7 @@ function pickRound() {
 }
 
 function paintRound() {
+  vEl.src = 'audio/intro_' + fruit.key + '.mp3';
   fruitEls.forEach(el => el.remove());
   fruitEls = [];
   document.body.style.backgroundColor = fruit.theme;
@@ -300,7 +301,7 @@ function paintRound() {
 function playVoice(src, onEnded) {
   vEl.onended = onEnded || null;
   vEl.onerror = onEnded ? () => setTimeout(onEnded, 400) : null;
-  vEl.src = src;
+  if (vEl.getAttribute('src') !== src) vEl.src = src;
   vEl.currentTime = 0;
   askEl.classList.add('talking');
   vEl.play().catch(() => { if (onEnded) setTimeout(onEnded, 400); });
@@ -403,41 +404,53 @@ function nextRound() {
 
 // ===== 拖放 =====
 function bindFruit(el) {
-  let startX = 0, startY = 0, baseR = null, dragging = false, moved = false;
+  let startX = 0, startY = 0, baseR = null, dragging = false, moved = false, pointerId = null, frozen = '', resetTimer = null;
 
   el.addEventListener('pointerdown', (e) => {
+    if (dragging) return;
     hideHint();
     if (phase === 'idle') { unlockAudio(); }
     if (phase !== 'play' && phase !== 'idle') return;
     if (el.classList.contains('in-basket')) return;
+    clearTimeout(resetTimer);
+    frozen = getComputedStyle(el).transform;
+    if (frozen === 'none') frozen = '';
+    pointerId = e.pointerId;
     dragging = true;
     moved = false;
     startX = e.clientX;
     startY = e.clientY;
     baseR = el.getBoundingClientRect();
-    el.setPointerCapture(e.pointerId);
+    try { el.setPointerCapture(e.pointerId); } catch (err) {}
     el.classList.remove('idle-sway', 'hop', 'slide-back');
     el.style.animation = 'none';
     el.style.transition = 'none';
     el.classList.add('lift');
-    el.style.transform = 'scale(1.18)';
+    el.style.transform = frozen;
     fxPick();
     e.preventDefault();
   });
 
   el.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
+    if (!dragging || e.pointerId !== pointerId) return;
     const dx = e.clientX - startX, dy = e.clientY - startY;
     // 阈值给到 14px：2 岁的手指按下去就会蹭，10px 太容易把「点一下」误判成「拖了一下」
     if (Math.abs(dx) + Math.abs(dy) > 14) moved = true;
-    el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(1.18)';
+    el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) ' + frozen;
   });
 
   function release(e) {
-    if (!dragging) return;
+    if (!dragging || e.pointerId !== pointerId) return;
     dragging = false;
-    el.classList.remove('lift');
     const r = el.getBoundingClientRect();
+    el.classList.remove('lift');
+    if (e.type === 'pointercancel') {
+      el.style.transition = '';
+      el.classList.add('slide-back');
+      el.style.transform = '';
+      resetTimer = setTimeout(() => { el.classList.remove('slide-back'); el.classList.add('idle-sway'); el.style.animation = ''; }, 460);
+      return;
+    }
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     const b = basketEl.getBoundingClientRect();
     const pad = b.width * 0.32;   // 篮子命中区外扩——2 岁手不必精准
@@ -465,7 +478,7 @@ function bindFruit(el) {
       el.style.transition = '';
       el.classList.add('slide-back');
       el.style.transform = 'scale(1)';
-      setTimeout(() => { el.classList.remove('slide-back'); el.classList.add('idle-sway'); el.style.animation = ''; }, 460);
+      resetTimer = setTimeout(() => { el.classList.remove('slide-back'); el.classList.add('idle-sway'); el.style.animation = ''; }, 460);
       return;
     }
     // 只点没拖：原地开心跳一下 + 噗声
@@ -476,7 +489,7 @@ function bindFruit(el) {
     void el.offsetWidth;
     el.classList.add('hop');
     fxPick();
-    setTimeout(() => { el.classList.remove('hop'); el.classList.add('idle-sway'); el.style.transition = ''; }, 500);
+    resetTimer = setTimeout(() => { el.classList.remove('hop'); el.classList.add('idle-sway'); el.style.transition = ''; }, 500);
   }
   el.addEventListener('pointerup', release);
   el.addEventListener('pointercancel', release);
@@ -485,8 +498,6 @@ function bindFruit(el) {
 // ===== 首戳解锁（iOS 音频需手势）=====
 function unlockAudio() {
   if (phase !== 'idle') return;
-  vEl.muted = true;
-  vEl.play().then(() => { vEl.pause(); vEl.muted = false; }).catch(() => { vEl.muted = false; });
   playIntro();
   phase = 'play';
 }

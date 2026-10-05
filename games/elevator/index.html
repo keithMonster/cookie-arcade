@@ -96,6 +96,7 @@ main { width:min(100%,800px); height:100%; height:100dvh; margin:auto; padding:m
 }
 @media (prefers-reduced-motion:reduce) { :root { --travel:160ms; --door:120ms; } .hint,.room.hint { animation:none; outline:4px solid var(--cream); outline-offset:2px; } #passenger { transition:opacity 150ms; } #lift.moving #cabin:before { animation:none; } }
 @media (orientation:landscape) and (max-height:360px) { main { padding-top:56px; grid-template-rows:64px minmax(0,1fr); } #mission { scale:.65; } #controls { gap:8px; } .control { width:56px; height:56px; } }
+#back:before { content:''; position:absolute; inset:-8px; border-radius:50%; }
 </style>
 </head>
 <body>
@@ -161,7 +162,7 @@ function say(names) {
     const name = queue.shift(); if (!name) return;
     let finished = false;
     const done = () => { if (finished || token!==speechToken) return; finished=true; next(); };
-    voice.onended=voice.onerror=done; voice.src=`audio/${name}.mp3`;
+    voice.onended=voice.onerror=done; const src=`audio/${name}.mp3`; if(voice.getAttribute('src')!==src)voice.src=src; else voice.currentTime=0;
     speechTimer=setTimeout(done,6000); voice.play().catch(done);
   };
   next();
@@ -285,7 +286,13 @@ function endPress(event) {
   if (!press||event.pointerId!==press.id) return;
   const old=press, rect=old.rect; cancelPress();
   if (!old.eligible||old.token!==round||phase!=='idle') return;
-  if (event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom) return;
+  const another=[...document.querySelectorAll('button')].some(button=>{
+    if (button===old.button) return false;
+    const r=button.getBoundingClientRect();
+    return event.clientX>=r.left&&event.clientX<=r.right&&event.clientY>=r.top&&event.clientY<=r.bottom;
+  });
+  if (another) return;
+  if (event.clientX<rect.left-12||event.clientX>rect.right+12||event.clientY<rect.top-12||event.clientY>rect.bottom+12) return;
   handleAction(old.button.dataset.action,old.first);
 }
 function buildHomes() {
@@ -358,6 +365,19 @@ setInterval(()=>{
 },1000);
 document.querySelector('#mission .fox').innerHTML=animalArt('fox'); passenger.innerHTML=animalArt('fox');
 buildHomes(); dealRound();
+voice.src=`audio/${taskName()}.mp3`;
+
+// 当前语音先由媒体元素预载，其余按三路下载；不等待预热即可操作。
+{
+ const files=["above.mp3", "below.mp3", "bottom.mp3", "close_first.mp3", "closing.mp3", "door_closed.mp3", "door_open.mp3", "down.mp3", "hello.mp3", "home_bear.mp3", "home_cat.mp3", "home_rabbit.mp3", "look.mp3", "opening.mp3", "task_bear.mp3", "task_cat.mp3", "task_rabbit.mp3", "top.mp3", "up.mp3"].filter(file=>!voice.src.endsWith('/'+file));
+ async function warmAudio(){
+  while(files.length){
+   const file=files.shift();
+   try{const response=await fetch('audio/'+file,{priority:'low'});if(response.ok)await response.arrayBuffer();}catch{}
+  }
+ }
+ for(let i=0;i<3;i++)warmAudio();
+}
 </script>
 </body>
 </html>

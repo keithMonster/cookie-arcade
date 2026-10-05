@@ -55,6 +55,7 @@ main { height: 100%; height: 100dvh; max-width: 1100px; margin: auto; padding: m
   .piece { width: clamp(56px, 15vh, 80px); }
 }
 @media (prefers-reduced-motion: reduce) { .glow { animation-duration: 2s; } .piece { transition: none; } }
+#back:before { content:''; position:absolute; inset:-8px; border-radius:50%; }
 </style>
 </head>
 <body>
@@ -74,7 +75,7 @@ const ROUTES = [
 const PORTS = {N:[50,0], E:[100,50], S:[50,100], W:[0,50]};
 const TYPES = ['EW','NS','EN','ES','NW','SW'];
 const LABELS = {EW:'横着的小路',NS:'竖着的小路',EN:'向上和右边拐的小路',ES:'向下和右边拐的小路',NW:'向上和左边拐的小路',SW:'向下和左边拐的小路'};
-const voice = new Audio(); voice.preload = 'auto'; voice.volume = .78;
+const voice = new Audio(); voice.preload = 'auto'; voice.volume = .78; voice.src = 'audio/intro.mp3';
 let audioContext, speechTimer, speechToken = 0, begun = false;
 let round = 0, routeIndex = -1, path = [], holes = [], pieces = [], selected = null, focusGap = null;
 let phase = 'build', drag = null, car, driveFrame = 0, nextTimer = 0, lastInput = Date.now();
@@ -104,7 +105,7 @@ function say(name) {
   if (!begun) return;
   stopSpeech(); const token = speechToken;
   const done = () => { if (token === speechToken) { clearTimeout(speechTimer); voice.pause(); } };
-  voice.onended = voice.onerror = done; voice.src = `audio/${name}.mp3`;
+  voice.onended = voice.onerror = done; const src=`audio/${name}.mp3`; if(voice.getAttribute('src')!==src)voice.src=src; else voice.currentTime=0;
   speechTimer = setTimeout(done, 6000);
   voice.play().catch(done);
 }
@@ -115,7 +116,8 @@ function input() {
   if (!begun) {
     begun = true;
     // 当前触点若已给出具体提示，就不用再抢播通用开场。
-    queueMicrotask(() => { if (!voice.src) say('intro'); });
+    const token = speechToken;
+    queueMicrotask(() => { if (token === speechToken) say('intro'); });
   }
 }
 function bounce(el, wrong = false) {
@@ -182,13 +184,21 @@ function moveDrag(event) {
   }
   if (drag.ghost) { drag.ghost.style.left = `${event.clientX}px`; drag.ghost.style.top = `${event.clientY}px`; }
 }
+function dropTarget(elements,x,y,pad=24) {
+ const areas=elements.map(el=>{const r=el.getBoundingClientRect();return {el,distance:Math.hypot(Math.max(r.left-x,0,x-r.right),Math.max(r.top-y,0,y-r.bottom))};});
+ const exact=areas.find(area=>area.distance===0);
+ if(exact) return exact.el;
+ areas.sort((a,b)=>a.distance-b.distance);
+ return areas[0]?.distance<=pad?areas[0].el:null;
+}
 function endDrag(event) {
   if (!drag || event.pointerId !== drag.id) return;
   const old = drag; clearDrag(false);
   if (phase !== 'build') return;
   if (!old.moved) { choose(old.piece, false); return; }
   selected = null; focusGap = null; refreshHints();
-  const gap = holes.find(g => { const r = g.el.getBoundingClientRect(); return !g.filled && event.clientX >= r.left-10 && event.clientX <= r.right+10 && event.clientY >= r.top-10 && event.clientY <= r.bottom+10; });
+  const target = dropTarget(holes.map(g=>g.el),event.clientX,event.clientY);
+  const gap = holes.find(g=>g.el===target);
   if (gap) completeStep(old.piece, gap); else dropOutside(old.piece,event.clientX,event.clientY);
 }
 function tapGap(gap) {
@@ -309,6 +319,18 @@ setInterval(() => {
   lastInput = Date.now();
 }, 1000);
 dealRound();
+
+// 当前语音先由媒体元素预载，其余按三路下载；不等待预热即可操作。
+{
+ const files=["choose.mp3", "go.mp3", "hint.mp3", "home.mp3", "intro.mp3", "joined.mp3", "mismatch.mp3", "next.mp3", "place.mp3", "wait.mp3"].filter(file=>!voice.src.endsWith('/'+file));
+ async function warmAudio(){
+  while(files.length){
+   const file=files.shift();
+   try{const response=await fetch('audio/'+file,{priority:'low'});if(response.ok)await response.arrayBuffer();}catch{}
+  }
+ }
+ for(let i=0;i<3;i++)warmAudio();
+}
 </script>
 </body>
 </html>

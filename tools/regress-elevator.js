@@ -164,10 +164,23 @@ async (page) => {
 
   await page.route('**/games/elevator/',async route=>{
     const response=await route.fetch(),source=await response.text();
-    await route.fulfill({response,body:source.replace('rect=old.rect','rect=old.button.getBoundingClientRect()')});
+    const patched=source.replace('rect=old.rect','rect=old.button.getBoundingClientRect()')
+      .replace('rect.left-12','rect.left').replace('rect.right+12','rect.right')
+      .replace('rect.top-12','rect.top').replace('rect.bottom+12','rect.bottom');
+    check('反向边界样本注入确实生效',patched!==source&&patched.includes('rect=old.button.getBoundingClientRect()')&&!patched.includes('rect.left-12')&&!patched.includes('rect.right+12')&&!patched.includes('rect.top-12')&&!patched.includes('rect.bottom+12'));
+    await route.fulfill({response,body:patched});
   });
   await page.goto(game); await reset(0,1);
-  const edge=await control('close').boundingBox(); await page.mouse.click(edge.x+edge.width/2,edge.y+2,{delay:160}); await settle();
+  const edge=await control('close').boundingBox(), point={x:edge.x+edge.width/2,y:edge.y+2};
+  await page.mouse.move(point.x,point.y); await page.mouse.down();
+  // 固定时长不证明动画已经绘制；先观测故障注入需要的几何条件。
+  await page.waitForFunction(({x,y})=>{
+    const button=document.querySelector('[data-action="close"]');
+    return press?.button===button&&press.eligible&&press.token===round&&phase==='idle'&&
+      y>=press.rect.top&&y<=press.rect.bottom&&x>=press.rect.left&&x<=press.rect.right&&button.getBoundingClientRect().top>y+.5;
+  },point,{timeout:3000});
+  check('反向样本已处于按下快照内、动画后边界外',await control('close').evaluate((el,y)=>el.getBoundingClientRect().top>y,point.y));
+  await page.mouse.up(); await settle();
   check('反向样本：按压后才取边界会吞掉顶部点击',await page.evaluate(()=>doors==='open'&&phase==='idle'));
   await page.unroute('**/games/elevator/');
   await page.route('**/games/elevator/',async route=>{
@@ -178,9 +191,12 @@ async (page) => {
   check('反向样本：移除位置守卫会在错误层送达',await page.evaluate(()=>floor===0&&targetFloor===2&&phase==='success'&&successCount===1));
   await page.unroute('**/games/elevator/');
   await page.goto(`${site}/`);
-  check('首页28款、电梯叮咚排第一且动态预览存在',await page.locator('a.tile').count()===28&&await page.locator('a.tile').first().getAttribute('href')==='games/elevator/'&&await page.locator('.preview.elevator .ev-lift').count()===1);
-  await page.keyboard.press('1'); await page.waitForURL(game);
-  check('首页按1进入电梯游戏',page.url()===game);
+  const elevatorTile=page.locator('a.tile[href="games/elevator/"]');
+  check('首页31款、电梯入口与动态预览存在',await page.locator('a.tile').count()===31&&await elevatorTile.count()===1&&await elevatorTile.locator('.preview.elevator .ev-lift').count()===1);
+  const elevatorKey=await elevatorTile.getAttribute('data-num');
+  check('电梯入口具有1至9键盘快捷键',/^[1-9]$/.test(elevatorKey));
+  await page.keyboard.press(elevatorKey); await page.waitForURL(game);
+  check('首页按电梯实际快捷键进入',page.url()===game);
   await page.locator('#back').focus(); await page.keyboard.press('Enter'); await page.waitForURL(`${site}/`);
   check('键盘返回首页有效',page.url()===`${site}/`);
   await page.locator('a[href="games/elevator/"]').click(); await page.locator('#back').click();

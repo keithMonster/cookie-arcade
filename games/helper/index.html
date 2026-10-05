@@ -108,6 +108,7 @@
     gap: 6vmin;
     align-items: flex-end;
   }
+  .item::before, .held::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: max(100%, 72px); transform: translateY(-50%); }
   .item {
     font-size: 14vmin;
     line-height: 1;
@@ -810,44 +811,62 @@ petEls.forEach((el, i) => bindTap(el, () => tapPet(i)));
 bindTap(askEl, tapHorn);
 bindTap(palmsEl, tapPalms);
 
+function hitPet(cx, cy) {
+  const candidates = petEls.map(el => ({ el, b: el.getBoundingClientRect() })).filter(({ b }) => {
+    const pad = b.width * 0.3;
+    return cx >= b.left - pad && cx <= b.right + pad && cy >= b.top - pad && cy <= b.bottom + pad;
+  });
+  const distance = b => Math.hypot(Math.max(b.left - cx, 0, cx - b.right), Math.max(b.top - cy, 0, cy - b.bottom));
+  const center = b => Math.hypot(cx - (b.left + b.right) / 2, cy - (b.top + b.bottom) / 2);
+  candidates.sort((a, b) => distance(a.b) - distance(b.b) || center(a.b) - center(b.b));
+  return candidates[0]?.el || null;
+}
+
 // ===== 手里的东西可以直接拖到动物身上（drop 判定同 basket：命中区外扩）=====
 (function bindDrag() {
-  let sx = 0, sy = 0, dragging = false, moved = false;
+  let sx = 0, sy = 0, dragging = false, moved = false, pointerId = null, frozen = '', resetTimer = null;
 
   heldEl.addEventListener('pointerdown', (e) => {
+    if (dragging) return;
     hideHint();
     if (phase !== 'give' || !heldItem) return;
     const guiding = !!document.querySelector('.guide');
     if (taskSpeaking && !guiding) { restart(heldEl, 'hop'); fxSoft(); armIdle(); return; }
+    clearTimeout(resetTimer);
+    frozen = getComputedStyle(heldEl).transform;
+    if (frozen === 'none') frozen = '';
+    pointerId = e.pointerId;
     dragging = true;
     moved = false;
     sx = e.clientX; sy = e.clientY;
     try { heldEl.setPointerCapture(e.pointerId); } catch (err) {}
     heldEl.classList.remove('hop', 'back');
     heldEl.classList.add('lift');
-    heldEl.style.transform = 'translateX(-50%) scale(1.16)';
+    heldEl.style.transition = 'none';
+    heldEl.style.transform = frozen;
     fxSoft();
     clearIdle();
     e.preventDefault();
   });
 
   heldEl.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
+    if (!dragging || e.pointerId !== pointerId) return;
     const dx = e.clientX - sx, dy = e.clientY - sy;
     if (Math.abs(dx) + Math.abs(dy) > DRAG_THRESHOLD) moved = true;
-    heldEl.style.transform = 'translateX(-50%) translate(' + dx + 'px,' + dy + 'px) scale(1.16)';
+    heldEl.style.transform = 'translate(' + dx + 'px,' + dy + 'px) ' + frozen;
   });
 
   function release(e) {
-    if (!dragging) return;
+    if (!dragging || e.pointerId !== pointerId) return;
     dragging = false;
     // 先量：一摘 lift，held-float 动画就会盖掉 inline transform，量到的会是归位后的矩形
     const r = heldEl.getBoundingClientRect();
     heldEl.classList.remove('lift');
     const slideBack = () => {
+      heldEl.style.transition = '';
       heldEl.classList.add('back');
       heldEl.style.transform = '';
-      later(() => heldEl.classList.remove('back'), 440);
+      resetTimer = later(() => { heldEl.classList.remove('back'); heldEl.style.transition = ''; }, 440);
     };
     // 这一步已经不在了：另一根手指或键盘在拖的过程中把东西送出去了。
     // 只收拾自己的样式走人，别再判一次对错（再判会二次 givePet，把 phase 卡死在 fly）
@@ -871,11 +890,7 @@ bindTap(palmsEl, tapPalms);
       return;
     }
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    const hit = petEls.find(p => {
-      const b = p.getBoundingClientRect();
-      const pad = b.width * 0.3;   // 2 岁的手不必精准
-      return cx > b.left - pad && cx < b.right + pad && cy > b.top - pad && cy < b.bottom + pad;
-    });
+    const hit = hitPet(cx, cy);
     if (hit) {
       if (hit.dataset.key === target.pet.key) {
         heldEl.style.transform = '';   // 归位后由 givePet 从小手位置起飞，落点一致

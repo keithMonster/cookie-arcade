@@ -346,11 +346,13 @@ function paintRound() {
   holeEl.innerHTML = shapeSvg(target, null);   // 虚线空洞（CSS 接管 fill/stroke）
   askWordEl.textContent = target.word + '的家！';
   document.body.style.backgroundColor = THEMES[SHAPES.indexOf(target)];
+  qEl.src = 'audio/q_' + target.key + '.mp3';
   yEl.src = 'audio/y_' + target.key + '.mp3';  // 表扬提前挂载，答对瞬间即播
 }
 
 function playQuestion() {
-  qEl.src = 'audio/q_' + target.key + '.mp3';
+  const src = 'audio/q_' + target.key + '.mp3';
+  if (qEl.getAttribute('src') !== src) qEl.src = src;
   qEl.currentTime = 0;
   askEl.classList.add('talking');
   qEl.play().catch(() => {});

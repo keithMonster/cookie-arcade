@@ -44,6 +44,7 @@
   }
 
   /* ===== 物件：散在中上部，可拿起拖动 ===== */
+  .item::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: max(100%, 72px); transform: translateY(-50%); }
   .item {
     position: fixed;
     width: 15vmin;
@@ -560,7 +561,8 @@ function slideBack(el) {
   el.style.transition = '';
   el.classList.add('slide-back');
   el.style.transform = 'scale(1)';
-  setTimeout(() => {
+  clearTimeout(el._resetTimer);
+  el._resetTimer = setTimeout(() => {
     el.classList.remove('slide-back');
     if (el.classList.contains('in-bin')) return;
     if (!el.classList.contains('guide')) el.classList.add('idle-sway');
@@ -618,25 +620,31 @@ function armIdle() {
 
 // ===== 拖放（机制同 basket：pointer capture + transform 跟手 + 命中区外扩）=====
 function hitBin(cx, cy) {
-  for (const side of ['L', 'R']) {
-    const b = binEls[side].getBoundingClientRect();
-    const pad = b.width * 0.26;   // 命中区外扩——2 岁的手不必精准
-    if (cx > b.left - pad && cx < b.right + pad &&
-        cy > b.top - pad * 1.5 && cy < b.bottom + pad) return side;
-  }
-  return null;
+  const candidates = ['L', 'R'].map(side => ({ side, b: binEls[side].getBoundingClientRect() })).filter(({ b }) => {
+    const pad = b.width * 0.26;
+    return cx >= b.left - pad && cx <= b.right + pad && cy >= b.top - pad * 1.5 && cy <= b.bottom + pad;
+  });
+  const distance = b => Math.hypot(Math.max(b.left - cx, 0, cx - b.right), Math.max(b.top - cy, 0, cy - b.bottom));
+  const center = b => Math.hypot(cx - (b.left + b.right) / 2, cy - (b.top + b.bottom) / 2);
+  candidates.sort((a, b) => distance(a.b) - distance(b.b) || center(a.b) - center(b.b));
+  return candidates[0]?.side || null;
 }
 
 function bindItem(el) {
-  let startX = 0, startY = 0, dragging = false, moved = false;
+  let startX = 0, startY = 0, dragging = false, moved = false, pointerId = null, frozen = '';
 
   el.addEventListener('pointerdown', (e) => {
+    if (dragging) return;
     hideHint();
     if (phase === 'idle') { unlockAudio(); }
     if (el.classList.contains('in-bin')) return;
     if (phase !== 'play' && phase !== 'intro') return;
     finishIntro();   // 抢了介绍语音的输入，自己把 intro 收尾——别把 phase 丢在 'intro'
     clearIdle();
+    clearTimeout(el._resetTimer);
+    frozen = getComputedStyle(el).transform;
+    if (frozen === 'none') frozen = '';
+    pointerId = e.pointerId;
     dragging = true;
     el.dataset.dragging = '1';
     moved = false;
@@ -647,27 +655,27 @@ function bindItem(el) {
     el.style.animation = 'none';
     el.style.transition = 'none';
     el.classList.add('lift');
-    el.style.transform = 'scale(1.18)';
+    el.style.transform = frozen;
     fxPick();
     e.preventDefault();
   });
 
   el.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
+    if (!dragging || e.pointerId !== pointerId) return;
     const dx = e.clientX - startX, dy = e.clientY - startY;
     // 阈值 14px：2 岁的手指按下去就会蹭，10px 太容易把「点一下」误判成「拖了一下」（basket 教训）
     if (Math.abs(dx) + Math.abs(dy) > 14) moved = true;
-    el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(1.18)';
+    el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) ' + frozen;
   });
 
   function release(e) {
-    if (!dragging) return;
+    if (!dragging || e.pointerId !== pointerId) return;
     dragging = false;
     el.dataset.dragging = '0';
+    const r = el.getBoundingClientRect();
     el.classList.remove('lift');
     // 系统收走手势（来电 / 手势冲突 / 多指）不是「他放的」，落在哪个篮子上都不判对错
     if (e && e.type === 'pointercancel') { slideBack(el); armIdle(); return; }
-    const r = el.getBoundingClientRect();
     const side = hitBin(r.left + r.width / 2, r.top + r.height / 2);
 
     if (moved && side) {
@@ -696,7 +704,7 @@ function bindItem(el) {
     void el.offsetWidth;
     el.classList.add('hop');
     fxPick();
-    setTimeout(() => {
+    el._resetTimer = setTimeout(() => {
       el.classList.remove('hop');
       if (el.classList.contains('in-bin')) return;
       if (!el.classList.contains('guide')) el.classList.add('idle-sway');

@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "35da12535d95691c";
+const CACHE_VERSION = "d1118b1d21f89172";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",
@@ -549,12 +549,24 @@ const PRECACHE_PATHS = [
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
 
 async function precache() {
+  const existed = await caches.has(CACHE_NAME);
   const cache = await caches.open(CACHE_NAME);
   const base = new URL(self.registration.scope);
   const requests = PRECACHE_PATHS.map(
     (path) => new Request(new URL(path, base), { cache: "reload" }),
   );
-  await cache.addAll(requests);
+  // 后台安装不要一次挤满全部媒体请求，给正在玩的游戏留下带宽。
+  let next = 0;
+  async function download() {
+    while (next < requests.length) await cache.add(requests[next++]);
+  }
+  const results = await Promise.allSettled(Array.from({ length: 4 }, download));
+  const failure = results.find(result => result.status === 'rejected');
+  if (failure) {
+    // 只清本次新建缓存，避免 SW-only 更新误删仍在服务旧页面的同名缓存。
+    if (!existed) await caches.delete(CACHE_NAME);
+    throw failure.reason;
+  }
 }
 
 async function rangeResponse(request, response) {

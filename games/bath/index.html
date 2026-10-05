@@ -330,7 +330,7 @@ function mudGeom(m) {
   return {
     x: w.left + (m._hit.cx / 100) * w.width,
     y: w.top + (m._hit.cy / 100) * w.height,
-    tol: m._hit.size * vmin * 1.1,
+    tol: Math.max(28, m._hit.size * vmin * 1.1),
   };
 }
 

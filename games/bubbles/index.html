@@ -223,17 +223,8 @@
 
   // ===== 计算泡泡当前中心 =====
   function bubbleCenter(b, now) {
-    const t = (now - b.bornAt) / 1000; // s
-    const progress = Math.min(t / b.life, 1);
-    const yOffset = b.rise * progress;
-    // wobble：对齐 CSS @keyframes（0%→50%→100% = 0→amp→0），即 (1-cos)/2 曲线
-    // 旧的 sin*0.5+0.5 在 phase=0 时给 0.5·amp，与实际渲染差 90° 相位
-    const phase = (t / b.wobblePeriod) * Math.PI * 2;
-    const xOffset = (1 - Math.cos(phase)) / 2 * b.wobbleAmp;
-    const cx = b.startX + b.size / 2 + xOffset;
-    // 屏幕坐标 y：bubble 用 bottom 锚定，再加 translateY(yOffset，负值=向上)
-    const cy = window.innerHeight - b.startBottom - b.size / 2 + yOffset;
-    return { cx, cy, r: b.size / 2 };
+    const rect = b.el.getBoundingClientRect();
+    return { cx: rect.left + rect.width / 2, cy: rect.top + rect.height / 2, r: rect.width / 2 };
   }
 
   // ===== 戳破检测（按坐标点） =====
@@ -245,7 +236,7 @@
       const { cx, cy, r } = bubbleCenter(b, now);
       const dx = px - cx;
       const dy = py - cy;
-      if (dx * dx + dy * dy < r * r) {
+      if (dx * dx + dy * dy < (r + 16) * (r + 16)) {
         popBubble(b, cx, cy);
       }
     }

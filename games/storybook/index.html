@@ -168,18 +168,29 @@ const STORY = {
 
 // ---- 音频：单 Audio 元素 src-swap（首戳手势内解锁后，后续非手势 play 在 iOS 才可靠）----
 const narrAudio = new Audio();
+narrAudio.preload = 'auto';
+narrAudio.src = 'audio/intro.mp3';
+let cancelNarration = () => {};
 function playAudio(key, { done } = {}) {
-  let finished = false;
-  const finish = () => { if (finished) return; finished = true; done && done(); };
+  cancelNarration();
+  let finished = false, watchdog;
+  cancelNarration = () => { finished = true; clearTimeout(watchdog); };
+  const finish = () => {
+    if (finished) return;
+    cancelNarration();
+    done && done();
+  };
+  watchdog = setTimeout(finish, 3600);
   narrAudio.onended = finish;
   narrAudio.onerror = finish;   // 加载失败也照常推进，不卡死
   try {
-    narrAudio.src = `audio/${key}.mp3`;
+    const src = `audio/${key}.mp3`;
+    if (narrAudio.getAttribute('src') !== src) narrAudio.src = src;
+    narrAudio.currentTime = 0;
     const p = narrAudio.play();
     if (p && p.catch) p.catch(finish);  // play 被拒（无手势）也往下走
   } catch (e) { finish(); }
-  // 超时兜底：onended 不触发时（揭晓句最长 ~3s）也推进
-  setTimeout(finish, 3600);
+  // 超时与完成回调随本句取消，避免旧句推进新一页。
 }
 
 // ---- DOM ----
@@ -304,11 +315,11 @@ function restart() {
 // ---- 启动（用户手势内首次 play 解锁 narrAudio，iOS 必需）----
 cover.addEventListener('click', () => {
   cover.style.opacity = 0;
+  showNarration('我们来玩躲猫猫吧！');
+  playAudio('intro', { done: () => renderPage() });
   setTimeout(() => {
     cover.classList.add('hidden');
     scene.classList.remove('hidden');
-    showNarration('我们来玩躲猫猫吧！');
-    playAudio('intro', { done: () => renderPage() });
   }, 600);
 }, { once: true });
 

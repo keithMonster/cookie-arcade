@@ -244,23 +244,17 @@
   }
 
   function bubbleCenter(b, now) {
-    const t = Math.min((now - b.bornAt) / 1000 / b.life, 1);
-    const cy = b.startTop + (b.endTop - b.startTop) * t + b.size / 2;
-    const cx = b.startX + b.size / 2; // 忽略 wobble 的几十像素近似
-    return { cx, cy, r: b.size / 2 };
+    const rect = b.el.getBoundingClientRect();
+    return { cx: rect.left + rect.width / 2, cy: rect.top + rect.height / 2, r: rect.width / 2 };
   }
 
   function popAt(px, py) {
     const now = performance.now();
-    // 容差半径放大：泡泡 wobble 在 compositor 上跑 (Web Animations API)，
-    // JS 算 cx 拿不到实时 transform 偏移（±50px）。半径放大 1.4 倍
-    // 让 cookie 戳偏 30-40px 也能命中——避免"明明戳到了却没破"的挫败
-    const TOUCH_PAD = 1.4;
     for (let i = liveBubbles.length - 1; i >= 0; i--) {
       const b = liveBubbles[i];
       if (b.popping) continue;
       const { cx, cy, r } = bubbleCenter(b, now);
-      const tr = r * TOUCH_PAD;
+      const tr = r + 16;
       const dx = px - cx, dy = py - cy;
       if (dx * dx + dy * dy < tr * tr) {
         popBubble(b, cx, cy);

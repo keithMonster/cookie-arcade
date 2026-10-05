@@ -21,6 +21,7 @@ main{height:100%;height:100dvh;max-width:1100px;margin:auto;display:grid;grid-te
 @media(orientation:landscape) and (max-height:550px){main{grid-template-columns:minmax(0,1fr) 88px;grid-template-rows:minmax(0,1fr);padding-top:64px;gap:16px}#controls{flex-direction:column;gap:16px}.control{width:64px;height:64px;padding:14px;border-radius:20px}#bus{top:30%;height:43%;min-height:100px;width:72%}#waiting{width:72px;height:80px}#station{top:4%;width:60px;height:60px;padding:8px}#station:after{height:65%}.ticket{width:44px;height:44px;top:-37%}#scene{border-radius:24px}}
 @media(prefers-reduced-motion:reduce){#bus,.rider,#waiting,.panel{transition-duration:100ms}.hint{animation:none;outline:4px solid #fff}.bump{animation:none;filter:brightness(1.15)}}
 .rider,#waiting{cursor:grab}.drag-source{opacity:.25!important}.drag-ghost{position:fixed;z-index:20;pointer-events:none;filter:drop-shadow(0 8px 8px #29494b40)}.drop-ready{outline:4px dashed #fff0ce;outline-offset:4px}.drop-ready.drop-over{outline-style:solid;filter:brightness(1.12)}#platform{position:absolute;left:6%;right:25%;bottom:3%;height:18%;min-height:44px;border-radius:24px;background:#fff0ce35;visibility:hidden;pointer-events:none;z-index:5}#platform.drop-ready{visibility:visible}#platform svg{width:40px;margin:auto}
+#back:before { content:''; position:absolute; inset:-8px; border-radius:50%; }
 </style>
 </head>
 <body>
@@ -41,7 +42,7 @@ main{height:100%;height:100dvh;max-width:1100px;margin:auto;display:grid;grid-te
 'use strict';
 const $=s=>document.querySelector(s), bus=$('#bus'), riders=[...document.querySelectorAll('.rider')];
 const stops=['park','beach','home'], stopNames=['公园','海边','家'], animals=['rabbit','bear','cat'];
-const voice=new Audio();voice.volume=.72;voice.preload='auto';
+const voice=new Audio();voice.volume=.72;voice.preload='auto';voice.src='audio/open_first.mp3';
 let context,voiceTimer,voiceToken=0,started=false,lastInput=Date.now(),revision=0,pending=null;
 let round=0,stop=0,leaving=0,doors=false,unloaded=false,boarded=false,phase='idle',misses=0;
 let transitionTimer,roundTimer;
@@ -59,7 +60,7 @@ function hush(){voiceToken++;clearTimeout(voiceTimer);voice.onended=voice.onerro
 function say(name){
   if(!started||document.hidden)return;hush();const token=voiceToken;
   const done=()=>{if(token===voiceToken){clearTimeout(voiceTimer);voice.pause();voice.onended=voice.onerror=null;}};
-  voice.onended=voice.onerror=done;voice.src=`audio/${name}.mp3`;voiceTimer=setTimeout(done,6000);voice.play().catch(done);
+  voice.onended=voice.onerror=done;const src=`audio/${name}.mp3`; if(voice.getAttribute('src')!==src)voice.src=src; else voice.currentTime=0;voiceTimer=setTimeout(done,6000);voice.play().catch(done);
 }
 function sound(freq=420){
   if(!context)return;const now=context.currentTime,o=context.createOscillator(),g=context.createGain();
@@ -135,7 +136,19 @@ function clearPending(returnHome=false){
   setTimeout(()=>p.ghost.remove(),180);
 }
 function inside(el,x,y,pad=0){const r=el.getBoundingClientRect();return x>=r.left-pad&&x<=r.right+pad&&y>=r.top-pad&&y<=r.bottom+pad;}
+function dropTarget(elements,x,y,pad=24) {
+ const areas=elements.map(el=>{const r=el.getBoundingClientRect();return {el,distance:Math.hypot(Math.max(r.left-x,0,x-r.right),Math.max(r.top-y,0,y-r.bottom))};});
+ const exact=areas.find(area=>area.distance===0);
+ if(exact) return exact.el;
+ areas.sort((a,b)=>a.distance-b.distance);
+ return areas[0]?.distance<=pad?areas[0].el:null;
+}
 function dropTargets(p){return p.el.id==='waiting'?[bus]:[$('#platform'),$('#station')];}
+function dropOwner(p,x,y){
+  // 上车的车身包括现有乘客；车外实体仍优先归属，原地取消另守。
+  const owners=p.el.id==='waiting'?targets.filter(el=>!el.classList.contains('rider')):[...document.querySelectorAll('.rider .ticket'),...targets];
+  return dropTarget([...owners,$('#platform'),bus],x,y);
+}
 function movePending(e){
   const p=pending;if(!p||p.id!==e.pointerId||!p.draggable)return;
   if(p.revision!==revision||phase!=='idle'){clearPending();return;}
@@ -145,7 +158,8 @@ function movePending(e){
     p.ghost.style.width=`${p.box.width}px`;p.ghost.style.height=`${p.box.height}px`;document.body.append(p.ghost);p.el.classList.add('drag-source');dropTargets(p).forEach(el=>el.classList.add('drop-ready'));
   }
   p.ghost.style.left=`${p.box.left+e.clientX-p.x}px`;p.ghost.style.top=`${p.box.top+e.clientY-p.y}px`;
-  dropTargets(p).forEach(el=>el.classList.toggle('drop-over',inside(el,e.clientX,e.clientY,12)));
+  const owner=dropOwner(p,e.clientX,e.clientY);
+  dropTargets(p).forEach(el=>el.classList.toggle('drop-over',el===owner));
 }
 targets.forEach(el=>{
   el.addEventListener('pointerdown',e=>{
@@ -157,7 +171,7 @@ targets.forEach(el=>{
     if(!pending||pending.id!==e.pointerId||pending.el!==el)return;movePending(e);const p=pending;if(!p)return;
     if(p.ghost){
       const atOrigin=[el,...el.querySelectorAll('.ticket')].some(target=>inside(target,e.clientX,e.clientY));
-      const hit=!atOrigin&&dropTargets(p).some(target=>inside(target,e.clientX,e.clientY,12));
+      const hit=!atOrigin&&dropTargets(p).includes(dropOwner(p,e.clientX,e.clientY));
       clearPending(!hit);if(hit&&p.revision===revision)action(idOf(el));return;
     }
     clearPending();
@@ -182,6 +196,18 @@ for(const event of ['blur','resize'])window.addEventListener(event,()=>clearPend
 document.addEventListener('visibilitychange',()=>{clearPending();if(document.hidden)hush();});
 setInterval(()=>{if(started&&!pending&&!document.hidden&&phase==='idle'&&Date.now()-lastInput>10000){lastInput=Date.now();highlight();say(canDepart()?'ready':!doors?'open_first':!unloaded?'look':!boarded?'board_first':'close_first');}},1200);
 dealRound();
+
+// 当前语音先由媒体元素预载，其余按三路下载；不等待预热即可操作。
+{
+ const files=["aboard.mp3", "board_first.mp3", "bye.mp3", "close.mp3", "close_first.mp3", "go.mp3", "leave_first.mp3", "look.mp3", "not_yet.mp3", "open.mp3", "open_first.mp3", "ready.mp3", "stop_beach.mp3", "stop_home.mp3", "stop_park.mp3"].filter(file=>!voice.src.endsWith('/'+file));
+ async function warmAudio(){
+  while(files.length){
+   const file=files.shift();
+   try{const response=await fetch('audio/'+file,{priority:'low'});if(response.ok)await response.arrayBuffer();}catch{}
+  }
+ }
+ for(let i=0;i<3;i++)warmAudio();
+}
 </script>
 </body>
 </html>
