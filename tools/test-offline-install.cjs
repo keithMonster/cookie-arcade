@@ -1,58 +1,98 @@
-// 本地 VM 验证安装并发、失败取消与活动缓存保留，不发网络请求。
+// 本地响应与缓存夹具：直接执行生产SW，验证增量复用、完整性与取消边界。
 const {readFileSync} = require('node:fs');
+const {createHash, webcrypto} = require('node:crypto');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
-const source = readFileSync(require('node:path').join(__dirname, '../service-worker.js'), 'utf8');
+const raw = readFileSync(require('node:path').join(__dirname, '../service-worker.js'), 'utf8');
+const base = 'https://example.test/arcade/';
+const name = 'cookie-arcade-offline-unit';
+const oldName = 'cookie-arcade-offline-old';
+const assets = {'./':'home', './index.html':'home', './game/':'game', './sound.mp3':'audio', './icon.png':'icon'};
+const hashes = Object.fromEntries(Object.entries(assets).map(([p, body]) => [p, createHash('sha256').update(body).digest('hex')]));
+const source = raw.replace(/\/\/ BEGIN GENERATED OFFLINE MANIFEST[\s\S]*?\/\/ END GENERATED OFFLINE MANIFEST/,
+  `const CACHE_VERSION='unit'; const PRECACHE_PATHS=${JSON.stringify(Object.keys(assets))}; const PRECACHE_HASHES=${JSON.stringify(hashes)};`);
+const entries = data => new Map(Object.entries(data).map(([p, body]) => [new URL(p, base).href, body]));
 
-async function scenario({mode = 'success', existed = false} = {}) {
-  let active = 0, peak = 0, writes = 0, calls = 0, deleted = false, skipped = false, install;
-  const self = {
-    registration: {scope: 'https://example.test/arcade/'}, location: {origin: 'https://example.test'},
-    addEventListener: (name, fn) => { if (name === 'install') install = fn; },
-    skipWaiting: () => { skipped = true; },
+async function scenario(label, options = {}) {
+  const data = new Map();
+  if (options.old) data.set(oldName, entries(options.old));
+  if (options.current) data.set(name, entries(options.current));
+  const oldBefore = JSON.stringify([...(data.get(oldName) || [])]);
+  const existed = data.has(name), fetched = [];
+  let skipped = false, activeWrites = 0, peakFetch = 0, activeFetch = 0, puts = 0, install;
+  const caches = {
+    keys: async () => [...data.keys()],
+    has: async key => data.has(key),
+    delete: async key => { assert.equal(activeWrites, 0, '晚到写入必须先退出'); return data.delete(key); },
+    open: async key => {
+      if (!data.has(key)) data.set(key, new Map());
+      return {
+        match: async request => data.get(key).has(request.url) ? new Response(data.get(key).get(request.url)) : undefined,
+        put: async (request, response) => {
+          activeWrites++;
+          try {
+            if (options.slowPut) await new Promise(r => setTimeout(r, 110));
+            if (options.quota && request.url.endsWith('/sound.mp3')) throw Error('quota');
+            data.get(key).set(request.url, await response.text()); puts++;
+          } finally { activeWrites--; }
+        },
+      };
+    },
   };
-  const add = async request => {
-    active++; calls++; peak = Math.max(peak, active);
-    const call = calls;
+  const fetch = async request => {
+    fetched.push(request.url); activeFetch++; peakFetch = Math.max(peakFetch, activeFetch);
     try {
       await new Promise((resolve, reject) => {
         if (request.signal.aborted) return reject(Error('aborted'));
         const abort = () => { clearTimeout(timer); reject(Error('aborted')); };
-        const hang = mode === 'hang' || (mode === 'fail-with-hang' && call > 1);
-        const timer = hang ? undefined : setTimeout(() => {
+        const timer = options.hang ? undefined : setTimeout(() => {
           request.signal.removeEventListener('abort', abort);
-          if (mode !== 'success' && call === 1) reject(Error('missing asset'));
-          else resolve();
+          resolve();
         }, 1);
-        request.signal.addEventListener('abort', abort, {once: true});
+        request.signal.addEventListener('abort', abort, {once:true});
       });
-      writes++;
-    } finally { active--; }
+      const path = './' + request.url.slice(base.length);
+      return new Response(options.mismatch ? 'wrong release' : assets[path], {status:options.httpError ? 503 : 200});
+    } finally { activeFetch--; }
   };
-  const caches = {
-    has: async () => existed, open: async () => ({add}),
-    delete: async () => { assert.equal(active, 0); deleted = true; },
+  const self = {
+    registration:{scope:base}, location:{origin:'https://example.test'},
+    addEventListener:(type, fn) => {if(type==='install') install=fn;},
+    skipWaiting:() => {skipped=true;},
   };
-  vm.runInNewContext(source, {
-    self, caches, URL, Request, Response, AbortController, clearTimeout,
-    setTimeout: (fn, ms) => setTimeout(fn, ms === 20000 ? 25 : ms),
-  });
+  vm.runInNewContext(source, {self,caches,fetch,crypto:webcrypto,URL,Request,Response,AbortController,Uint8Array,
+    clearTimeout,setTimeout:(fn,ms)=>setTimeout(fn,ms===20000?75:ms)});
   let pending;
-  install({waitUntil: promise => { pending = promise; }});
-  if (mode === 'success') await pending;
-  else await assert.rejects(pending, /missing asset|aborted/);
-  assert.equal(active, 0);
-  assert.ok(peak <= 4 && peak > 1);
-  assert.equal(skipped, mode === 'success');
-  assert.equal(deleted, mode !== 'success' && !existed);
-  if (mode !== 'success') assert.ok(calls <= 4, '失败后不得继续下载队列');
-  return {mode, existed, peak, calls, writes, deleted, skipped};
+  install({waitUntil:promise=>{pending=promise;}});
+  if(options.fail) await assert.rejects(pending);
+  else await pending;
+  assert.equal(skipped,!options.fail);
+  assert.equal(activeWrites,0); assert.equal(activeFetch,0); assert.ok(peakFetch<=4);
+  assert.equal(JSON.stringify([...(data.get(oldName)||[])]),oldBefore,'旧版必须完整保留');
+  if(options.fail) assert.equal(data.has(name),existed,'只清本次新建的候选缓存');
+  else assert.deepEqual([...data.get(name)].sort(),[...entries(assets)].sort());
+  if(options.downloads!==undefined) assert.equal(fetched.length,options.downloads);
+  if(options.puts!==undefined) assert.equal(puts,options.puts);
+  return {label,passed:true,downloads:fetched.length,puts,skipped};
 }
-
-(async () => {
-  const results = [];
-  for (const mode of ['success', 'fail', 'fail-with-hang', 'hang']) {
-    for (const existed of [false, true]) results.push(await scenario({mode, existed}));
-  }
-  console.log(JSON.stringify({passed: results.length, results}));
-})().catch(error => { console.error(error); process.exitCode = 1; });
+(async()=>{
+  const {['./sound.mp3']: ignored,...missing}=assets;
+  const scenarios = [
+    ['首次完整安装',{downloads:5}],
+    ['旧版无hash元数据全复用',{old:assets,downloads:0}],
+    ['只改首页及目录别名',{old:{...assets,'./':'old home','./index.html':'old home'},downloads:2}],
+    ['旧缓存损坏仅重下该文件',{old:{...assets,'./sound.mp3':'bad'},downloads:1}],
+    ['旧缓存缺项仅补该文件',{old:missing,downloads:1}],
+    ['同名完整缓存不下载不重写',{current:assets,downloads:0,puts:0}],
+    ['同名部分缓存补齐',{current:missing,downloads:1}],
+    ['200但正文不符拒绝激活',{old:{...assets,'./sound.mp3':'old'},mismatch:true,fail:true}],
+    ['HTTP失败保留旧缓存',{old:missing,httpError:true,fail:true}],
+    ['网络挂起取消并清理',{old:missing,hang:true,fail:true}],
+    ['同名部分缓存失败不删除',{current:missing,httpError:true,fail:true}],
+    ['本地复制超时不误激活',{old:assets,slowPut:true,fail:true}],
+    ['存储空间不足不误激活',{old:assets,quota:true,fail:true}],
+  ];
+  const results=[];
+  for(const [label,options] of scenarios) results.push(await scenario(label,options));
+  console.log(JSON.stringify({passed:results.length,results}));
+})().catch(error=>{console.error(error);process.exitCode=1;});

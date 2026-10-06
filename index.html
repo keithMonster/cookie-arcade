@@ -50,6 +50,7 @@
   .tile {
     position: relative;
     z-index: 1;
+    touch-action: pan-y;
     border-radius: 18px;
     overflow: hidden;
     cursor: pointer;
@@ -1204,7 +1205,7 @@
     background: transparent;
     cursor: pointer;
     pointer-events: auto;
-    touch-action: manipulation;
+    touch-action: pan-y;
     scroll-margin-block: 30vh;
     transition: transform 150ms ease-out;
   }
@@ -1644,6 +1645,15 @@
 <script src="games/_lib/twirlywoos.js"></script>
 <script src="games/_lib/stage.js"></script>
 <script>
+  // 首页需要单指滚动；只拦浏览器缩放，不取消单指点击或游戏入口。
+  const preventPageZoom = event => { if (event.cancelable) event.preventDefault(); };
+  for (const type of ['gesturestart', 'gesturechange', 'gestureend', 'dblclick']) {
+    document.addEventListener(type, preventPageZoom, { passive: false });
+  }
+  document.addEventListener('touchmove', event => {
+    if (event.touches.length > 1) preventPageZoom(event);
+  }, { passive: false });
+
   const refreshButton = document.getElementById('refresh-games');
   const refreshStatus = document.getElementById('refresh-status');
   const pageController = navigator.serviceWorker?.controller;
@@ -1721,7 +1731,7 @@
       if (candidate) {
         try { candidate.postMessage({ type: 'OFFLINE_PROGRESS' }); } catch { /* 生命周期由下方轮询判断。 */ }
         const count = progress ? `（${progress.completed}/${progress.total}）` : '';
-        refreshState('checking', `正在下载游戏和声音${count}\n已等 ${seconds} 秒，可以先玩现有游戏`);
+        refreshState('checking', `正在准备游戏和声音${count}\n已等 ${seconds} 秒，可以先玩现有游戏`);
       } else if (seconds >= 3) {
         refreshState('checking', `正在连接更新，已等 ${seconds} 秒；网络慢也不影响现有游戏`);
       }

@@ -80,10 +80,16 @@ def version(files: list[Path]) -> str:
 def generated_block(files: list[Path]) -> str:
     paths = cache_paths(files)
     rendered = ",\n".join(f"  {json.dumps(path)}" for path in paths)
+    hashes = {}
+    for path in paths:
+        relative = path.removeprefix("./")
+        target = ROOT / (relative + "index.html" if path.endswith("/") else relative)
+        hashes[path] = hashlib.sha256(target.read_bytes()).hexdigest()
     return (
         f"{BEGIN}\n"
         f"const CACHE_VERSION = {json.dumps(version(files))};\n"
         f"const PRECACHE_PATHS = [\n{rendered}\n];\n"
+        f"const PRECACHE_HASHES = {json.dumps(hashes, indent=2)};\n"
         f"{END}"
     )
 
