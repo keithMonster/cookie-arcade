@@ -1191,24 +1191,68 @@
     color: rgba(80, 50, 30, 0.35);
   }
   .refresh-button {
+    position: relative;
+    z-index: 1;
     display: block;
-    margin: 24px auto 12px;
-    min-height: 48px;
-    padding: 12px 24px;
-    border: 1px solid rgba(80, 50, 30, 0.25);
-    border-radius: 24px;
-    background: #f5e6cb;
-    color: #634a35;
-    font: inherit;
-    font-size: 14px;
-    letter-spacing: 0.05em;
+    width: 160px;
+    height: 176px;
+    margin: 24px auto 8px;
+    padding: 0;
+    border: 0;
+    border-radius: 48px;
+    background: transparent;
     cursor: pointer;
     touch-action: manipulation;
+    scroll-margin-block: 30vh;
+    transition: transform 150ms ease-out;
   }
   .refresh-button:focus-visible { outline: 3px solid #876345; outline-offset: 4px; }
-  .refresh-button:active { transform: translateY(1px); }
-  .refresh-button:disabled { opacity: 0.6; cursor: wait; }
-  .refresh-status { min-height: 20px; padding: 0 16px; color: #795e47; letter-spacing: 0; line-height: 1.6; }
+  .refresh-button:active { transform: scale(.96); }
+  .refresh-toy { position: absolute; inset: 0; pointer-events: none; }
+  .refresh-stick { position: absolute; top: 64px; left: 75px; width: 10px; height: 104px; border-radius: 8px; background: #b98c56; box-shadow: inset -3px 0 #9c713e; }
+  .refresh-turn { position: absolute; top: 0; left: 16px; width: 128px; height: 128px; }
+  .refresh-rotor { position: absolute; inset: 0; }
+  .refresh-petal { position: absolute; left: 64px; top: 4px; width: 60px; height: 60px; border-radius: 70% 70% 12% 70%; transform-origin: 0 60px; background: #e97862; box-shadow: inset -4px -4px #00000010; }
+  .refresh-petal:nth-child(2) { transform: rotate(90deg); background: #e9b64c; }
+  .refresh-petal:nth-child(3) { transform: rotate(180deg); background: #7cb894; }
+  .refresh-petal:nth-child(4) { transform: rotate(270deg); background: #75aec6; }
+  .refresh-face { position: absolute; top: 44px; left: 60px; width: 40px; height: 40px; border-radius: 50%; background: #fff3d4; box-shadow: 0 2px 3px #70462520; transition: background 250ms ease-out; }
+  .refresh-eye { position: absolute; top: 12px; width: 4px; height: 6px; border-radius: 50%; background: #644b38; transition: transform 250ms ease-out; }
+  .refresh-eye:first-child { left: 11px; }
+  .refresh-eye:nth-child(2) { right: 11px; }
+  .refresh-smile { position: absolute; top: 20px; left: 14px; width: 12px; height: 7px; border-bottom: 2px solid #644b38; border-radius: 0 0 12px 12px; }
+  .refresh-specks { position: absolute; left: 80px; top: 64px; }
+  .refresh-specks i { position: absolute; width: 8px; height: 8px; margin: -4px; border-radius: 50%; background: #e9b64c; opacity: 0; }
+  .refresh-specks i:nth-child(1) { --dx: -72px; --dy: -48px; }
+  .refresh-specks i:nth-child(2) { --dx: 0px; --dy: -76px; background: #e97862; }
+  .refresh-specks i:nth-child(3) { --dx: 72px; --dy: -40px; background: #75aec6; }
+  .refresh-specks i:nth-child(4) { --dx: 64px; --dy: 40px; }
+  .refresh-specks i:nth-child(5) { --dx: -64px; --dy: 40px; background: #7cb894; }
+  .refresh-button.is-tapped .refresh-face { animation: refresh-nod 650ms ease-out; }
+  .refresh-button.is-tapped .refresh-turn { animation: refresh-spin 900ms ease-out; }
+  .refresh-button.is-tapped .refresh-specks i { animation: refresh-pop 800ms ease-out both; }
+  .refresh-button[data-state="checking"] .refresh-rotor { animation: refresh-spin 2.4s linear infinite; }
+  .refresh-button[data-state="latest"] .refresh-rotor,
+  .refresh-button[data-state="ready"] .refresh-rotor { animation: refresh-spin 1s ease-out; }
+  .refresh-button[data-state="latest"] .refresh-toy,
+  .refresh-button[data-state="ready"] .refresh-toy { animation: refresh-hop 800ms ease-out; }
+  .refresh-button[data-state="offline"] .refresh-eye,
+  .refresh-button[data-state="slow"] .refresh-eye,
+  .refresh-button[data-state="error"] .refresh-eye { transform: scaleY(.35); }
+  .refresh-button[data-state="offline"] .refresh-face,
+  .refresh-button[data-state="slow"] .refresh-face,
+  .refresh-button[data-state="error"] .refresh-face { background: #f8e9c8; }
+  .refresh-title { font-size: 14px; font-weight: 600; letter-spacing: .1em; color: #795e47; }
+  .refresh-status { max-width: 30em; min-height: 48px; margin: 8px auto 0; padding: 0 16px; font-size: 12px; color: #795e47; letter-spacing: 0; line-height: 1.6; }
+  @keyframes refresh-spin { to { transform: rotate(360deg); } }
+  @keyframes refresh-nod { 30% { transform: translateY(3px) scale(.96); } 65% { transform: translateY(-3px); } }
+  @keyframes refresh-hop { 35% { transform: translateY(-12px) rotate(-4deg); } 65% { transform: translateY(-4px) rotate(3deg); } }
+  @keyframes refresh-pop { 10% { opacity: .8; } 100% { opacity: 0; transform: translate(var(--dx),var(--dy)) scale(.4); } }
+  @media (prefers-reduced-motion: reduce) {
+    .refresh-button, .refresh-face, .refresh-eye { transition: none; }
+    .refresh-button[data-state] .refresh-toy, .refresh-button[data-state] .refresh-turn, .refresh-button[data-state] .refresh-rotor,
+    .refresh-button[data-state] .refresh-face, .refresh-button[data-state] .refresh-specks i { animation: none; }
+  }
   .preview.bus { background:#dfebd2; }
   .bs-stop { position:absolute;right:12%;top:8%;font-size:clamp(24px,5vw,48px); }
   .bs-stop:after { content:"";position:absolute;width:5px;height:75%;left:50%;top:90%;background:#789a84; }
@@ -1581,8 +1625,16 @@
 
 <div class="footer">
   按 1-9 选游戏 · 任意键随机进入
-  <button class="refresh-button" id="refresh-games" type="button">↻ 刷新游戏台</button>
-  <div class="refresh-status" id="refresh-status" role="status" aria-live="polite">联网更新，没网也能继续玩</div>
+  <button class="refresh-button" id="refresh-games" type="button" data-state="idle" aria-label="转转风车，刷新游戏台" aria-describedby="refresh-status">
+    <span class="refresh-toy" aria-hidden="true">
+      <span class="refresh-stick"></span>
+      <span class="refresh-turn"><span class="refresh-rotor"><i class="refresh-petal"></i><i class="refresh-petal"></i><i class="refresh-petal"></i><i class="refresh-petal"></i></span></span>
+      <span class="refresh-face"><i class="refresh-eye"></i><i class="refresh-eye"></i><i class="refresh-smile"></i></span>
+      <span class="refresh-specks"><i></i><i></i><i></i><i></i><i></i></span>
+    </span>
+  </button>
+  <div class="refresh-title">转一转，找新玩具</div>
+  <div class="refresh-status" id="refresh-status" role="status" aria-live="polite">给家长：点风车检查更新，没网也能继续玩</div>
 </div>
 
 <script src="games/_lib/twirlywoos.js"></script>
@@ -1590,6 +1642,8 @@
 <script>
   const refreshButton = document.getElementById('refresh-games');
   const refreshStatus = document.getElementById('refresh-status');
+  const pageController = navigator.serviceWorker?.controller;
+  let refreshBusy = false, refreshCooldown = 0, tapTimer, toyAudio, lastTap = -Infinity;
   const registerOffline = () => navigator.serviceWorker.register('./service-worker.js', {
     updateViaCache: 'none',
   });
@@ -1599,16 +1653,50 @@
     });
   }
 
+  function refreshState(state, message) {
+    refreshButton.dataset.state = state;
+    refreshButton.setAttribute('aria-busy', String(state === 'checking'));
+    refreshStatus.textContent = message;
+  }
+
+  function tapWindmill() {
+    // 幼儿连点仍有反馈；限制粒子与声音频率，声音失败不影响更新。
+    if (performance.now() - lastTap < 140) return;
+    lastTap = performance.now();
+    clearTimeout(tapTimer);
+    refreshButton.classList.remove('is-tapped');
+    void refreshButton.offsetWidth;
+    refreshButton.classList.add('is-tapped');
+    tapTimer = setTimeout(() => refreshButton.classList.remove('is-tapped'), 800);
+    try {
+      const Audio = window.AudioContext || window.webkitAudioContext;
+      if (!Audio) return;
+      toyAudio ||= new Audio();
+      toyAudio.resume().catch(() => {});
+      const note = toyAudio.createOscillator(), gain = toyAudio.createGain();
+      note.type = 'sine';
+      note.frequency.setValueAtTime(660, toyAudio.currentTime);
+      note.frequency.exponentialRampToValueAtTime(880, toyAudio.currentTime + .12);
+      gain.gain.setValueAtTime(.0001, toyAudio.currentTime);
+      gain.gain.exponentialRampToValueAtTime(.035, toyAudio.currentTime + .015);
+      gain.gain.exponentialRampToValueAtTime(.0001, toyAudio.currentTime + .22);
+      note.connect(gain); gain.connect(toyAudio.destination);
+      note.onended = () => { note.disconnect(); gain.disconnect(); };
+      note.start(); note.stop(toyAudio.currentTime + .24);
+    } catch { /* 声音不可用时仍保留形色与动作反馈。 */ }
+  }
+
   refreshButton.addEventListener('click', async () => {
-    if (refreshButton.disabled) return;
-    if (!('serviceWorker' in navigator) || !navigator.onLine) {
-      refreshStatus.textContent = '暂时无法更新，现有游戏可以继续玩';
+    tapWindmill();
+    if (refreshBusy || performance.now() < refreshCooldown) return;
+    if (!('serviceWorker' in navigator)) {
+      refreshState('unsupported', '这里暂不支持更新，请家长用 Safari 或 Chrome 打开原网址');
       return;
     }
-    refreshButton.disabled = true;
-    refreshButton.textContent = '正在更新…';
-    refreshStatus.textContent = '准备好后自动刷新，也可以先去玩';
+    refreshBusy = true;
+    refreshState('checking', '风车转呀转，看看有没有新玩具…');
     let timer, poll, registration, candidate, finished = false;
+    const connection = new AbortController();
     const rememberWorker = () => { candidate = registration.installing || candidate; };
     try {
       await Promise.race([
@@ -1620,6 +1708,11 @@
           if (finished) return;
           candidate = registration.installing || registration.waiting;
           registration.addEventListener('updatefound', rememberWorker);
+          // SW 脚本不在离线清单中；实测 update() 离线也可能 resolve，先核真实连接。
+          const response = await fetch('./service-worker.js', { cache: 'no-store', signal: connection.signal });
+          if (!response.ok) throw Error('network unavailable');
+          await response.text();
+          if (finished) return;
           await registration.update();
           if (finished) return;
           await new Promise((resolve, reject) => {
@@ -1634,17 +1727,30 @@
           });
         })(),
       ]);
-      // 只有安装成功且页面已由完整缓存接管后，才重新打开首页。
-      location.reload();
-    } catch {
-      refreshStatus.textContent = '这次没更新完成，现有游戏可以继续玩，稍后再试';
+      if (navigator.serviceWorker.controller === pageController) {
+        refreshState('latest', '已经是最新啦，继续玩吧！');
+      } else {
+        refreshState('ready', '新玩具准备好啦！');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        // 用户已切走时不突然刷新；回来再点即可进入已装好的新版。
+        if (!document.hidden) location.replace(new URL('./', location.href).href);
+      }
+    } catch (error) {
+      if (error.message === 'timeout') {
+        refreshState('slow', '下载有点慢，先玩现有的；联网等一会儿再点');
+      } else if (!navigator.onLine) {
+        refreshState('offline', '现在没连上网，现有玩具照样玩');
+      } else {
+        refreshState('error', '这次没下载好，现有玩具都还在，稍后再试');
+      }
     } finally {
       finished = true;
+      connection.abort();
       clearTimeout(timer);
       clearInterval(poll);
       registration?.removeEventListener('updatefound', rememberWorker);
-      refreshButton.disabled = false;
-      refreshButton.textContent = '↻ 刷新游戏台';
+      refreshBusy = false;
+      refreshCooldown = performance.now() + 5000;
     }
   });
 
