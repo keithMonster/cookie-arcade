@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "5a601851f8ee08b9";
+const CACHE_VERSION = "700f4b28a392c848";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",

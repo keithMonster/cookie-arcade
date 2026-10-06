@@ -1190,6 +1190,25 @@
     letter-spacing: 0.3em;
     color: rgba(80, 50, 30, 0.35);
   }
+  .refresh-button {
+    display: block;
+    margin: 24px auto 12px;
+    min-height: 48px;
+    padding: 12px 24px;
+    border: 1px solid rgba(80, 50, 30, 0.25);
+    border-radius: 24px;
+    background: #f5e6cb;
+    color: #634a35;
+    font: inherit;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .refresh-button:focus-visible { outline: 3px solid #876345; outline-offset: 4px; }
+  .refresh-button:active { transform: translateY(1px); }
+  .refresh-button:disabled { opacity: 0.6; cursor: wait; }
+  .refresh-status { min-height: 20px; padding: 0 16px; color: #795e47; letter-spacing: 0; line-height: 1.6; }
   .preview.bus { background:#dfebd2; }
   .bs-stop { position:absolute;right:12%;top:8%;font-size:clamp(24px,5vw,48px); }
   .bs-stop:after { content:"";position:absolute;width:5px;height:75%;left:50%;top:90%;background:#789a84; }
@@ -1560,18 +1579,74 @@
   </a>
 </div>
 
-<div class="footer">按 1-9 选游戏 · 任意键随机进入</div>
+<div class="footer">
+  按 1-9 选游戏 · 任意键随机进入
+  <button class="refresh-button" id="refresh-games" type="button">↻ 刷新游戏台</button>
+  <div class="refresh-status" id="refresh-status" role="status" aria-live="polite">联网更新，没网也能继续玩</div>
+</div>
 
 <script src="games/_lib/twirlywoos.js"></script>
 <script src="games/_lib/stage.js"></script>
 <script>
+  const refreshButton = document.getElementById('refresh-games');
+  const refreshStatus = document.getElementById('refresh-status');
+  const registerOffline = () => navigator.serviceWorker.register('./service-worker.js', {
+    updateViaCache: 'none',
+  });
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./service-worker.js', {
-      updateViaCache: 'none',
-    }).catch(() => {
+    registerOffline().catch(() => {
       // 首次联网安装失败时仍按普通网页运行；已有离线版本不会因此被注销。
     });
   }
+
+  refreshButton.addEventListener('click', async () => {
+    if (refreshButton.disabled) return;
+    if (!('serviceWorker' in navigator) || !navigator.onLine) {
+      refreshStatus.textContent = '暂时无法更新，现有游戏可以继续玩';
+      return;
+    }
+    refreshButton.disabled = true;
+    refreshButton.textContent = '正在更新…';
+    refreshStatus.textContent = '准备好后自动刷新，也可以先去玩';
+    let timer, poll, registration, candidate, finished = false;
+    const rememberWorker = () => { candidate = registration.installing || candidate; };
+    try {
+      await Promise.race([
+        new Promise((_, reject) => { timer = setTimeout(() => reject(Error('timeout')), 90000); }),
+        (async () => {
+          registration = await navigator.serviceWorker.getRegistration('./');
+          if (finished) return;
+          if (!registration) registration = await registerOffline();
+          if (finished) return;
+          candidate = registration.installing || registration.waiting;
+          registration.addEventListener('updatefound', rememberWorker);
+          await registration.update();
+          if (finished) return;
+          await new Promise((resolve, reject) => {
+            const check = () => {
+              if (candidate?.state === 'redundant') return reject(Error('install failed'));
+              const active = registration.active;
+              if (!registration.installing && !registration.waiting && active?.state === 'activated'
+                && navigator.serviceWorker.controller === active) resolve();
+            };
+            poll = setInterval(check, 100);
+            check();
+          });
+        })(),
+      ]);
+      // 只有安装成功且页面已由完整缓存接管后，才重新打开首页。
+      location.reload();
+    } catch {
+      refreshStatus.textContent = '这次没更新完成，现有游戏可以继续玩，稍后再试';
+    } finally {
+      finished = true;
+      clearTimeout(timer);
+      clearInterval(poll);
+      registration?.removeEventListener('updatefound', rememberWorker);
+      refreshButton.disabled = false;
+      refreshButton.textContent = '↻ 刷新游戏台';
+    }
+  });
 
   // 挂木板墙 + 树影底（首页不带红船，纯舞台）
   TW.Stage.mount();
@@ -1588,7 +1663,7 @@
   const tiles = document.querySelectorAll('.tile');
   document.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey) return;
-    if (e.target.closest('.tw-idle-bird')) return;
+    if (e.target.closest('.tw-idle-bird, button')) return;
     const idx = parseInt(e.key, 10);
     if (idx >= 1 && idx <= tiles.length) {
       const tile = tiles[idx - 1];
