@@ -1190,6 +1190,7 @@
     letter-spacing: 0.3em;
     color: rgba(80, 50, 30, 0.35);
   }
+  .refresh-group { position: relative; z-index: 1; pointer-events: none; }
   .refresh-button {
     position: relative;
     z-index: 1;
@@ -1202,6 +1203,7 @@
     border-radius: 48px;
     background: transparent;
     cursor: pointer;
+    pointer-events: auto;
     touch-action: manipulation;
     scroll-margin-block: 30vh;
     transition: transform 150ms ease-out;
@@ -1242,8 +1244,8 @@
   .refresh-button[data-state="offline"] .refresh-face,
   .refresh-button[data-state="slow"] .refresh-face,
   .refresh-button[data-state="error"] .refresh-face { background: #f8e9c8; }
-  .refresh-title { font-size: 14px; font-weight: 600; letter-spacing: .1em; color: #795e47; }
-  .refresh-status { max-width: 30em; min-height: 48px; margin: 8px auto 0; padding: 0 16px; font-size: 12px; color: #795e47; letter-spacing: 0; line-height: 1.6; }
+  .refresh-title { font-size: 14px; font-weight: 700; letter-spacing: .1em; color: #644b38; }
+  .refresh-status { max-width: 30em; min-height: 48px; margin: 8px auto 0; padding: 0 16px; font-size: 12px; color: #795e47; letter-spacing: 0; line-height: 1.6; white-space: pre-line; font-variant-numeric: tabular-nums; }
   @keyframes refresh-spin { to { transform: rotate(360deg); } }
   @keyframes refresh-nod { 30% { transform: translateY(3px) scale(.96); } 65% { transform: translateY(-3px); } }
   @keyframes refresh-hop { 35% { transform: translateY(-12px) rotate(-4deg); } 65% { transform: translateY(-4px) rotate(3deg); } }
@@ -1625,6 +1627,7 @@
 
 <div class="footer">
   按 1-9 选游戏 · 任意键随机进入
+  <div class="refresh-group">
   <button class="refresh-button" id="refresh-games" type="button" data-state="idle" aria-label="转转风车，刷新游戏台" aria-describedby="refresh-status">
     <span class="refresh-toy" aria-hidden="true">
       <span class="refresh-stick"></span>
@@ -1635,6 +1638,7 @@
   </button>
   <div class="refresh-title">转一转，找新玩具</div>
   <div class="refresh-status" id="refresh-status" role="status" aria-live="polite">给家长：点风车检查更新，没网也能继续玩</div>
+  </div>
 </div>
 
 <script src="games/_lib/twirlywoos.js"></script>
@@ -1695,12 +1699,37 @@
     }
     refreshBusy = true;
     refreshState('checking', '风车转呀转，看看有没有新玩具…');
-    let timer, poll, registration, candidate, finished = false;
+    let timer, poll, feedback, connectionTimer, registration, candidate, progress, finished = false;
+    const started = performance.now();
     const connection = new AbortController();
-    const rememberWorker = () => { candidate = registration.installing || candidate; };
+    const rememberWorker = () => {
+      const worker = registration.installing || registration.waiting;
+      if (worker && worker !== candidate) { candidate = worker; progress = null; }
+      if (candidate) clearTimeout(connectionTimer);
+    };
+    const receiveProgress = event => {
+      const data = event.data;
+      if (finished || event.source !== candidate || data?.type !== 'OFFLINE_PROGRESS') return;
+      if (!Number.isInteger(data.completed) || !Number.isInteger(data.total)
+        || data.total <= 0 || data.completed < 0 || data.completed > data.total) return;
+      progress = data;
+    };
+    const showProgress = () => {
+      if (finished) return;
+      rememberWorker();
+      const seconds = Math.floor((performance.now() - started) / 1000);
+      if (candidate) {
+        try { candidate.postMessage({ type: 'OFFLINE_PROGRESS' }); } catch { /* 生命周期由下方轮询判断。 */ }
+        const count = progress ? `（${progress.completed}/${progress.total}）` : '';
+        refreshState('checking', `正在下载游戏和声音${count}\n已等 ${seconds} 秒，可以先玩现有游戏`);
+      } else if (seconds >= 3) {
+        refreshState('checking', `正在连接更新，已等 ${seconds} 秒；网络慢也不影响现有游戏`);
+      }
+    };
     try {
       await Promise.race([
         new Promise((_, reject) => { timer = setTimeout(() => reject(Error('timeout')), 90000); }),
+        new Promise((_, reject) => { connectionTimer = setTimeout(() => reject(Error('connection timeout')), 12000); }),
         (async () => {
           registration = await navigator.serviceWorker.getRegistration('./');
           if (finished) return;
@@ -1708,13 +1737,20 @@
           if (finished) return;
           candidate = registration.installing || registration.waiting;
           registration.addEventListener('updatefound', rememberWorker);
-          // SW 脚本不在离线清单中；实测 update() 离线也可能 resolve，先核真实连接。
-          const response = await fetch('./service-worker.js', { cache: 'no-store', signal: connection.signal });
-          if (!response.ok) throw Error('network unavailable');
-          await response.text();
+          navigator.serviceWorker.addEventListener('message', receiveProgress);
+          feedback = setInterval(showProgress, 500);
+          showProgress();
+          // 已有安装时直接观察它，不把另一项 update 排在长下载后面等待。
+          if (!candidate) {
+            // update() 离线也可能 resolve；未缓存脚本的真实请求用来核联网。
+            const response = await fetch('./service-worker.js', { cache: 'no-store', signal: connection.signal });
+            if (!response.ok) throw Error('network unavailable');
+            await response.text();
+            if (finished) return;
+            await registration.update();
+          }
           if (finished) return;
-          await registration.update();
-          if (finished) return;
+          rememberWorker();
           await new Promise((resolve, reject) => {
             const check = () => {
               if (candidate?.state === 'redundant') return reject(Error('install failed'));
@@ -1727,6 +1763,7 @@
           });
         })(),
       ]);
+      clearInterval(feedback);
       if (navigator.serviceWorker.controller === pageController) {
         refreshState('latest', '已经是最新啦，继续玩吧！');
       } else {
@@ -1736,8 +1773,10 @@
         if (!document.hidden) location.replace(new URL('./', location.href).href);
       }
     } catch (error) {
-      if (error.message === 'timeout') {
-        refreshState('slow', '下载有点慢，先玩现有的；联网等一会儿再点');
+      if (error.message === 'connection timeout') {
+        refreshState('slow', '这次没连上更新，先玩现有游戏；网络好些后再点');
+      } else if (error.message === 'timeout') {
+        refreshState('slow', '下载还没完成，现有游戏都还在；先玩一会儿，稍后再点查看结果');
       } else if (!navigator.onLine) {
         refreshState('offline', '现在没连上网，现有玩具照样玩');
       } else {
@@ -1747,8 +1786,11 @@
       finished = true;
       connection.abort();
       clearTimeout(timer);
+      clearTimeout(connectionTimer);
       clearInterval(poll);
+      clearInterval(feedback);
       registration?.removeEventListener('updatefound', rememberWorker);
+      navigator.serviceWorker.removeEventListener('message', receiveProgress);
       refreshBusy = false;
       refreshCooldown = performance.now() + 5000;
     }

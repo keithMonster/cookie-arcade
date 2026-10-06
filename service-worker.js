@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "541ccee04b86883e";
+const CACHE_VERSION = "256d2f83b0beafda";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",
@@ -556,18 +556,37 @@ const PRECACHE_PATHS = [
 // END GENERATED OFFLINE MANIFEST
 
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
+const installProgress = { completed: 0, total: PRECACHE_PATHS.length };
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type !== "OFFLINE_PROGRESS") return;
+  event.source?.postMessage({ type: "OFFLINE_PROGRESS", ...installProgress });
+});
 
 async function precache() {
   const existed = await caches.has(CACHE_NAME);
   const cache = await caches.open(CACHE_NAME);
   const base = new URL(self.registration.scope);
+  const abort = new AbortController();
   const requests = PRECACHE_PATHS.map(
-    (path) => new Request(new URL(path, base), { cache: "reload" }),
+    (path) => new Request(new URL(path, base), { cache: "reload", signal: abort.signal }),
   );
   // 后台安装不要一次挤满全部媒体请求，给正在玩的游戏留下带宽。
   let next = 0;
   async function download() {
-    while (next < requests.length) await cache.add(requests[next++]);
+    while (next < requests.length && !abort.signal.aborted) {
+      const timer = setTimeout(() => abort.abort(), 20000);
+      try {
+        await cache.add(requests[next++]);
+        installProgress.completed++;
+      } catch (error) {
+        // 任一请求失败就停其余队列；等全部写入退出后才清理新缓存。
+        abort.abort();
+        throw error;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
   }
   const results = await Promise.allSettled(Array.from({ length: 4 }, download));
   const failure = results.find(result => result.status === 'rejected');
