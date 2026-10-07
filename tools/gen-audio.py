@@ -409,6 +409,26 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
         "done.mp3": ("text", "接通啦！小水车转起来，小花也开啦！", SENT_SPEED),
         "again.mp3": ("text", "水换地方啦，再转转小水管！", SENT_SPEED),
     }
+    m["garage"] = {
+        "intro.mp3": ("text", "小车来修理啦！看看哪里需要帮忙？", SENT_SPEED),
+        "tire.mp3": ("text", "轮胎，装到空空的轮子那里。", SENT_SPEED),
+        "wrench.mp3": ("text", "小扳手，把松松的轮子拧紧。", SENT_SPEED),
+        "pump.mp3": ("text", "小气筒，给瘪瘪的轮胎打气！", SENT_SPEED),
+        "sponge.mp3": ("text", "小海绵，擦掉车上的泥巴。", SENT_SPEED),
+        "fitted.mp3": ("text", "装上啦！轮子还松松的，拿扳手拧紧吧。", SENT_SPEED),
+        "tight.mp3": ("text", "咔哒，拧紧啦！", SENT_SPEED),
+        "air.mp3": ("text", "噗，轮胎鼓起来一点啦！", SENT_SPEED),
+        "clean.mp3": ("text", "擦呀擦，泥巴掉下来啦！", SENT_SPEED),
+        "ready.mp3": ("text", "修好啦！按按车灯，让小车出发吧！", SENT_SPEED),
+        "done.mp3": ("text", "谢谢小小修理师！嘀嘀，出发喽！", SENT_SPEED),
+        "hello.mp3": ("text", "你好呀！谢谢你来帮忙！", SENT_SPEED),
+        "look.mp3": ("text", "再看看哪里需要修，换个工具试试吧。", SENT_SPEED),
+        "wheel_first.mp3": ("text", "这里还没有轮子呢，先把轮胎装上吧。", SENT_SPEED),
+        "tighten_first.mp3": ("text", "轮子还松松的，先用扳手拧紧哦。", SENT_SPEED),
+        "not_ready.mp3": ("text", "嘀嘀，还有地方没修好，再看看吧。", SENT_SPEED),
+        "place.mp3": ("text", "把工具送到小车需要修的地方吧。", SENT_SPEED),
+        "release.mp3": ("text", "先把手里的工具放回去，再出发吧。", SENT_SPEED),
+    }
     return m
 
 

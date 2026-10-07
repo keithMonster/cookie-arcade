@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DOCS = ["README.md", "CLAUDE.md", "WHY.md", "STORY.md"]
+DOCS = ["README.md", "AGENTS.md", "WHY.md", "STORY.md"]
 
 
 def read(name):

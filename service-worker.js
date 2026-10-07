@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "c6afd847f1f4065f";
+const CACHE_VERSION = "e905e80f29357db3";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",
@@ -269,6 +269,26 @@ const PRECACHE_PATHS = [
   "./games/find/audio/y_watermelon.mp3",
   "./games/find/audio/y_yeye.mp3",
   "./games/find/index.html",
+  "./games/garage/",
+  "./games/garage/audio/air.mp3",
+  "./games/garage/audio/clean.mp3",
+  "./games/garage/audio/done.mp3",
+  "./games/garage/audio/fitted.mp3",
+  "./games/garage/audio/hello.mp3",
+  "./games/garage/audio/intro.mp3",
+  "./games/garage/audio/look.mp3",
+  "./games/garage/audio/not_ready.mp3",
+  "./games/garage/audio/place.mp3",
+  "./games/garage/audio/pump.mp3",
+  "./games/garage/audio/ready.mp3",
+  "./games/garage/audio/release.mp3",
+  "./games/garage/audio/sponge.mp3",
+  "./games/garage/audio/tight.mp3",
+  "./games/garage/audio/tighten_first.mp3",
+  "./games/garage/audio/tire.mp3",
+  "./games/garage/audio/wheel_first.mp3",
+  "./games/garage/audio/wrench.mp3",
+  "./games/garage/index.html",
   "./games/helper/",
   "./games/helper/audio/first_take.mp3",
   "./games/helper/audio/got_apple.mp3",
@@ -554,7 +574,7 @@ const PRECACHE_PATHS = [
   "./manifest.json"
 ];
 const PRECACHE_HASHES = {
-  "./": "6c0323891b19c1faf606a7636bc3b966146fa1f9cb4641d72041fe64818199a1",
+  "./": "bbbfd529c0054c266fba682b63edfe4c2be9056f713ddf3a400a134cec807a24",
   "./apple-touch-icon.png": "f13bedd187a81e96dc2357f3353b53a73b0ab386c0730addf91710d05b2c870a",
   "./games/_lib/stage.js": "b76441eb6da988b153bc1d64931a11d8bca2db9432761359bcd68974166f75c9",
   "./games/_lib/twirlywoos.js": "f495dfbf52f75a01a85105def28b544cc618e62f1e95f4af6ebf38ce758a5031",
@@ -631,7 +651,7 @@ const PRECACHE_HASHES = {
   "./games/beads/index.html": "baca7e707f8553f8fd6b7edf9a343623f9ec57ff9ef4c8e484517c5b388d9f39",
   "./games/bubbles/": "af8aed13ba1cd5a7a39251cd53ae14011578e845d0d3b299eee7a655610a10c9",
   "./games/bubbles/index.html": "af8aed13ba1cd5a7a39251cd53ae14011578e845d0d3b299eee7a655610a10c9",
-  "./games/bus/": "5f35acd746b49231449ced0e3b235b2ab3419ea95191867a0dcac1c8c384115a",
+  "./games/bus/": "e27d0a2c1b22b0b44df9cc7947c5273c58d1271ae85e732ac59344653f82a862",
   "./games/bus/audio/aboard.mp3": "687e5d2f8b83f945fe284c9cbc97b780300de4c7c8a5ab262c4327eebd2f1302",
   "./games/bus/audio/board_first.mp3": "0a13cdaf2a15f9300a1e9593739f4a001d8ea52246462f280ceb65554f224dfc",
   "./games/bus/audio/bye.mp3": "b78d15e7fa66d705663fdc017fd4654906e567b35f4a5d10fa1b9401fd0a152f",
@@ -647,7 +667,7 @@ const PRECACHE_HASHES = {
   "./games/bus/audio/stop_beach.mp3": "b1a9397565bca32e151f43cf5587bb8cb311451797d4281e492e9e7b1e504378",
   "./games/bus/audio/stop_home.mp3": "eecbc512c5f436cd19dd53ade907db39c0b070b0934d4a4211e0a71818a72128",
   "./games/bus/audio/stop_park.mp3": "acacc619e2df482f5cfc1ce1c70f684df0effdffb25bd5d5368f8c37c2fcbda7",
-  "./games/bus/index.html": "5f35acd746b49231449ced0e3b235b2ab3419ea95191867a0dcac1c8c384115a",
+  "./games/bus/index.html": "e27d0a2c1b22b0b44df9cc7947c5273c58d1271ae85e732ac59344653f82a862",
   "./games/cars/": "71aa8d1082e9163b78d483d391d10d95e2682dea22b0d471e435561f865e2d11",
   "./games/cars/audio/ambulance.mp3": "92c556902525d5370c90db0835633ebe2601203fa3d077e1cd5d2b0cd0f22b72",
   "./games/cars/audio/bus.mp3": "26845025bd57150692f5038cf8cd674ea52986151f112e13fcd501a7eea183dc",
@@ -820,6 +840,26 @@ const PRECACHE_HASHES = {
   "./games/find/audio/y_watermelon.mp3": "0d764032b9ff5a35b79a530782690c6f3bdb9e7426c4930f9709a45b68acb3fb",
   "./games/find/audio/y_yeye.mp3": "cb892f97957c17e81e525d13003873bf8a379300b85c2ea38ad8f3b910feb16e",
   "./games/find/index.html": "63617e1e6930b64a7573bbffa408c77b47e1af66d755b6afa1b4bb09fb398d68",
+  "./games/garage/": "d5c9ec15972c67af18a128fa20ff5e477d62bee8111397120f07072622fc1393",
+  "./games/garage/audio/air.mp3": "5441778cc9ca90c60db6d2ce71c074327875dfd17a5c8883305c80d0853cfe18",
+  "./games/garage/audio/clean.mp3": "945253e1d4d573196d7bb65d6ae1e1c6ac243136d3f7b3b929959f1ab7e8d7c7",
+  "./games/garage/audio/done.mp3": "c430f212dc6817868ac27b1f80add2a15c8483efde4cd0e487ba91e22760578b",
+  "./games/garage/audio/fitted.mp3": "6ea335f5aae3891b34f79051ad02b200f4a3cc40dcf02e7e14ffa65a8e31f9cf",
+  "./games/garage/audio/hello.mp3": "547747d1c228b459925dc62cc6c5a2b4fffdb8833640a23ec6a97fda3d64dbe7",
+  "./games/garage/audio/intro.mp3": "1af2f82d13271d17df626fa7ff3d7757554b8201dccb64b27cdf3babb0f1239b",
+  "./games/garage/audio/look.mp3": "8b63f86150dff2f768d6cda23a75b519bfaf5ef176a7e31d80545795343e3606",
+  "./games/garage/audio/not_ready.mp3": "3f282311d993048923361383fa61f6a46baf0a0a2ae7829f7c5f8bb30a13e527",
+  "./games/garage/audio/place.mp3": "2d4c2e34cfe3e3879fdc623fd8e719f6cc90b138e6a26e3e0d0d2bb44cc87989",
+  "./games/garage/audio/pump.mp3": "aaf88b35735d1e8b18d691fa872b7068da4a0ad39a4717a9ea3fb45cc48dc6b3",
+  "./games/garage/audio/ready.mp3": "ccb8656ddf21fe362d8a2399f8fb76a93d2493ed78d8f58225300cd32c90b17b",
+  "./games/garage/audio/release.mp3": "386fce0ae01016a5149a3e57bd361a2b1a7693d41007c46ed2a1a1beb36ee156",
+  "./games/garage/audio/sponge.mp3": "96012539dc724754634aaf3d230e6baa49d861872d536a117ac5aad61d3f6095",
+  "./games/garage/audio/tight.mp3": "34980ae57230112d8513acbd3dcbcb6e5cc57f9daef77f35879d74c971603b30",
+  "./games/garage/audio/tighten_first.mp3": "2d38a01f6e4faa0add1130420d69a8f8b29469241ed04d0970671a8bcbaea49a",
+  "./games/garage/audio/tire.mp3": "7afcd85081b7936ee6234e5f42a0613b9726960f0058e9ee38446643eb03c690",
+  "./games/garage/audio/wheel_first.mp3": "b401b7536083ff2198743a21970f371bca52072e37a051fb4ee0457f74f9e861",
+  "./games/garage/audio/wrench.mp3": "a04e326b948d181203507731955d4dfa852d2284b8165c67734f5d3b51fc07c7",
+  "./games/garage/index.html": "d5c9ec15972c67af18a128fa20ff5e477d62bee8111397120f07072622fc1393",
   "./games/helper/": "a0f3c314a7399b77fdff520e24ca0645eb6bc8db8fe590b7b26d7ec6cbd89894",
   "./games/helper/audio/first_take.mp3": "95dda062f7cd5d1b345c7ed8448e1f18427937df0a9f68800417263cf6d6e60a",
   "./games/helper/audio/got_apple.mp3": "6be60c803caa5bbeace38448df30adc3be9ec78cb851e046609174ea422afa33",
@@ -1101,7 +1141,7 @@ const PRECACHE_HASHES = {
   "./games/words/audio/yeye.mp3": "b590c4ab518641b6140c2d65dfb6eae96cf084bfe9b3794f3f2782fd9d648984",
   "./games/words/index.html": "2b2f39c59da09ae4d2dd609b083e727c72a8a74278a2814d4db146d6c9f30e85",
   "./icon-512.png": "a530eb48a4319756b8bcad8816a1196a7e8870e285b148bd5de83c59bb65caab",
-  "./index.html": "6c0323891b19c1faf606a7636bc3b966146fa1f9cb4641d72041fe64818199a1",
+  "./index.html": "bbbfd529c0054c266fba682b63edfe4c2be9056f713ddf3a400a134cec807a24",
   "./manifest.json": "d69e8e038642ab66493c79fa4c964a75087ac156e8e0184378c4009f4b642573"
 };
 // END GENERATED OFFLINE MANIFEST
