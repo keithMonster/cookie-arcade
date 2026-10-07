@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "65b3841cee47fec2";
+const CACHE_VERSION = "912d68302ec8ca2a";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",
@@ -840,7 +840,7 @@ const PRECACHE_HASHES = {
   "./games/find/audio/y_watermelon.mp3": "0d764032b9ff5a35b79a530782690c6f3bdb9e7426c4930f9709a45b68acb3fb",
   "./games/find/audio/y_yeye.mp3": "cb892f97957c17e81e525d13003873bf8a379300b85c2ea38ad8f3b910feb16e",
   "./games/find/index.html": "63617e1e6930b64a7573bbffa408c77b47e1af66d755b6afa1b4bb09fb398d68",
-  "./games/garage/": "d5c9ec15972c67af18a128fa20ff5e477d62bee8111397120f07072622fc1393",
+  "./games/garage/": "a3dc54a6e6d88ab761b70b0577af59b6c1a240860da378f3ba507dc35f400f33",
   "./games/garage/audio/air.mp3": "5441778cc9ca90c60db6d2ce71c074327875dfd17a5c8883305c80d0853cfe18",
   "./games/garage/audio/clean.mp3": "945253e1d4d573196d7bb65d6ae1e1c6ac243136d3f7b3b929959f1ab7e8d7c7",
   "./games/garage/audio/done.mp3": "c430f212dc6817868ac27b1f80add2a15c8483efde4cd0e487ba91e22760578b",
@@ -851,7 +851,7 @@ const PRECACHE_HASHES = {
   "./games/garage/audio/not_ready.mp3": "3f282311d993048923361383fa61f6a46baf0a0a2ae7829f7c5f8bb30a13e527",
   "./games/garage/audio/place.mp3": "2d4c2e34cfe3e3879fdc623fd8e719f6cc90b138e6a26e3e0d0d2bb44cc87989",
   "./games/garage/audio/pump.mp3": "aaf88b35735d1e8b18d691fa872b7068da4a0ad39a4717a9ea3fb45cc48dc6b3",
-  "./games/garage/audio/ready.mp3": "ccb8656ddf21fe362d8a2399f8fb76a93d2493ed78d8f58225300cd32c90b17b",
+  "./games/garage/audio/ready.mp3": "d84a9c8cc42c8d471508b92464304883a165d6dea8572e111067d764213ed786",
   "./games/garage/audio/release.mp3": "386fce0ae01016a5149a3e57bd361a2b1a7693d41007c46ed2a1a1beb36ee156",
   "./games/garage/audio/sponge.mp3": "96012539dc724754634aaf3d230e6baa49d861872d536a117ac5aad61d3f6095",
   "./games/garage/audio/tight.mp3": "34980ae57230112d8513acbd3dcbcb6e5cc57f9daef77f35879d74c971603b30",
@@ -859,7 +859,7 @@ const PRECACHE_HASHES = {
   "./games/garage/audio/tire.mp3": "7afcd85081b7936ee6234e5f42a0613b9726960f0058e9ee38446643eb03c690",
   "./games/garage/audio/wheel_first.mp3": "b401b7536083ff2198743a21970f371bca52072e37a051fb4ee0457f74f9e861",
   "./games/garage/audio/wrench.mp3": "a04e326b948d181203507731955d4dfa852d2284b8165c67734f5d3b51fc07c7",
-  "./games/garage/index.html": "d5c9ec15972c67af18a128fa20ff5e477d62bee8111397120f07072622fc1393",
+  "./games/garage/index.html": "a3dc54a6e6d88ab761b70b0577af59b6c1a240860da378f3ba507dc35f400f33",
   "./games/helper/": "a0f3c314a7399b77fdff520e24ca0645eb6bc8db8fe590b7b26d7ec6cbd89894",
   "./games/helper/audio/first_take.mp3": "95dda062f7cd5d1b345c7ed8448e1f18427937df0a9f68800417263cf6d6e60a",
   "./games/helper/audio/got_apple.mp3": "6be60c803caa5bbeace38448df30adc3be9ec78cb851e046609174ea422afa33",

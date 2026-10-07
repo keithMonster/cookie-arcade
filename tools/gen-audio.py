@@ -419,7 +419,7 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
         "tight.mp3": ("text", "咔哒，拧紧啦！", SENT_SPEED),
         "air.mp3": ("text", "噗，轮胎鼓起来一点啦！", SENT_SPEED),
         "clean.mp3": ("text", "擦呀擦，泥巴掉下来啦！", SENT_SPEED),
-        "ready.mp3": ("text", "修好啦！按按车灯，让小车出发吧！", SENT_SPEED),
+        "ready.mp3": ("text", "修好啦！点点小车，让它出发吧！", SENT_SPEED),
         "done.mp3": ("text", "谢谢小小修理师！嘀嘀，出发喽！", SENT_SPEED),
         "hello.mp3": ("text", "你好呀！谢谢你来帮忙！", SENT_SPEED),
         "look.mp3": ("text", "再看看哪里需要修，换个工具试试吧。", SENT_SPEED),

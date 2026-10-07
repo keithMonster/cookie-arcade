@@ -13,9 +13,9 @@
 main{height:100%;height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:max(72px,calc(env(safe-area-inset-top) + 64px)) max(12px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
 #scene{position:relative;width:min(100%,900px,calc((100dvh - 236px)*1.45));aspect-ratio:900/620;flex-shrink:0;border-radius:32px;isolation:isolate}#backdrop{position:absolute;inset:0;border-radius:32px;overflow:hidden}.prop{position:absolute;min-width:44px;min-height:44px;z-index:2}.prop svg{transition:filter .15s}.prop:active svg{filter:brightness(1.1)}
 #sun{left:79%;top:3%;width:13%;height:18%}#cloud{left:10%;top:3%;width:23%;height:15%}#sign{left:43%;top:18%;width:14%;height:16%}#cat{left:83%;top:71%;width:14%;height:21%}
-#car-zone{position:absolute;left:10%;top:38%;width:77%;height:46%;z-index:3;--paint:#e98263;transform-origin:50% 92%}#car-art{position:absolute;inset:0}.car-hit{position:absolute;min-width:44px;min-height:44px;border-radius:24px}#body-hit{left:19%;top:35%;width:57%;height:29%}#driver{left:41%;top:5%;width:19%;height:30%}#horn{left:84%;top:41%;width:15%;height:25%}.wheel-hit{top:64%;width:21%;height:35%}#left-wheel{left:12%}#right-wheel{left:67%}.wheel-art{transform-box:fill-box;transform-origin:center bottom;transition:transform .24s,opacity .18s}.absent{opacity:0}.flat{transform:scaleY(.56)}.loose .hub{fill:var(--coral)}.loose{animation:loose 1.1s ease-in-out infinite}.mud{transition:opacity .25s}.shine{opacity:0}.ready .shine{opacity:1}.ready #horn{animation:hint 1.5s infinite}.driving{animation:drive 2.2s cubic-bezier(.5,0,.8,.5) forwards}.arriving{animation:arrive .75s ease-out}.driving .wheel-art{animation:wheel-spin .3s linear infinite;transform-origin:center}
+#car-zone{position:absolute;left:10%;top:38%;width:77%;height:46%;z-index:3;--paint:#e98263;transform-origin:50% 92%}#car-art{position:absolute;inset:0}.car-hit{position:absolute;min-width:44px;min-height:44px;border-radius:24px}#body-hit{left:19%;top:35%;width:57%;height:29%}#driver{left:41%;top:5%;width:19%;height:30%}#horn{left:84%;top:41%;width:15%;height:25%}.wheel-hit{top:64%;width:21%;height:35%}#left-wheel{left:12%}#right-wheel{left:67%}.wheel-art{transform-box:fill-box;transform-origin:center bottom;transition:transform .24s,opacity .18s}.absent{opacity:0}.flat{transform:scaleY(.56)}.loose .hub{fill:var(--coral)}.loose{animation:loose 1.1s ease-in-out infinite}.mud{transition:opacity .25s}.shine{opacity:0}.ready .shine{opacity:1}.ready:not(.driving) #car-art{animation:ready-car 1.5s ease-in-out infinite}.lamp-flash{animation:lamp-flash .55s ease-out}.driving{animation:drive 2.2s cubic-bezier(.5,0,.8,.5) forwards}.arriving{animation:arrive .75s ease-out}.driving .wheel-art{animation:wheel-spin .3s linear infinite;transform-origin:center}
 #tools{display:flex;align-items:center;justify-content:center;gap:16px;padding:16px 24px;background:#a3c9b7;border-radius:32px;box-shadow:0 8px 0 #83ac99,0 16px 24px #294c4914;width:min(100%,600px);flex-shrink:0}.tool{width:96px;height:96px;border-radius:24px;background:var(--cream);box-shadow:0 5px 0 #dbc99e;position:relative;transition:background .15s}.tool svg{padding:12px}.tool.selected{background:var(--yellow);outline:4px solid var(--ink);outline-offset:4px}.held svg{opacity:.18}.hint{outline:4px dashed #f7c250;outline-offset:4px;animation:hint 1.3s ease-in-out infinite}.over{background:#fff0cf45;outline:4px solid var(--yellow)}.pop{animation:pop .34s ease-out}.wobble{animation:wobble .35s ease-out}.ghost{position:fixed;z-index:40;width:80px;height:80px;pointer-events:none;filter:drop-shadow(0 8px 8px #294c4930)}.ghost svg{width:100%;height:100%}.puff{position:fixed;border:3px solid var(--cream);border-radius:50%;width:20px;height:20px;pointer-events:none;z-index:45;animation:puff .65s ease-out forwards}.ground-ring{position:absolute;width:24px;height:12px;border:3px solid var(--yellow);border-radius:50%;pointer-events:none;animation:puff .65s ease-out forwards;z-index:4}
-@keyframes pop{40%{scale:1.1;translate:0 -4px}}@keyframes wobble{25%{rotate:-5deg}75%{rotate:5deg}}@keyframes loose{50%{rotate:5deg}}@keyframes hint{50%{filter:brightness(1.15)}}@keyframes puff{to{scale:2.5;translate:0 -24px;opacity:0}}@keyframes drive{0%{translate:0 0;rotate:0}10%{translate:-2% 0;rotate:-2deg}100%{translate:150% 0;rotate:0}}@keyframes arrive{from{translate:-140% 0}to{translate:0 0}}@keyframes wheel-spin{to{rotate:360deg}}
+@keyframes pop{40%{scale:1.1;translate:0 -4px}}@keyframes wobble{25%{rotate:-5deg}75%{rotate:5deg}}@keyframes loose{50%{rotate:5deg}}@keyframes hint{50%{filter:brightness(1.15)}}@keyframes puff{to{scale:2.5;translate:0 -24px;opacity:0}}@keyframes drive{0%{translate:0 0;rotate:0}10%{translate:-2% 0;rotate:-2deg}100%{translate:150% 0;rotate:0}}@keyframes arrive{from{translate:-140% 0}to{translate:0 0}}@keyframes wheel-spin{to{rotate:360deg}}@keyframes ready-car{50%{translate:0 -4px;rotate:1deg}}@keyframes lamp-flash{30%{fill:#fffdf0;filter:drop-shadow(0 0 12px #fff0a0)}}
 @media(max-width:500px){main{gap:24px}#tools{gap:12px;padding:12px;border-radius:24px}.tool{width:calc((100vw - 84px)/4);height:calc((100vw - 84px)/4);max-height:80px}.tool svg{padding:8px}#scene{width:100%}}
 @media(max-height:540px) and (orientation:landscape){main{padding:16px max(72px,env(safe-area-inset-right)) 24px max(72px,env(safe-area-inset-left));gap:12px}#scene{width:min(100%,calc((100dvh - 140px)*1.45))}#tools{padding:8px 16px;gap:16px;width:auto}.tool{width:64px;height:64px}.tool svg{padding:8px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}.hint{filter:brightness(1.12)}}
@@ -43,7 +43,7 @@ main{height:100%;height:100dvh;display:flex;flex-direction:column;align-items:ce
    <path d="M186 45H298V113H148ZM321 45H395Q405 45 415 59L455 113H321Z" fill="#c9e7df"/>
    <g id="driver-art"><path d="M314 83L304 45L332 60L357 59L380 43L379 83Z" fill="#eec695"/><ellipse cx="343" cy="85" rx="37" ry="30" fill="#eec695"/><circle cx="330" cy="79" r="4" fill="#4c584b"/><circle cx="355" cy="79" r="4" fill="#4c584b"/><path d="M336 91Q343 100 351 91" fill="none" stroke="#9d7562" stroke-width="4" stroke-linecap="round"/></g>
    <path d="M48 155H637V219H48" fill="var(--paint)"/><path d="M302 126V211M470 126V211" stroke="#663f2b22" stroke-width="4"/><rect x="328" y="137" width="33" height="8" rx="4" fill="#fff0cf"/>
-   <rect x="607" y="154" width="42" height="26" rx="12" fill="#ffe49b"/><rect x="35" y="167" width="19" height="27" rx="8" fill="#b85243"/><path d="M30 224H658" stroke="#f8db9e" stroke-width="18" stroke-linecap="round"/>
+   <rect id="headlight" x="607" y="154" width="42" height="26" rx="12" fill="#ffe49b"/><rect x="35" y="167" width="19" height="27" rx="8" fill="#b85243"/><path d="M30 224H658" stroke="#f8db9e" stroke-width="18" stroke-linecap="round"/>
    <g id="left-art" class="wheel-art"><circle cx="151" cy="239" r="51" fill="#354c4b"/><circle cx="151" cy="239" r="33" fill="#a7bfb2"/><circle class="hub" cx="151" cy="239" r="13" fill="#f4ca70"/><path d="M151 210V218M151 260V268M122 239H130M172 239H180" stroke="#638a7e" stroke-width="6" stroke-linecap="round"/></g>
    <g id="right-art" class="wheel-art"><circle cx="524" cy="239" r="51" fill="#354c4b"/><circle cx="524" cy="239" r="33" fill="#a7bfb2"/><circle class="hub" cx="524" cy="239" r="13" fill="#f4ca70"/><path d="M524 210V218M524 260V268M495 239H503M545 239H553" stroke="#638a7e" stroke-width="6" stroke-linecap="round"/></g>
    <g id="axle" fill="#537466"><circle cx="151" cy="239" r="15"/><circle cx="524" cy="239" r="15"/></g>
@@ -52,7 +52,7 @@ main{height:100%;height:100dvh;display:flex;flex-direction:column;align-items:ce
   </svg>
   <button class="car-hit" id="body-hit" aria-label="车身上的泥点"></button>
   <button class="car-hit" id="driver" aria-label="和小司机打招呼"></button>
-  <button class="car-hit" id="horn" aria-label="按喇叭，修好后出发"></button>
+  <button class="car-hit" id="horn" aria-label="摸摸车灯，嘀嘀"></button>
   <button class="car-hit wheel-hit" id="left-wheel" aria-label="左边的轮子"></button>
   <button class="car-hit wheel-hit" id="right-wheel" aria-label="右边的轮子"></button>
  </div>
@@ -88,25 +88,31 @@ function feedback(el){lastInput=Date.now();animate(el);tone();if(!introduced){in
 function needs(){if(fault.missing)return 'tire';if(!fault.tight)return 'wrench';if(fault.air<3)return 'pump';if(fault.mud)return 'sponge';return null;}
 function targetFor(tool){return tool==='sponge'?'body-hit':`${fault.side}-wheel`;}
 function clearHints(){$$('.hint').forEach(el=>el.classList.remove('hint'));}
-function hint(){clearHints();if(phase!=='play')return;const n=needs();if(n){$(`#${n}`).classList.add('hint');$(`#${targetFor(n)}`).classList.add('hint');}else $('#horn').classList.add('hint');}
+function hint(){clearHints();if(phase!=='play')return;const n=needs();if(n){$(`#${n}`).classList.add('hint');$(`#${targetFor(n)}`).classList.add('hint');}else $('#body-hit').classList.add('hint');}
 function render(){
  for(const side of ['left','right']){const el=$(`#${side}-art`),active=side===fault.side;el.classList.toggle('absent',active&&fault.missing);el.classList.toggle('loose',active&&!fault.missing&&!fault.tight);el.classList.toggle('flat',active&&!fault.missing&&fault.air<3);if(active&&!fault.missing&&fault.air<3)el.style.transform=`scaleY(${.5+fault.air/6})`;else el.style.transform='';}
  $$('#axle circle').forEach((el,i)=>el.style.opacity=fault.missing&&fault.side===['left','right'][i]?'1':'0');
- $$('.mud').forEach((el,i)=>el.style.opacity=i<fault.mud?'1':'0');$('#car-zone').classList.toggle('ready',!needs());
+ $$('.mud').forEach((el,i)=>el.style.opacity=i<fault.mud?'1':'0');$('#car-zone').classList.toggle('ready',!needs());$('#body-hit').setAttribute('aria-label',needs()?'车身上的泥点':'点小车出发试车');
  for(const id of tools){$(`#${id}`).classList.toggle('selected',selected===id);$(`#${id}`).setAttribute('aria-pressed',String(selected===id));}
 }
 function miss(el,name='look'){misses++;animate(el,'wobble');tone(280);say(name);if(misses>=2)hint();}
+function canUse(tool,target){
+ if(phase!=='play')return false;
+ if(tool==='sponge')return target==='body-hit'&&fault.mud>0;
+ if(target!==`${fault.side}-wheel`)return false;
+ if(tool==='tire')return fault.missing;
+ if(tool==='wrench')return !fault.missing&&!fault.tight;
+ return tool==='pump'&&!fault.missing&&fault.tight&&fault.air<3;
+}
 // 所有输入在这里按最新状态判定，提示和第二根手指均不能绕过依赖。
 function use(tool,target){
  if(phase!=='play')return false;const el=$(`#${target}`);if(!el||!tools.includes(tool))return false;
- const wheel=target===`${fault.side}-wheel`,body=target==='body-hit';let valid=false;
- if(tool==='sponge'&&body&&fault.mud){fault.mud--;valid=true;}
- if(wheel){
-  if(tool==='tire'&&fault.missing){fault.missing=false;fault.tight=false;valid=true;}
-  else if(tool==='wrench'&&!fault.missing&&!fault.tight){fault.tight=true;valid=true;}
-  else if(tool==='pump'&&!fault.missing&&fault.tight&&fault.air<3){fault.air++;valid=true;}
- }
- if(!valid){miss(el,wheel&&fault.missing?'wheel_first':wheel&&!fault.tight?'tighten_first':'look');return false;}
+ const wheel=target===`${fault.side}-wheel`;
+ if(!canUse(tool,target)){miss(el,wheel&&fault.missing?'wheel_first':wheel&&!fault.tight?'tighten_first':'look');return false;}
+ if(tool==='sponge')fault.mud--;
+ else if(tool==='tire'){fault.missing=false;fault.tight=false;}
+ else if(tool==='wrench')fault.tight=true;
+ else if(tool==='pump')fault.air++;
  misses=0;clearHints();render();animate(el);burst(el,tool==='sponge'?'#e9faf4':'#f4c765');tone(720);
  say(!needs()?'ready':tool==='tire'?'fitted':tool==='wrench'?'tight':tool==='pump'?'air':'clean');
  if(!needs())hint();return true;
@@ -120,8 +126,9 @@ function drive(){
 }
 function tap(id){
  if(tools.includes(id)){if(phase==='play')choose(id);return;}
+ if(id==='body-hit'&&!needs()){drive();return;}
  if(['left-wheel','right-wheel','body-hit'].includes(id)){if(selected){if(heldTool(selected))say('release');else use(selected,id);}else{say(id==='body-hit'&&fault.mud?'sponge':id===`${fault.side}-wheel`&&needs()?needs():'hello');}return;}
- if(id==='horn'){drive();return;}
+ if(id==='horn'){animate($('#headlight'),'lamp-flash');tone(620);if(!needs())say('ready');return;}
  if(id==='driver'){burst($('#driver'),'#e88465');say('hello');return;}
  if(id==='cat'){animate($('#cat'),'wobble');tone(650);burst($('#cat'));return;}
  if(id==='cloud'){burst($('#cloud'),'#b1d8e5');tone(340);return;}
@@ -134,19 +141,37 @@ function targetAt(x,y){
  const hits=inside(0);const close=hits.length?hits:inside(12);close.sort((a,b)=>Math.hypot(x-a.b.x-a.b.width/2,y-a.b.y-a.b.height/2)-Math.hypot(x-b.b.x-b.b.width/2,y-b.b.y-b.b.height/2));return close[0]?.id||null;
 }
 function clearPointer(id){
- const p=pointers.get(id);if(!p)return;pointers.delete(id);p.ghost?.remove();p.el.classList.remove('held');try{p.el.releasePointerCapture(id);}catch{};refreshOver();
+ const p=pointers.get(id);if(!p)return;pointers.delete(id);p.ghost?.remove();if(p.tool)$(`#${p.tool}`).classList.remove('held');try{p.el.releasePointerCapture(id);}catch{};refreshOver();
 }
 function clearAll(){for(const id of [...pointers.keys()])clearPointer(id);selected=null;render();}
 function refreshOver(){$$('.over').forEach(el=>el.classList.remove('over'));for(const p of pointers.values())if(p.over)$(`#${p.over}`).classList.add('over');}
 function ghost(p,e){
- if(!p.ghost){p.ghost=document.createElement('div');p.ghost.className='ghost';p.ghost.innerHTML=p.el.innerHTML;p.ghost.setAttribute('aria-hidden','true');document.body.append(p.ghost);p.el.classList.add('held');}
+ if(!p.ghost){const tool=$(`#${p.tool}`);p.ghost=document.createElement('div');p.ghost.className='ghost';p.ghost.innerHTML=tool.innerHTML;p.ghost.setAttribute('aria-hidden','true');document.body.append(p.ghost);tool.classList.add('held');}
  p.ghost.style.left=`${e.clientX-40}px`;p.ghost.style.top=`${e.clientY-40}px`;
+}
+function moveTool(p,e){
+ const target=targetAt(e.clientX,e.clientY),same=target&&target===p.over;
+ const distance=same?Math.hypot(e.clientX-p.lastX,e.clientY-p.lastY):0;
+ p.lastX=e.clientX;p.lastY=e.clientY;p.over=target;
+ if(!same)p.distance=0;
+ const working=target&&(canUse(p.tool,target)||p.worked&&target===p.doneTarget);
+ p.distance+=working?distance:0;p.motion+=working?distance:0;
+ const swing=working?Math.sin(p.motion/20):0;
+ p.ghost.style.transform=p.tool==='pump'?`translateY(${swing*8}px)`:`rotate(${swing*28}deg)`;
+ // 运输距离不计工；在目标内实际移动才修理，成功后松手也不再重复提交。
+ if(target&&canUse(p.tool,target)&&(p.tool==='tire'||p.distance>=28)){
+  if(use(p.tool,target)){p.worked=true;p.doneTarget=target;p.distance=0;if(p.tool==='tire')p.ghost.style.opacity='.25';}
+ }
+ refreshOver();
 }
 for(const el of $$('button')){
  el.addEventListener('pointerdown',e=>{
   if(e.button!==0||[...pointers.values()].some(p=>p.el===el))return;e.preventDefault();feedback(el);
   if(phase!=='play'&&tools.includes(el.id))return;
-  pointers.set(e.pointerId,{id:e.pointerId,el,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:false,tool:tools.includes(el.id)?el.id:null,round,over:null,distance:0,worked:false});
+  const fromTool=tools.includes(el.id),onTarget=['left-wheel','right-wheel','body-hit'].includes(el.id);
+  const tool=fromTool?el.id:onTarget&&selected&&needs()?selected:null;
+  if(tool&&heldTool(tool)){say('release');return;}
+  pointers.set(e.pointerId,{id:e.pointerId,el,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:false,tool,round,over:!fromTool&&tool?el.id:null,distance:0,motion:0,worked:false,doneTarget:null,readyAtDown:!needs()});
   try{el.setPointerCapture(e.pointerId);}catch{}
  });
  // pointer 的点击由自己的 pointerup 执行；保留键盘/辅助技术生成的 detail=0 click。
@@ -156,19 +181,12 @@ document.addEventListener('pointermove',e=>{
  const p=pointers.get(e.pointerId);if(!p||!p.tool||p.round!==round)return;
  if(Math.hypot(e.clientX-p.x,e.clientY-p.y)>9)p.moved=true;if(!p.moved)return;
  if(selected===p.tool){selected=null;render();}ghost(p,e);
- const target=targetAt(e.clientX,e.clientY);if(p.over!==target){p.distance=0;p.worked=false;}p.over=target;
- p.distance+=Math.hypot(e.clientX-p.lastX,e.clientY-p.lastY);p.lastX=e.clientX;p.lastY=e.clientY;
- // 擦洗和打气是连续动作；位移而非帧数计工，停住不会自动完成。
- if(target&&['sponge','pump'].includes(p.tool)&&p.distance>28){
-  const can=p.tool==='sponge'?target==='body-hit'&&fault.mud>0:target===`${fault.side}-wheel`&&!fault.missing&&fault.tight&&fault.air<3;
-  if(can){use(p.tool,target);p.worked=true;p.distance=0;}
- }
- refreshOver();
+ moveTool(p,e);
 });
 document.addEventListener('pointerup',e=>{
  const p=pointers.get(e.pointerId);if(!p)return;const target=p.tool&&p.moved?targetAt(e.clientX,e.clientY):null;clearPointer(e.pointerId);
- if(p.round!==round)return;if(p.tool&&p.moved){if(selected===p.tool)selected=null;render();if(target){if(!p.worked)use(p.tool,target);}else miss(p.el,'place');}
- else if(Math.hypot(e.clientX-p.x,e.clientY-p.y)<20)tap(p.el.id);
+ if(p.round!==round)return;if(p.tool&&p.moved){if(selected===p.tool)selected=null;render();if(!p.worked){if(target)use(p.tool,target);else miss(p.el,'place');}}
+ else if(Math.hypot(e.clientX-p.x,e.clientY-p.y)<20){if(p.el.id==='body-hit'&&!p.readyAtDown&&!needs())say('ready');else tap(p.el.id);}
 });
 for(const type of ['pointercancel','lostpointercapture'])document.addEventListener(type,e=>clearPointer(e.pointerId));
 $('#scene').addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;e.preventDefault();lastInput=Date.now();tone(380);const p=document.createElement('i');p.className='puff';p.style.left=`${e.clientX}px`;p.style.top=`${e.clientY}px`;document.body.append(p);setTimeout(()=>p.remove(),700);});

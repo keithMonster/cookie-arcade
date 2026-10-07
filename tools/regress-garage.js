@@ -1,15 +1,16 @@
 // 本机隔离 Playwright CLI run-code；无生产或付费调用。
 async page => {
  if(new URL(page.url()).origin!=='http://127.0.0.1:8775')throw Error('仅本地8775');
- const root='http://127.0.0.1:8775',out='/Users/xuke/githubProject/monster/output/cookie-arcade/garage-20261007';
+ const root='http://127.0.0.1:8775',out='/Users/xuke/githubProject/monster/output/cookie-arcade/garage-drag-20261007';
  const results=[],errors=[];page.on('pageerror',e=>errors.push(e.message));
- const check=(name,ok,detail)=>{results.push({name,ok:!!ok,detail});};
+ const check=(name,ok,detail)=>{results.push({name,ok:!!ok,detail});if(!ok)throw Error(name);};
  const state=()=>page.evaluate(()=>({round,phase,fault:{...fault},selected,misses,held:pointers.size,ghosts:document.querySelectorAll('.ghost').length,needed:needs()}));
  const setup=async n=>{await page.evaluate(n=>{round=n;newRound();},n);await page.waitForTimeout(800);};
  const use=async(tool,target)=>{await page.locator(`#${tool}`).click();await page.locator(`#${target}`).click();};
  const center=async id=>{const b=await page.locator(`#${id}`).boundingBox();return {x:b.x+b.width/2,y:b.y+b.height/2};};
  const drag=async(id,target)=>{const a=await center(id),b=await center(target);await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:8});await page.mouse.up();};
- await page.goto(root+'/games/garage/');await page.waitForTimeout(900);
+ try {
+ await page.goto(root+'/games/garage/');await page.reload();await page.waitForTimeout(900);
  // 状态前置只用于枚举布局；全部修理和试车由浏览器输入完成。
  for(let variant=0;variant<4;variant++){
   await setup(variant);let s=await state();const target=s.fault.side+'-wheel';
@@ -21,7 +22,7 @@ async page => {
   s=await state();if(s.fault.missing){await drag('tire',target);check(`布局${variant} 拖轮胎装上但未拧紧`,!(await state()).fault.missing&&!(await state()).fault.tight);await use('pump',target);check(`布局${variant} 未拧紧不打气`,(await state()).fault.air===s.fault.air);await use('wrench',target);}
   s=await state();if(s.fault.air<3){await use('pump',target);for(let i=s.fault.air+1;i<3;i++)await page.locator(`#${target}`).click();}
   s=await state();check(`布局${variant} 完整修好但等待孩子出发`,!s.needed&&s.phase==='play',s);
-  await page.locator('#horn').click();check(`布局${variant} 主动试车`,(await state()).phase==='drive');
+  await page.locator('#body-hit').click();check(`布局${variant} 主动试车`,(await state()).phase==='drive');
   const old=s.round;await page.waitForFunction(r=>round>r,old);check(`布局${variant} 自动新车恢复`,(await state()).phase==='play'&&(await state()).held===0);
  }
  await setup(0);await use('pump','left-wheel');await page.locator('#left-wheel').click();let s=await state();
@@ -70,8 +71,9 @@ async page => {
  await send('touchMove',[{...t,id:1}]);await send('touchEnd',[{...t,id:1}]);check('另一指点击选择不被拖放清除',(await state()).selected==='sponge'&&!(await state()).fault.missing);await cdp.detach();
  await setup(0);await page.evaluate(()=>{window.oldPlay=voice.play;voice.play=()=>Promise.reject(Error('blocked'));});await use('tire','left-wheel');await use('wrench','left-wheel');check('声音拒播不阻断玩法',(await state()).fault.tight);await page.evaluate(()=>voice.play=window.oldPlay);
  await setup(0);a=await center('tire');await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(a.x,a.y-80);await page.evaluate(()=>{window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));});await page.mouse.up();check('页面恢复无残留拖动',(await state()).held===0&&(await state()).ghosts===0&&(await state()).fault.missing);
- await page.evaluate(()=>{fault={missing:false,tight:true,air:3,mud:0,side:'left'};render();});await page.locator('#horn').click();await page.evaluate(()=>{window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));});check('出发中页面恢复可玩',(await state()).phase==='play'&&!!(await state()).needed);
+ await page.evaluate(()=>{fault={missing:false,tight:true,air:3,mud:0,side:'left'};render();});await page.locator('#body-hit').click();await page.evaluate(()=>{window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));});check('出发中页面恢复可玩',(await state()).phase==='play'&&!!(await state()).needed);
  const audio=await page.evaluate(async()=>{voice.pause();voice.src='audio/done.mp3';return new Promise(resolve=>{const timeout=setTimeout(()=>resolve({ended:false,error:voice.error?.message}),9000);voice.onended=()=>{clearTimeout(timeout);resolve({ended:true,duration:voice.duration});};voice.play().catch(e=>{clearTimeout(timeout);resolve({ended:false,error:String(e)});});});});check('本地语音实际ended',audio.ended,audio);
  check('无脚本异常',errors.length===0,errors);
  return {passed:results.filter(x=>x.ok).length,failed:results.filter(x=>!x.ok).length,results,limitations:['Chromium触屏模拟不等于iPad扬声器或Cookie试玩','bfcache异常恢复使用合成persisted事件']};
+ } catch(e) { return {error:String(e),passed:results.filter(r=>r.ok).length,failed:results.filter(r=>!r.ok).length,results,state:await state()}; }
 }
