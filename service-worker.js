@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "912d68302ec8ca2a";
+const CACHE_VERSION = "3dac1deefe201fb2";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",
@@ -78,6 +78,23 @@ const PRECACHE_PATHS = [
   "./games/beads/audio/next_round.mp3",
   "./games/beads/audio/place.mp3",
   "./games/beads/index.html",
+  "./games/bridge/",
+  "./games/bridge/audio/hello.mp3",
+  "./games/bridge/audio/home.mp3",
+  "./games/bridge/audio/intro.mp3",
+  "./games/bridge/audio/long.mp3",
+  "./games/bridge/audio/not_ready.mp3",
+  "./games/bridge/audio/occupied.mp3",
+  "./games/bridge/audio/place.mp3",
+  "./games/bridge/audio/placed.mp3",
+  "./games/bridge/audio/plan.mp3",
+  "./games/bridge/audio/ready.mp3",
+  "./games/bridge/audio/release.mp3",
+  "./games/bridge/audio/returned.mp3",
+  "./games/bridge/audio/short.mp3",
+  "./games/bridge/audio/short_gap.mp3",
+  "./games/bridge/audio/water.mp3",
+  "./games/bridge/index.html",
   "./games/bubbles/",
   "./games/bubbles/index.html",
   "./games/bus/",
@@ -574,7 +591,7 @@ const PRECACHE_PATHS = [
   "./manifest.json"
 ];
 const PRECACHE_HASHES = {
-  "./": "3ac97411199a7978dcdaed557bf88a03e593abc665cc2e16f293f7eb8a563574",
+  "./": "51870d6d6d30aafadc6dc7a9d901a51a91f55c09438d72a1faa5809f128f04aa",
   "./apple-touch-icon.png": "f13bedd187a81e96dc2357f3353b53a73b0ab386c0730addf91710d05b2c870a",
   "./games/_lib/stage.js": "b76441eb6da988b153bc1d64931a11d8bca2db9432761359bcd68974166f75c9",
   "./games/_lib/twirlywoos.js": "f495dfbf52f75a01a85105def28b544cc618e62f1e95f4af6ebf38ce758a5031",
@@ -649,6 +666,23 @@ const PRECACHE_HASHES = {
   "./games/beads/audio/next_round.mp3": "bfc7e42d2074b9958ee1a39ae79c106bc5367b204174a1c7d18472df5cd39ef5",
   "./games/beads/audio/place.mp3": "e5960d53fa61e086784065dd980c332898b8eb6272a070c86b05f860a1d5634a",
   "./games/beads/index.html": "baca7e707f8553f8fd6b7edf9a343623f9ec57ff9ef4c8e484517c5b388d9f39",
+  "./games/bridge/": "4bd23a580de130aec1f7fe2d6e961ebe599c2e70652cd9e9693d8ac9c1754088",
+  "./games/bridge/audio/hello.mp3": "e3a7ecedf39bfb89322d28a6eaa15cc8398b8fcf576c30486fd9e57c064bfef2",
+  "./games/bridge/audio/home.mp3": "ec0894f54df3e9bb346b28be2fb4c8e76b8473f49a20fce1242d36a7bf670f98",
+  "./games/bridge/audio/intro.mp3": "ba2af948d63bd7220b038932dbd26269b369c6ef6aa1d4508313c7d89eda273b",
+  "./games/bridge/audio/long.mp3": "ef4516cec0b340e25e8124ec079aad48ebeb490b24d3f2f84416f399438088c2",
+  "./games/bridge/audio/not_ready.mp3": "b25338259f67bedf5b7f242cfd8fe611134ae5aa8d1bfc0cd54a18c4e65b5895",
+  "./games/bridge/audio/occupied.mp3": "443674b5e61103ec86dddc7cbe6c0acb8b9bb173ba5f9f93dad20f0a71af3951",
+  "./games/bridge/audio/place.mp3": "1143ac12cd20bac91040ba5cd894ea5ee9b8951b3563f99c545344ff06397d35",
+  "./games/bridge/audio/placed.mp3": "cb25139e1ebece7359adf24d997066806287ec0e63e1a49709a132c62a65a823",
+  "./games/bridge/audio/plan.mp3": "8622f759df36739fc48c3cdb6eb112bca576d84b0b7d5011a6bbe41e208a7867",
+  "./games/bridge/audio/ready.mp3": "b6fee3ba6af982a9ea1991695281f945b35b042aa3a88a817c55567d1a3d89bb",
+  "./games/bridge/audio/release.mp3": "d616fa2b79347a27f558b86bba2cf83d1d8044e7c3e5783f57c0aaca57972b56",
+  "./games/bridge/audio/returned.mp3": "0cdf900e3f738d7f66205e4976275e8b666dd6da187a896b3c1c4c9fd0525473",
+  "./games/bridge/audio/short.mp3": "cae50253fdaa0aec3de20de3bfe7443714323ff7b8693e716e9d818014bc2e68",
+  "./games/bridge/audio/short_gap.mp3": "9b8043d80b0718045fc407c2299ddbfb53e134affa6c3105423f88ff20eea241",
+  "./games/bridge/audio/water.mp3": "bd58c8fa8bae2cfccdd89ce4793bec82d74419bb727f3c1b79dfc550f2a51428",
+  "./games/bridge/index.html": "4bd23a580de130aec1f7fe2d6e961ebe599c2e70652cd9e9693d8ac9c1754088",
   "./games/bubbles/": "af8aed13ba1cd5a7a39251cd53ae14011578e845d0d3b299eee7a655610a10c9",
   "./games/bubbles/index.html": "af8aed13ba1cd5a7a39251cd53ae14011578e845d0d3b299eee7a655610a10c9",
   "./games/bus/": "e27d0a2c1b22b0b44df9cc7947c5273c58d1271ae85e732ac59344653f82a862",
@@ -1141,7 +1175,7 @@ const PRECACHE_HASHES = {
   "./games/words/audio/yeye.mp3": "b590c4ab518641b6140c2d65dfb6eae96cf084bfe9b3794f3f2782fd9d648984",
   "./games/words/index.html": "2b2f39c59da09ae4d2dd609b083e727c72a8a74278a2814d4db146d6c9f30e85",
   "./icon-512.png": "a530eb48a4319756b8bcad8816a1196a7e8870e285b148bd5de83c59bb65caab",
-  "./index.html": "3ac97411199a7978dcdaed557bf88a03e593abc665cc2e16f293f7eb8a563574",
+  "./index.html": "51870d6d6d30aafadc6dc7a9d901a51a91f55c09438d72a1faa5809f128f04aa",
   "./manifest.json": "d69e8e038642ab66493c79fa4c964a75087ac156e8e0184378c4009f4b642573"
 };
 // END GENERATED OFFLINE MANIFEST

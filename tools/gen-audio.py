@@ -429,6 +429,23 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
         "place.mp3": ("text", "把工具送到小车需要修的地方吧。", SENT_SPEED),
         "release.mp3": ("text", "先把手里的工具放回去，再出发吧。", SENT_SPEED),
     }
+    m["bridge"] = {
+        "intro.mp3": ("text", "小车想过河，试试把木板搭上去吧。", SENT_SPEED),
+        "short.mp3": ("text", "这是短木板。", SENT_SPEED),
+        "long.mp3": ("text", "这是长木板。", SENT_SPEED),
+        "short_gap.mp3": ("text", "还够不到对面呢，试试长一点的。", SENT_SPEED),
+        "placed.mp3": ("text", "搭上啦！另一条河呢？", SENT_SPEED),
+        "ready.mp3": ("text", "桥都搭好啦！点点小车，过河吧！", SENT_SPEED),
+        "occupied.mp3": ("text", "这个位置已经用上啦，换个地方试试。", SENT_SPEED),
+        "plan.mp3": ("text", "把长木板留给宽宽的河，再看看短木板放哪里。", SENT_SPEED),
+        "place.mp3": ("text", "把木板搭在河上，或者放回下面吧。", SENT_SPEED),
+        "release.mp3": ("text", "木板还拿在手里，放好再开车吧。", SENT_SPEED),
+        "not_ready.mp3": ("text", "前面还有河呢，先把桥搭好吧。", SENT_SPEED),
+        "home.mp3": ("text", "到家啦！谢谢你，小小搭桥师！", SENT_SPEED),
+        "hello.mp3": ("text", "你好呀！我在这里等小车。", SENT_SPEED),
+        "water.mp3": ("text", "小鱼在桥下面游来游去。", SENT_SPEED),
+        "returned.mp3": ("text", "拿回来啦，可以重新搭。", SENT_SPEED),
+    }
     return m
 
 
