@@ -83,8 +83,11 @@ All spoken voice follows one contract:
 
 ## Design
 
+- [玩法覆盖地图 / Parent Map](parent-map/index.html) — eight directions, per-game tags, coverage radar and CSV; an independent parent page, not a child score.
+- [CAPABILITY-MAP.md](CAPABILITY-MAP.md) — research, classification boundaries and the single-source maintenance workflow.
+
 - [`AGENTS.md`](AGENTS.md) — the admission rules every new game has to pass (four questions + hard lines).
-- [`WHY.md`](WHY.md) — why those rules exist: the toy→game axis, why "educational" and "fun" compete at this age, the capability map behind every game on the台, and the observable signals that will retire each hard line.
+- [`WHY.md`](WHY.md) — why those rules exist: the toy→game axis, why "educational" and "fun" compete at this age, the historical 14-line route behind the台 (current coverage lives in Parent Map), and the observable signals that will retire each hard line.
 - [`STORY.md`](STORY.md) — how it all happened, written for Cookie to read someday.
 
 ## Inspirations

@@ -139,6 +139,15 @@ def main():
     if offline_check.returncode != 0:
         failures.append(offline_check.stdout.strip() or offline_check.stderr.strip())
 
+    parent_map_check = subprocess.run(
+        [sys.executable, str(ROOT / "tools" / "gen-parent-map.py"), "--check"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if parent_map_check.returncode != 0:
+        failures.append(parent_map_check.stdout.strip() or parent_map_check.stderr.strip())
+
     if failures:
         print("✗ 文档一致性检查未通过：")
         for f in failures:

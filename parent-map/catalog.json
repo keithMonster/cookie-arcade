@@ -1,0 +1,701 @@
+{
+  "schema": 1,
+  "reviewed_on": "2026-10-07",
+  "domains": [
+    {
+      "id": "spatial",
+      "name": "空间与方向",
+      "facets": [
+        {
+          "id": "shape",
+          "name": "形状匹配",
+          "venue": "screen"
+        },
+        {
+          "id": "position",
+          "name": "位置关系",
+          "venue": "screen"
+        },
+        {
+          "id": "rotation",
+          "name": "旋转连接",
+          "venue": "screen"
+        },
+        {
+          "id": "navigation",
+          "name": "地图与视角",
+          "venue": "screen"
+        }
+      ]
+    },
+    {
+      "id": "math",
+      "name": "数量与逻辑",
+      "facets": [
+        {
+          "id": "correspondence",
+          "name": "一一对应",
+          "venue": "screen"
+        },
+        {
+          "id": "quantity",
+          "name": "数量与多少",
+          "venue": "screen"
+        },
+        {
+          "id": "measurement",
+          "name": "长短比较",
+          "venue": "screen"
+        },
+        {
+          "id": "patterns",
+          "name": "分类与模式",
+          "venue": "screen"
+        }
+      ]
+    },
+    {
+      "id": "executive",
+      "name": "注意记忆与自控",
+      "facets": [
+        {
+          "id": "attention",
+          "name": "选择性注意",
+          "venue": "screen"
+        },
+        {
+          "id": "memory",
+          "name": "主动记忆",
+          "venue": "screen"
+        },
+        {
+          "id": "inhibition",
+          "name": "抑制与等待",
+          "venue": "screen"
+        },
+        {
+          "id": "switching",
+          "name": "规则切换",
+          "venue": "screen"
+        }
+      ]
+    },
+    {
+      "id": "language",
+      "name": "语言与交流",
+      "facets": [
+        {
+          "id": "vocabulary",
+          "name": "词义理解",
+          "venue": "screen"
+        },
+        {
+          "id": "instructions",
+          "name": "指令理解",
+          "venue": "screen"
+        },
+        {
+          "id": "expression",
+          "name": "主动表达",
+          "venue": "screen"
+        },
+        {
+          "id": "dialogue",
+          "name": "对话叙事",
+          "venue": "screen"
+        }
+      ]
+    },
+    {
+      "id": "causal",
+      "name": "因果与问题解决",
+      "facets": [
+        {
+          "id": "agency",
+          "name": "动作因果",
+          "venue": "screen"
+        },
+        {
+          "id": "dependencies",
+          "name": "条件与依赖",
+          "venue": "screen"
+        },
+        {
+          "id": "resources",
+          "name": "资源重排",
+          "venue": "screen"
+        },
+        {
+          "id": "experiment",
+          "name": "预测与实验",
+          "venue": "screen"
+        }
+      ]
+    },
+    {
+      "id": "motor",
+      "name": "感知与动作",
+      "facets": [
+        {
+          "id": "tracking",
+          "name": "视觉追踪",
+          "venue": "screen"
+        },
+        {
+          "id": "touch",
+          "name": "触屏控制",
+          "venue": "screen"
+        },
+        {
+          "id": "auditory",
+          "name": "听觉辨别",
+          "venue": "screen"
+        },
+        {
+          "id": "physical",
+          "name": "身体与实物",
+          "venue": "offline"
+        }
+      ]
+    },
+    {
+      "id": "creative",
+      "name": "创造与音乐",
+      "facets": [
+        {
+          "id": "drawing",
+          "name": "自由绘画",
+          "venue": "screen"
+        },
+        {
+          "id": "music",
+          "name": "自由音乐",
+          "venue": "screen"
+        },
+        {
+          "id": "rhythm",
+          "name": "节奏时值",
+          "venue": "screen"
+        },
+        {
+          "id": "imagination",
+          "name": "开放构造扮演",
+          "venue": "screen"
+        }
+      ]
+    },
+    {
+      "id": "social",
+      "name": "情绪与社会生活",
+      "facets": [
+        {
+          "id": "care",
+          "name": "照料脚本",
+          "venue": "screen"
+        },
+        {
+          "id": "emotion",
+          "name": "辨认表达情绪",
+          "venue": "screen"
+        },
+        {
+          "id": "negotiation",
+          "name": "真人轮流协商",
+          "venue": "offline"
+        },
+        {
+          "id": "daily-life",
+          "name": "生活实践",
+          "venue": "offline"
+        }
+      ]
+    }
+  ],
+  "games": [
+    {
+      "slug": "bridge",
+      "name": "搭桥过河",
+      "primary": "causal",
+      "core": [
+        "measurement",
+        "resources"
+      ],
+      "exposure": [],
+      "action": "一长一短板分配给宽窄河；长板可拿回重排",
+      "limit": "试出来不等于事先规划；未证明迁移",
+      "source": "README.md；games/bridge/index.html",
+      "reviewed_sha": "4bd23a580de130aec1f7fe2d6e961ebe599c2e70652cd9e9693d8ac9c1754088"
+    },
+    {
+      "slug": "garage",
+      "name": "小小修车铺",
+      "primary": "causal",
+      "core": [
+        "dependencies",
+        "touch",
+        "care"
+      ],
+      "exposure": [],
+      "action": "看故障选工具；装轮→拧紧→打气；持工具连续操作",
+      "limit": "固定故障映射不是开放科学实验",
+      "source": "README.md；games/garage/index.html",
+      "reviewed_sha": "a3dc54a6e6d88ab761b70b0577af59b6c1a240860da378f3ba507dc35f400f33"
+    },
+    {
+      "slug": "waterwheel",
+      "name": "转转小水车",
+      "primary": "spatial",
+      "core": [
+        "rotation",
+        "touch"
+      ],
+      "exposure": [],
+      "action": "转弯管连接水源与水车",
+      "limit": "只有单块旋转，不等于多步路径规划",
+      "source": "README.md；games/waterwheel/index.html",
+      "reviewed_sha": "bbfef4c5548ba5c35c191c0bd4ed91152dd2fdd3fc8e80716ec3de75d1672e57"
+    },
+    {
+      "slug": "picnic",
+      "name": "野餐分分乐",
+      "primary": "math",
+      "core": [
+        "correspondence",
+        "care"
+      ],
+      "exposure": [
+        "inhibition"
+      ],
+      "action": "先让每只兔子有一份，再分余下食物",
+      "limit": "无总数提问；等咀嚼是系统限制，不足证自控",
+      "source": "README.md；games/picnic/index.html",
+      "reviewed_sha": "b008f9e1a5a5979154515c2e65a235ae72b1118a42f703ce103afa91fcc21974"
+    },
+    {
+      "slug": "beads",
+      "name": "串串珠",
+      "primary": "math",
+      "core": [
+        "patterns"
+      ],
+      "exposure": [],
+      "action": "照可见 AB 样例续接两颗珠子",
+      "limit": "样例常驻，不记作主动回忆",
+      "source": "README.md；games/beads/index.html",
+      "reviewed_sha": "baca7e707f8553f8fd6b7edf9a343623f9ec57ff9ef4c8e484517c5b388d9f39"
+    },
+    {
+      "slug": "bus",
+      "name": "公交来啦",
+      "primary": "causal",
+      "core": [
+        "attention",
+        "dependencies"
+      ],
+      "exposure": [
+        "care"
+      ],
+      "action": "按目的地图选择下车者；先下后上再关门出发",
+      "limit": "有交通角色不等于真人协商",
+      "source": "README.md；games/bus/index.html",
+      "reviewed_sha": "e27d0a2c1b22b0b44df9cc7947c5273c58d1271ae85e732ac59344653f82a862"
+    },
+    {
+      "slug": "elevator",
+      "name": "电梯叮咚",
+      "primary": "spatial",
+      "core": [
+        "position",
+        "dependencies"
+      ],
+      "exposure": [],
+      "action": "比较所在楼层与目标，选上下、到站开门",
+      "limit": "目标常驻；不等于地图导航与工作记忆测试",
+      "source": "README.md；games/elevator/index.html",
+      "reviewed_sha": "4e22b10b5ba4df3737a192ccb778a2fea411993e6480fac2cde287e8c48239ac"
+    },
+    {
+      "slug": "road",
+      "name": "修路喽",
+      "primary": "spatial",
+      "core": [
+        "rotation"
+      ],
+      "exposure": [],
+      "action": "看缺口两侧端点，选择直路或弯路",
+      "limit": "两处独立连接，不计两步前瞻",
+      "source": "README.md；games/road/index.html",
+      "reviewed_sha": "eb40ca3e3c2c6e12d15f5aa30daddf654b96367014521c75b5342dbd7eb8616c"
+    },
+    {
+      "slug": "outing",
+      "name": "出门喽",
+      "primary": "causal",
+      "core": [
+        "dependencies",
+        "care",
+        "touch"
+      ],
+      "exposure": [],
+      "action": "看天气选用品；袜先于鞋、奶先于擦嘴",
+      "limit": "穿衣惯例不自动证明新情境逻辑推理",
+      "source": "README.md；games/outing/index.html",
+      "reviewed_sha": "f7a5ad0f4d758c2e0db60fc542f0a825d97e63288f5803b4c1b937661e554e4c"
+    },
+    {
+      "slug": "helper",
+      "name": "帮帮忙",
+      "primary": "language",
+      "core": [
+        "instructions",
+        "memory"
+      ],
+      "exposure": [],
+      "action": "一次听完取什么、给谁，再操作",
+      "limit": "有重播与提示；提示后的成功单独记",
+      "source": "README.md；games/helper/index.html",
+      "reviewed_sha": "a0f3c314a7399b77fdff520e24ca0645eb6bc8db8fe590b7b26d7ec6cbd89894"
+    },
+    {
+      "slug": "sort",
+      "name": "分一分",
+      "primary": "math",
+      "core": [
+        "patterns"
+      ],
+      "exposure": [],
+      "action": "同形物件按颜色放进对应篮子",
+      "limit": "只按颜色；换一对颜色不是切换分类维度",
+      "source": "README.md；games/sort/index.html",
+      "reviewed_sha": "211a6e77e0710f60d9b4de599e7278d7af10e48686a73b072515b95bff42386c"
+    },
+    {
+      "slug": "echo",
+      "name": "跟着敲",
+      "primary": "creative",
+      "core": [],
+      "exposure": [
+        "rhythm",
+        "inhibition",
+        "quantity"
+      ],
+      "action": "听示范后敲够次数；显示圆点，够数即庆祝",
+      "limit": "源码只判 hits >= pattern.length；不判间隔、强弱或过量",
+      "source": "README.md；games/echo/index.html",
+      "reviewed_sha": "561af11c32511be4c0db13ea8ab4696b11f39db1845892485e18239e4e641b80"
+    },
+    {
+      "slug": "train",
+      "name": "排排队",
+      "primary": "language",
+      "core": [
+        "instructions",
+        "attention"
+      ],
+      "exposure": [],
+      "action": "每次听一个动物名称，让它上车",
+      "limit": "逐次点名，不要求记住整段序列",
+      "source": "README.md；games/train/index.html",
+      "reviewed_sha": "48c843aa61079adce560df8fffaf59157404e0ee3cbc88fa85defe89509afac2"
+    },
+    {
+      "slug": "basket",
+      "name": "装一装",
+      "primary": "motor",
+      "core": [
+        "touch"
+      ],
+      "exposure": [
+        "correspondence",
+        "quantity"
+      ],
+      "action": "拖水果入篮，系统逐个播报数量",
+      "limit": "数词由系统说；没有独立数量选择",
+      "source": "README.md；games/basket/index.html",
+      "reviewed_sha": "100b1ff8b560424ffcf6408871fd7fb59e245d03fd2f142d11dd20c0dc1c861d"
+    },
+    {
+      "slug": "sleep",
+      "name": "睡觉觉",
+      "primary": "social",
+      "core": [
+        "care"
+      ],
+      "exposure": [
+        "emotion"
+      ],
+      "action": "盖被子，动物入睡、天亮换下一只",
+      "limit": "安静画面不能证明情绪调节",
+      "source": "README.md；games/sleep/index.html",
+      "reviewed_sha": "6fa1818b2f5c1bcfedee5f23b2b4a8b5c7cb24576c099d48a542951274a8effd"
+    },
+    {
+      "slug": "bath",
+      "name": "洗澡澡",
+      "primary": "social",
+      "core": [
+        "care",
+        "touch"
+      ],
+      "exposure": [],
+      "action": "擦除泥点给动物洗澡",
+      "limit": "屏幕清洁不等于真实生活自理",
+      "source": "README.md；games/bath/index.html",
+      "reviewed_sha": "21dce3735ed3cc3132a10c8eddceac4ef10db4ab1bcd2264a671481750dd1753"
+    },
+    {
+      "slug": "feed",
+      "name": "喂一喂",
+      "primary": "math",
+      "core": [
+        "patterns",
+        "care"
+      ],
+      "exposure": [],
+      "action": "按固定动物食物映射选择，错食物被拒绝",
+      "limit": "固定偏好配对不作为动物饮食全知识",
+      "source": "README.md；games/feed/index.html",
+      "reviewed_sha": "6967982378739b2f94f4206339639017aa1ef5df5ef53f73ee838462316eb248"
+    },
+    {
+      "slug": "shapes",
+      "name": "送回家",
+      "primary": "spatial",
+      "core": [
+        "shape"
+      ],
+      "exposure": [],
+      "action": "二选一，把相同形状送到对应洞口",
+      "limit": "不等于不同视角识形或心理旋转",
+      "source": "README.md；games/shapes/index.html",
+      "reviewed_sha": "683f9195dbc6160ae7e0edd51261f9a83bc42c889a7befd6f2b87440cef6ba81"
+    },
+    {
+      "slug": "storybook",
+      "name": "谁在门后面",
+      "primary": "causal",
+      "core": [
+        "agency"
+      ],
+      "exposure": [
+        "vocabulary"
+      ],
+      "action": "敲门揭示角色，自动翻页",
+      "limit": "有旁白不等于叙事表达；无延迟找回任务",
+      "source": "README.md；games/storybook/index.html",
+      "reviewed_sha": "d7d6b71b5f1e07aae37de539d5ea4498dafa0b034142d18389648c3225586979"
+    },
+    {
+      "slug": "scribble",
+      "name": "画彩虹",
+      "primary": "creative",
+      "core": [
+        "drawing",
+        "touch"
+      ],
+      "exposure": [],
+      "action": "手指移动留下彩虹轨迹",
+      "limit": "自由涂画不等于照样画或实物持笔",
+      "source": "README.md；games/scribble/index.html",
+      "reviewed_sha": "ba23452bc2df1d66b332cdc77c36eecc3ad6cad7c8decda6613ec5549d71320e"
+    },
+    {
+      "slug": "peekaboo",
+      "name": "躲猫猫",
+      "primary": "causal",
+      "core": [
+        "agency"
+      ],
+      "exposure": [],
+      "action": "掀开任一毯子揭示角色",
+      "limit": "不要求记住藏在哪；不作工作记忆证据",
+      "source": "README.md；games/peekaboo/index.html",
+      "reviewed_sha": "aa0db9edd490ffc88488b76de2b17358eee4cdcf5dea4c3a86b4ea0fb7ede1dd"
+    },
+    {
+      "slug": "find",
+      "name": "找一找",
+      "primary": "language",
+      "core": [
+        "vocabulary",
+        "attention"
+      ],
+      "exposure": [],
+      "action": "听词，从三张卡里找目标",
+      "limit": "能指认不等于能主动命名",
+      "source": "README.md；games/find/index.html",
+      "reviewed_sha": "63617e1e6930b64a7573bbffa408c77b47e1af66d755b6afa1b4bb09fb398d68"
+    },
+    {
+      "slug": "words",
+      "name": "学说话",
+      "primary": "language",
+      "core": [],
+      "exposure": [
+        "vocabulary",
+        "expression"
+      ],
+      "action": "点词卡听名称，留白邀请跟说",
+      "limit": "无孩子发声记录；只算表达邀请",
+      "source": "README.md；games/words/index.html",
+      "reviewed_sha": "2b2f39c59da09ae4d2dd609b083e727c72a8a74278a2814d4db146d6c9f30e85"
+    },
+    {
+      "slug": "cars",
+      "name": "车车",
+      "primary": "causal",
+      "core": [
+        "agency"
+      ],
+      "exposure": [
+        "vocabulary",
+        "tracking"
+      ],
+      "action": "点出车辆，听车名，看它开走",
+      "limit": "命名暴露与观看，不等于词汇掌握或追踪任务",
+      "source": "README.md；games/cars/index.html",
+      "reviewed_sha": "71aa8d1082e9163b78d483d391d10d95e2682dea22b0d471e435561f865e2d11"
+    },
+    {
+      "slug": "animals",
+      "name": "动物园",
+      "primary": "language",
+      "core": [],
+      "exposure": [
+        "vocabulary",
+        "auditory"
+      ],
+      "action": "点动物听名字与叫声",
+      "limit": "听到不同声不等于辨别声音",
+      "source": "README.md；games/animals/index.html",
+      "reviewed_sha": "617d6df60c92f4db5d38ca1af48bf80596c5b6f54f759096392fccab214d2b6c"
+    },
+    {
+      "slug": "tw-summon",
+      "name": "召唤鸟鸟",
+      "primary": "causal",
+      "core": [
+        "agency"
+      ],
+      "exposure": [
+        "vocabulary"
+      ],
+      "action": "触碰召唤熟悉角色",
+      "limit": "角色亲近是价值；不虚构独特能力收益",
+      "source": "README.md；games/tw-summon/index.html",
+      "reviewed_sha": "335dffad05f19535af7d4bc7ed8dffbf75d2ff45de5d652999df10df7c6661dc"
+    },
+    {
+      "slug": "tw-bubbles",
+      "name": "戳泡泡（鸟）",
+      "primary": "motor",
+      "core": [
+        "tracking",
+        "touch"
+      ],
+      "exposure": [],
+      "action": "追着下落泡泡触碰",
+      "limit": "触屏追踪不代表全身协调",
+      "source": "README.md；games/tw-bubbles/index.html",
+      "reviewed_sha": "a26a0770ebc24df8e4a459e89c0e3b2f2fbaeb16f4ba3940cdd7a2be89660da3"
+    },
+    {
+      "slug": "tw-chorus",
+      "name": "四鸟合唱",
+      "primary": "creative",
+      "core": [
+        "music"
+      ],
+      "exposure": [
+        "auditory"
+      ],
+      "action": "自主点不同角色组合声音",
+      "limit": "多指合唱不是与真人合作",
+      "source": "README.md；games/tw-chorus/index.html",
+      "reviewed_sha": "492ef445946c3f519fa3f40fc72d5fcf40aad79091422117824bad3f0567144f"
+    },
+    {
+      "slug": "tw-mood",
+      "name": "彩色心情",
+      "primary": "causal",
+      "core": [
+        "agency"
+      ],
+      "exposure": [],
+      "action": "点出角色色和长音",
+      "limit": "名称有心情，不代表情绪辨认任务",
+      "source": "README.md；games/tw-mood/index.html",
+      "reviewed_sha": "87c515ef0338815d6fff08d6b5e50f20181b50b0c9a4cb1887892da484c2c1f4"
+    },
+    {
+      "slug": "tw-more",
+      "name": "More More More",
+      "primary": "causal",
+      "core": [
+        "agency"
+      ],
+      "exposure": [
+        "quantity"
+      ],
+      "action": "点击逐个落球，累积后欢呼",
+      "limit": "更多的视觉体验，不判多或少",
+      "source": "README.md；games/tw-more/index.html",
+      "reviewed_sha": "b324387ba05b7c9248d3ed703e589b70b86973bf4e5150f7b3b24a31bd9b83ca"
+    },
+    {
+      "slug": "keyboard",
+      "name": "碰碰形状",
+      "primary": "causal",
+      "core": [
+        "agency"
+      ],
+      "exposure": [],
+      "action": "触碰生成形状、音符与粒子",
+      "limit": "出现形状，不要求分辨形状",
+      "source": "README.md；games/keyboard/index.html",
+      "reviewed_sha": "d7f0b83e791df84ddb448002890cd410af4eb98324123cdb13884026f372c741"
+    },
+    {
+      "slug": "bubbles",
+      "name": "戳泡泡",
+      "primary": "motor",
+      "core": [
+        "tracking",
+        "touch"
+      ],
+      "exposure": [],
+      "action": "追踪上浮泡泡并触碰",
+      "limit": "没有反应速度标准，不计速度能力",
+      "source": "README.md；games/bubbles/index.html",
+      "reviewed_sha": "af8aed13ba1cd5a7a39251cd53ae14011578e845d0d3b299eee7a655610a10c9"
+    },
+    {
+      "slug": "drums",
+      "name": "小鼓机",
+      "primary": "creative",
+      "core": [
+        "music"
+      ],
+      "exposure": [
+        "auditory"
+      ],
+      "action": "自主敲不同音色的垫子",
+      "limit": "可自由发声；不判听辨或节奏模仿",
+      "source": "README.md；games/drums/index.html",
+      "reviewed_sha": "28e59dd15abb9da82f3390eeca3bbf06dcedd12de24fcb482aaa933affda86f4"
+    },
+    {
+      "slug": "cascade",
+      "name": "变色屏",
+      "primary": "causal",
+      "core": [
+        "agency"
+      ],
+      "exposure": [],
+      "action": "触碰改变颜色与声音",
+      "limit": "颜色变化不等于颜色分类或情绪调节",
+      "source": "README.md；games/cascade/index.html",
+      "reviewed_sha": "da4f16a2c558846dcc15c6a725c3145cc58acc156ee871eecdf0e60d615f2cee"
+    }
+  ]
+}
