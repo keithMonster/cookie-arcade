@@ -37,7 +37,7 @@ async page => {
     await test.waitForFunction(old=>performance.timeOrigin!==old && !!document.querySelector('.refresh-group'),firstTime);
     const first=await progress();
     const requests=await (await test.request.get(origin+'/__test/counts')).json();
-    check('旧发布版直接增量迁移，仅重下首页两个地址', first.downloaded===2 && first.reused===547 && first.completed===549, {progress:first,requests});
+    check('旧发布版直接增量迁移，仅重下首页两个地址', first.downloaded===2 && first.reused===first.total-2 && first.completed===first.total, {progress:first,requests});
     check('升级没有重新请求任何游戏或语音资源',Object.keys(requests).every(path=>['/','/index.html','/service-worker.js'].includes(path)));
     const sound=await test.evaluate(async()=>{
       const cache=await caches.open((await caches.keys())[0]);
@@ -50,7 +50,7 @@ async page => {
     await click();
     await test.waitForFunction(old=>performance.timeOrigin!==old && document.title==='Cookie Arcade v2',nextTime);
     const next=await progress();
-    check('只改首页并损坏一份旧音频，仅下载3个地址',next.downloaded===3 && next.reused===546 && next.completed===549,next);
+    check('只改首页并损坏一份旧音频，仅下载3个地址',next.downloaded===3 && next.reused===next.total-3 && next.completed===next.total,next);
     await test.context().setOffline(true);
     const range=await test.evaluate(async url=>{
       const response=await fetch(url,{headers:{Range:'bytes=0-15'}});
@@ -71,11 +71,28 @@ async page => {
     await mode('hang');
     const began=Date.now();
     await click();
-    await test.waitForFunction(()=>refreshButton.dataset.state==='error',null,{timeout:30000});
-    check('增量资源挂起可取消，旧缓存保留',Date.now()-began<28000 && await test.evaluate(async old=>JSON.stringify(await caches.keys())===JSON.stringify(old.keys),before),{elapsed:Date.now()-began});
+    await test.waitForTimeout(22000);
+    const waiting=()=>test.evaluate(old=>refreshBusy && refreshButton.dataset.state==='checking' && performance.timeOrigin===old.time,before);
+    check('单资源超过20秒仍下载，旧页继续服务',await waiting(),{elapsed:Date.now()-began,status:await test.locator('#refresh-status').textContent()});
+    await test.waitForTimeout(36000);
+    await test.waitForTimeout(36000);
+    check('整轮超过90秒仍等待并显示进度',await waiting(),{elapsed:Date.now()-began,status:await test.locator('#refresh-status').textContent()});
+    await test.waitForFunction(()=>document.title==='Cookie Arcade hang',null,{timeout:30000});
+    check('百秒慢下载完成后自动切换完整新版',Date.now()-began>=99000,await progress());
     await test.context().setOffline(true);
     await test.reload();
-    check('失败后仍可离线重开原版首页',await test.title()==='Cookie Arcade v2');
+    check('慢下载完成后新版可离线重开',await test.title()==='Cookie Arcade hang');
+    await test.context().setOffline(false);
+    await mode('connect');
+    await click();
+    await test.waitForTimeout(13000);
+    check('连接超过12秒仍等待不报超时',await test.evaluate(()=>refreshBusy&&refreshButton.dataset.state==='checking'),await test.locator('#refresh-status').textContent());
+    await test.waitForFunction(()=>document.title==='Cookie Arcade connect',null,{timeout:45000});
+    check('慢连接最终完成更新',await test.title()==='Cookie Arcade connect');
+    await test.context().setOffline(true);
+    await click();
+    await test.waitForFunction(()=>refreshButton.dataset.state==='offline');
+    check('真实断网仍提示且保留旧游戏',await test.evaluate(()=>!refreshBusy&&!!navigator.serviceWorker.controller));
     return {passed:results.length,results};
   } catch(error) {
     return {error:String(error),results,status:await test.locator('#refresh-status').textContent().catch(()=>null)};

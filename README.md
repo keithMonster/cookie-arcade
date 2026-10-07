@@ -61,6 +61,9 @@ bootstrap the arcade while already offline.
 - `service-worker.js` precaches the home page, PWA metadata/icons, all 33 game pages,
   shared game code and local media. Existing users keep the previous complete cache
   until a new complete version has installed.
+- Slow connections and downloads have no application-imposed time limit. The home
+  page keeps showing elapsed time and preparation progress until the update finishes
+  or a real network, storage or integrity error occurs. Existing games remain usable.
 - Audio byte-range requests are served from the local cache too, which keeps iOS media
   playback working when the network is gone.
 - `python3 tools/gen-offline-cache.py` regenerates the versioned asset manifest after

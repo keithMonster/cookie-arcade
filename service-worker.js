@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "027dab6365a01fce";
+const CACHE_VERSION = "65b3841cee47fec2";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",
@@ -574,7 +574,7 @@ const PRECACHE_PATHS = [
   "./manifest.json"
 ];
 const PRECACHE_HASHES = {
-  "./": "d0eab5b00e31940bee32d53b1ae991c511435a7ae2bbe076677c7fcc4bcc5652",
+  "./": "3ac97411199a7978dcdaed557bf88a03e593abc665cc2e16f293f7eb8a563574",
   "./apple-touch-icon.png": "f13bedd187a81e96dc2357f3353b53a73b0ab386c0730addf91710d05b2c870a",
   "./games/_lib/stage.js": "b76441eb6da988b153bc1d64931a11d8bca2db9432761359bcd68974166f75c9",
   "./games/_lib/twirlywoos.js": "f495dfbf52f75a01a85105def28b544cc618e62f1e95f4af6ebf38ce758a5031",
@@ -1141,7 +1141,7 @@ const PRECACHE_HASHES = {
   "./games/words/audio/yeye.mp3": "b590c4ab518641b6140c2d65dfb6eae96cf084bfe9b3794f3f2782fd9d648984",
   "./games/words/index.html": "2b2f39c59da09ae4d2dd609b083e727c72a8a74278a2814d4db146d6c9f30e85",
   "./icon-512.png": "a530eb48a4319756b8bcad8816a1196a7e8870e285b148bd5de83c59bb65caab",
-  "./index.html": "d0eab5b00e31940bee32d53b1ae991c511435a7ae2bbe076677c7fcc4bcc5652",
+  "./index.html": "3ac97411199a7978dcdaed557bf88a03e593abc665cc2e16f293f7eb8a563574",
   "./manifest.json": "d69e8e038642ab66493c79fa4c964a75087ac156e8e0184378c4009f4b642573"
 };
 // END GENERATED OFFLINE MANIFEST
@@ -1195,7 +1195,6 @@ async function precache() {
   }
   async function download() {
     while (next < requests.length && !abort.signal.aborted) {
-      const timer = setTimeout(() => abort.abort(), 20000);
       try {
         await prepare(next++);
         installProgress.completed++;
@@ -1203,8 +1202,6 @@ async function precache() {
         // 任一请求失败就停其余队列；等全部写入退出后才清理新缓存。
         abort.abort();
         throw error;
-      } finally {
-        clearTimeout(timer);
       }
     }
   }

@@ -1719,13 +1719,11 @@
     }
     refreshBusy = true;
     refreshState('checking', '风车转呀转，看看有没有新玩具…');
-    let timer, poll, feedback, connectionTimer, registration, candidate, progress, finished = false;
+    let poll, feedback, registration, candidate, progress, finished = false;
     const started = performance.now();
-    const connection = new AbortController();
     const rememberWorker = () => {
       const worker = registration.installing || registration.waiting;
       if (worker && worker !== candidate) { candidate = worker; progress = null; }
-      if (candidate) clearTimeout(connectionTimer);
     };
     const receiveProgress = event => {
       const data = event.data;
@@ -1747,10 +1745,8 @@
       }
     };
     try {
-      await Promise.race([
-        new Promise((_, reject) => { timer = setTimeout(() => reject(Error('timeout')), 90000); }),
-        new Promise((_, reject) => { connectionTimer = setTimeout(() => reject(Error('connection timeout')), 12000); }),
-        (async () => {
+      // 慢网持续等待实际结果；进度计时只用于展示，不中止连接或下载。
+      await (async () => {
           registration = await navigator.serviceWorker.getRegistration('./');
           if (finished) return;
           if (!registration) registration = await registerOffline();
@@ -1763,7 +1759,7 @@
           // 已有安装时直接观察它，不把另一项 update 排在长下载后面等待。
           if (!candidate) {
             // update() 离线也可能 resolve；未缓存脚本的真实请求用来核联网。
-            const response = await fetch('./service-worker.js', { cache: 'no-store', signal: connection.signal });
+            const response = await fetch('./service-worker.js', { cache: 'no-store' });
             if (!response.ok) throw Error('network unavailable');
             await response.text();
             if (finished) return;
@@ -1781,8 +1777,7 @@
             poll = setInterval(check, 100);
             check();
           });
-        })(),
-      ]);
+        })();
       clearInterval(feedback);
       if (navigator.serviceWorker.controller === pageController) {
         refreshState('latest', '已经是最新啦，继续玩吧！');
@@ -1793,20 +1788,13 @@
         if (!document.hidden) location.replace(new URL('./', location.href).href);
       }
     } catch (error) {
-      if (error.message === 'connection timeout') {
-        refreshState('slow', '这次没连上更新，先玩现有游戏；网络好些后再点');
-      } else if (error.message === 'timeout') {
-        refreshState('slow', '下载还没完成，现有游戏都还在；先玩一会儿，稍后再点查看结果');
-      } else if (!navigator.onLine) {
+      if (!navigator.onLine) {
         refreshState('offline', '现在没连上网，现有玩具照样玩');
       } else {
         refreshState('error', '这次没下载好，现有玩具都还在，稍后再试');
       }
     } finally {
       finished = true;
-      connection.abort();
-      clearTimeout(timer);
-      clearTimeout(connectionTimer);
       clearInterval(poll);
       clearInterval(feedback);
       registration?.removeEventListener('updatefound', rememberWorker);

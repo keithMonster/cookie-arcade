@@ -9,7 +9,7 @@ import subprocess
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
-OLD = {name: subprocess.check_output(['git', 'show', '067dbed:' + name], cwd=ROOT) for name in ['index.html', 'service-worker.js']}
+OLD = {name: subprocess.check_output(['git', 'show', '627b537:' + name], cwd=ROOT) for name in ['index.html', 'service-worker.js']}
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -35,7 +35,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         mode = self.path.removeprefix('/__test/')
-        if mode not in ['old', 'current', 'v2', 'broken', 'hang']:
+        if mode not in ['old', 'current', 'v2', 'broken', 'hang', 'connect']:
             self.send_error(400)
             return
         Handler.mode = mode
@@ -59,14 +59,16 @@ class Handler(SimpleHTTPRequestHandler):
             source = OLD[name]
         else:
             source = (ROOT / name).read_bytes()
-            if self.mode in ['v2', 'broken', 'hang']:
+            if self.mode in ['v2', 'broken', 'hang', 'connect']:
                 original = (ROOT / 'index.html').read_bytes()
                 modified = original.replace(b"<title>Cookie's Arcade</title>", f'<title>Cookie Arcade {self.mode}</title>'.encode())
                 if name == 'index.html':
                     if self.mode == 'hang':
-                        time.sleep(25)
+                        time.sleep(100)
                     source = b'wrong release' if self.mode == 'broken' else modified
                 else:
+                    if self.mode == 'connect':
+                        time.sleep(14)
                     source = source.replace(b'const CACHE_VERSION = "', ('const CACHE_VERSION = "test-' + self.mode + '-').encode())
                     source = source.replace(hashlib.sha256(original).hexdigest().encode(), hashlib.sha256(modified).hexdigest().encode())
         return self.reply(source, 'application/javascript' if name.endswith('.js') else 'text/html; charset=utf-8')

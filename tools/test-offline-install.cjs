@@ -20,6 +20,7 @@ async function scenario(label, options = {}) {
   const oldBefore = JSON.stringify([...(data.get(oldName) || [])]);
   const existed = data.has(name), fetched = [];
   let skipped = false, activeWrites = 0, peakFetch = 0, activeFetch = 0, puts = 0, install;
+  const releaseFetch = [], productionTimers = [];
   const caches = {
     keys: async () => [...data.keys()],
     has: async key => data.has(key),
@@ -45,14 +46,17 @@ async function scenario(label, options = {}) {
       await new Promise((resolve, reject) => {
         if (request.signal.aborted) return reject(Error('aborted'));
         const abort = () => { clearTimeout(timer); reject(Error('aborted')); };
-        const timer = options.hang ? undefined : setTimeout(() => {
+        const release = () => {
           request.signal.removeEventListener('abort', abort);
           resolve();
-        }, 1);
+        };
+        const waiting = options.hang || (options.hangOthers && request.url !== base);
+        const timer = waiting ? undefined : setTimeout(release, 1);
+        if(options.hang) releaseFetch.push(release);
         request.signal.addEventListener('abort', abort, {once:true});
       });
       const path = './' + request.url.slice(base.length);
-      return new Response(options.mismatch ? 'wrong release' : assets[path], {status:options.httpError ? 503 : 200});
+      return new Response(options.mismatch ? 'wrong release' : assets[path], {status:options.httpError || options.hangOthers ? 503 : 200});
     } finally { activeFetch--; }
   };
   const self = {
@@ -61,12 +65,21 @@ async function scenario(label, options = {}) {
     skipWaiting:() => {skipped=true;},
   };
   vm.runInNewContext(source, {self,caches,fetch,crypto:webcrypto,URL,Request,Response,AbortController,Uint8Array,
-    clearTimeout,setTimeout:(fn,ms)=>setTimeout(fn,ms===20000?75:ms)});
+    clearTimeout,setTimeout:(fn,ms)=>{productionTimers.push(ms);return setTimeout(fn,ms===20000?75:ms);}});
   let pending;
   install({waitUntil:promise=>{pending=promise;}});
+  if(options.hang){
+    let settled=false;pending.then(()=>{settled=true;},()=>{settled=true;});
+    await new Promise(resolve=>setTimeout(resolve,110));
+    assert.equal(settled,false,'慢请求必须继续等待，不能因时间失败');
+    assert.equal(skipped,false,'慢请求未完成不能启用新版');
+    assert.equal(JSON.stringify([...(data.get(oldName)||[])]),oldBefore);
+    releaseFetch.forEach(release=>release());
+  }
   if(options.fail) await assert.rejects(pending);
   else await pending;
   assert.equal(skipped,!options.fail);
+  assert.deepEqual(productionTimers,[],'生产下载不得设置固定截止时间');
   assert.equal(activeWrites,0); assert.equal(activeFetch,0); assert.ok(peakFetch<=4);
   assert.equal(JSON.stringify([...(data.get(oldName)||[])]),oldBefore,'旧版必须完整保留');
   if(options.fail) assert.equal(data.has(name),existed,'只清本次新建的候选缓存');
@@ -87,9 +100,10 @@ async function scenario(label, options = {}) {
     ['同名部分缓存补齐',{current:missing,downloads:1}],
     ['200但正文不符拒绝激活',{old:{...assets,'./sound.mp3':'old'},mismatch:true,fail:true}],
     ['HTTP失败保留旧缓存',{old:missing,httpError:true,fail:true}],
-    ['网络挂起取消并清理',{old:missing,hang:true,fail:true}],
+    ['慢网络持续等待并最终完成',{old:missing,hang:true,downloads:1}],
+    ['真实HTTP失败取消其他等待请求',{hangOthers:true,fail:true}],
     ['同名部分缓存失败不删除',{current:missing,httpError:true,fail:true}],
-    ['本地复制超时不误激活',{old:assets,slowPut:true,fail:true}],
+    ['本地缓存写入缓慢仍完整启用',{old:assets,slowPut:true,downloads:0}],
     ['存储空间不足不误激活',{old:assets,quota:true,fail:true}],
   ];
   const results=[];
