@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "e905e80f29357db3";
+const CACHE_VERSION = "027dab6365a01fce";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",
@@ -574,7 +574,7 @@ const PRECACHE_PATHS = [
   "./manifest.json"
 ];
 const PRECACHE_HASHES = {
-  "./": "bbbfd529c0054c266fba682b63edfe4c2be9056f713ddf3a400a134cec807a24",
+  "./": "d0eab5b00e31940bee32d53b1ae991c511435a7ae2bbe076677c7fcc4bcc5652",
   "./apple-touch-icon.png": "f13bedd187a81e96dc2357f3353b53a73b0ab386c0730addf91710d05b2c870a",
   "./games/_lib/stage.js": "b76441eb6da988b153bc1d64931a11d8bca2db9432761359bcd68974166f75c9",
   "./games/_lib/twirlywoos.js": "f495dfbf52f75a01a85105def28b544cc618e62f1e95f4af6ebf38ce758a5031",
@@ -904,8 +904,8 @@ const PRECACHE_HASHES = {
   "./games/helper/audio/yay_2.mp3": "67cac37686cc964b4bdf9a18745ecd430d3245487e0edee94c5f6da2a0287e66",
   "./games/helper/audio/yay_3.mp3": "32f0e9d0c6accbca3c4876596fad44bfe9429a306000f513b9d019e90f650fb6",
   "./games/helper/index.html": "a0f3c314a7399b77fdff520e24ca0645eb6bc8db8fe590b7b26d7ec6cbd89894",
-  "./games/keyboard/": "b4d22917fb5df7627eba2be6d90a20cac7a4a65abe6255fcc4c1fb1411d7d612",
-  "./games/keyboard/index.html": "b4d22917fb5df7627eba2be6d90a20cac7a4a65abe6255fcc4c1fb1411d7d612",
+  "./games/keyboard/": "d7f0b83e791df84ddb448002890cd410af4eb98324123cdb13884026f372c741",
+  "./games/keyboard/index.html": "d7f0b83e791df84ddb448002890cd410af4eb98324123cdb13884026f372c741",
   "./games/outing/": "f7a5ad0f4d758c2e0db60fc542f0a825d97e63288f5803b4c1b937661e554e4c",
   "./games/outing/audio/bye_1.mp3": "115a2983d29b00d9c77912df02e8fd91c9eac2142682c015f97638214a7e9a09",
   "./games/outing/audio/bye_2.mp3": "dd1033c8b1c010e7a521528fcf5d3d069552ba02460ee092b48157625e936ee3",
@@ -1141,7 +1141,7 @@ const PRECACHE_HASHES = {
   "./games/words/audio/yeye.mp3": "b590c4ab518641b6140c2d65dfb6eae96cf084bfe9b3794f3f2782fd9d648984",
   "./games/words/index.html": "2b2f39c59da09ae4d2dd609b083e727c72a8a74278a2814d4db146d6c9f30e85",
   "./icon-512.png": "a530eb48a4319756b8bcad8816a1196a7e8870e285b148bd5de83c59bb65caab",
-  "./index.html": "bbbfd529c0054c266fba682b63edfe4c2be9056f713ddf3a400a134cec807a24",
+  "./index.html": "d0eab5b00e31940bee32d53b1ae991c511435a7ae2bbe076677c7fcc4bcc5652",
   "./manifest.json": "d69e8e038642ab66493c79fa4c964a75087ac156e8e0184378c4009f4b642573"
 };
 // END GENERATED OFFLINE MANIFEST
