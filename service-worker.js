@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "a47cc45bcb2cb10c";
+const CACHE_VERSION = "b6486b7cb77f2ab4";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",
@@ -1086,7 +1086,7 @@ const PRECACHE_HASHES = {
   "./games/storybook/audio/reveal_chickedy.mp3": "05a14fca7cce0b80f4ef97863c38877bd94bb2be38ebfbf7c1a1a18c626adff2",
   "./games/storybook/audio/reveal_toodloo.mp3": "d30ab5414d260f81120ea2f1b3ab082dfac434b1a18109fb4bc7c3405513f58d",
   "./games/storybook/index.html": "d7d6b71b5f1e07aae37de539d5ea4498dafa0b034142d18389648c3225586979",
-  "./games/town/": "dd24362861b6fe4002a26e7e3ef0ef1d8b94bdc00d8b26f8d195853360fa7b6b",
+  "./games/town/": "f7be7d07aab30b6058af063c712c84fd860354b92be1030de3c11f0696b88ead",
   "./games/town/audio/arch.mp3": "20a949879927b88d271415cd01771f5ea5862e9b9cc9c70598977e7e14b88194",
   "./games/town/audio/arrived.mp3": "e936b2c68c1adebe5e2bd0c82d3b407bea50860b16dc62bc16036bbef6f68796",
   "./games/town/audio/block.mp3": "3a044ab3610d0edd1611f8984e326b30367460bda2fc4693257a19b5cb2a21f0",
@@ -1102,7 +1102,7 @@ const PRECACHE_HASHES = {
   "./games/town/audio/roof.mp3": "1f6d7b765d80057c4f8f176fa4ef61cd96d11faf45643916066375ba4bce4011",
   "./games/town/audio/roof_top.mp3": "052a724e7a68cfd5c8e4ac8056404087208514d095375e90a1cab523e3c98f24",
   "./games/town/audio/top.mp3": "534b8665169033591926c022d64e7dc4e0c21594836e1cd9e418ee5f6b2f9dd9",
-  "./games/town/index.html": "dd24362861b6fe4002a26e7e3ef0ef1d8b94bdc00d8b26f8d195853360fa7b6b",
+  "./games/town/index.html": "f7be7d07aab30b6058af063c712c84fd860354b92be1030de3c11f0696b88ead",
   "./games/train/": "48c843aa61079adce560df8fffaf59157404e0ee3cbc88fa85defe89509afac2",
   "./games/train/audio/first_cat.mp3": "5ca6b7c3002036af0f727d5daf7805ed5da23813cb37e16be7b0b9374f72c82e",
   "./games/train/audio/first_chicken.mp3": "50ec039102efdf06991befbbd876d84a058472aeef40a4f7f5c2dd97336bda89",

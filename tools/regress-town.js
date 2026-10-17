@@ -10,7 +10,7 @@ async page => {
  const send=(type,points)=>touch.send('Input.dispatchTouchEvent',{type,touchPoints:points});
  const drag=async(a,b)=>{const p=await center(a),q=await center(b);await send('touchStart',[{...p,id:1}]);await send('touchMove',[{...q,id:1}]);await send('touchEnd',[]);};
  const place=async(kind,col)=>{await page.locator(`[data-kind="${kind}"]`).tap();await page.locator(`[data-column="${col}"]`).tap({position:{x:10,y:10}});};
- await page.reload();await reset();check('空白无文字UI',!(await page.locator('#scene').innerText()).trim());
+ await page.setViewportSize({width:390,height:844});await page.reload();await reset();check('空白无文字UI',!(await page.locator('#scene').innerText()).trim());
  await place('arch',0);await place('block',0);await place('roof',0);check('点选可搭三层',(await state()).columns[0].join()==='arch,block,roof');
  await place('block',0);await place('block',0);check('满列不覆盖',(await state()).columns[0].length===3);check('错误提示不代搭',(await state()).columns.flat().length===3);
  await drag('[data-piece="roof"]','#basket');check('拖动回收顶块',(await state()).columns[0].join()==='arch,block');
