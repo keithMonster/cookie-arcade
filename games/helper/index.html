@@ -859,6 +859,9 @@ function hitPet(cx, cy) {
   function release(e) {
     if (!dragging || e.pointerId !== pointerId) return;
     dragging = false;
+    const releasedId = pointerId;
+    pointerId = null;
+    try { heldEl.releasePointerCapture(releasedId); } catch (err) {}
     // 先量：一摘 lift，held-float 动画就会盖掉 inline transform，量到的会是归位后的矩形
     const r = heldEl.getBoundingClientRect();
     heldEl.classList.remove('lift');
@@ -907,6 +910,10 @@ function hitPet(cx, cy) {
   }
   heldEl.addEventListener('pointerup', release);
   heldEl.addEventListener('pointercancel', release);
+  heldEl.addEventListener('lostpointercapture', e => release({ pointerId: e.pointerId, type: 'pointercancel' }));
+  const cancelDrag = () => release({ pointerId, type: 'pointercancel' });
+  for (const event of ['blur', 'resize', 'pagehide']) window.addEventListener(event, cancelDrag);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) cancelDrag(); });
 })();
 
 // ===== 键盘：任意字母 / 数字 = 自动完成当前这一步 =====

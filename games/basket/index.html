@@ -266,8 +266,10 @@ let missStreak = 0;      // 连续「没送进篮子」的尝试次数——只�
 let everDragged = false; // 成功拖入过一次 = 会拖了，帮忙门槛放宽一档
 let assistMode = false;  // 还不会拖的娃：帮过一次之后，碰一下就替他送进去
 let lastFruitKey = null;
+let roundSeq = 0, voiceSeq = 0, voiceTimer = null, nextTimer = null;
 
 function pickRound() {
+  roundSeq++;
   let f;
   do { f = FRUITS[Math.floor(Math.random() * FRUITS.length)]; } while (f.key === lastFruitKey);
   fruit = f;
@@ -299,12 +301,25 @@ function paintRound() {
 }
 
 function playVoice(src, onEnded) {
-  vEl.onended = onEnded || null;
-  vEl.onerror = onEnded ? () => setTimeout(onEnded, 400) : null;
+  clearTimeout(voiceTimer);
+  const seq = ++voiceSeq;
+  let finished = false;
+  const finish = () => {
+    if (finished || seq !== voiceSeq) return;
+    finished = true;
+    clearTimeout(voiceTimer);
+    vEl.onended = vEl.onerror = null;
+    askEl.classList.remove('talking');
+    if (onEnded) onEnded();
+  };
+  vEl.onended = finish;
+  vEl.onerror = finish;
   if (vEl.getAttribute('src') !== src) vEl.src = src;
   vEl.currentTime = 0;
   askEl.classList.add('talking');
-  vEl.play().catch(() => { if (onEnded) setTimeout(onEnded, 400); });
+  // 媒体中断可能没有 ended/error；拒播和 error 同到也只推进一次。
+  voiceTimer = setTimeout(finish, 6000);
+  vEl.play().catch(finish);
 }
 vEl.addEventListener('ended', () => askEl.classList.remove('talking'));
 vEl.addEventListener('error', () => askEl.classList.remove('talking'));
@@ -343,6 +358,7 @@ function basketLanding(i) {
 }
 
 function flyIn(el) {
+  if (el.classList.contains('in-basket') || el.classList.contains('lift')) return;
   el.classList.remove('idle-sway', 'hop', 'slide-back');
   el.style.animation = 'none';
   // 拖动中的视觉位置带 transform 偏移——先固化成 left/top 清掉 transform，
@@ -377,18 +393,23 @@ function flyIn(el) {
 }
 
 function celebrate() {
+  if (phase !== 'celebrate') return;
+  const seq = roundSeq;
   fxParty();
   basketEl.classList.remove('party');
   void basketEl.offsetWidth;
   basketEl.classList.add('party');
   burstSparks(basketEl, true);
-  playVoice('audio/done_' + fruit.key + '_' + total + '.mp3', () => setTimeout(nextRound, 900));
-  // 看门狗：iOS 中断（Siri/锁屏）时 ended/error 都不来，8s 兜底防卡死
-  setTimeout(() => { if (phase === 'celebrate') nextRound(); }, 8000);
+  playVoice('audio/done_' + fruit.key + '_' + total + '.mp3', () => {
+    nextTimer = setTimeout(() => { if (seq === roundSeq) nextRound(); }, 900);
+  });
 }
 
 function nextRound() {
   if (phase === 'dealing') return;
+  clearTimeout(nextTimer);
+  clearTimeout(voiceTimer);
+  voiceSeq++;
   phase = 'dealing';
   stageEl.classList.add('out');
   // 水果挂在 body 不在 stage 里，单独淡出
@@ -442,6 +463,9 @@ function bindFruit(el) {
   function release(e) {
     if (!dragging || e.pointerId !== pointerId) return;
     dragging = false;
+    const releasedId = pointerId;
+    pointerId = null;
+    try { el.releasePointerCapture(releasedId); } catch (err) {}
     const r = el.getBoundingClientRect();
     el.classList.remove('lift');
     if (e.type === 'pointercancel') {
@@ -493,7 +517,13 @@ function bindFruit(el) {
   }
   el.addEventListener('pointerup', release);
   el.addEventListener('pointercancel', release);
+  el.addEventListener('lostpointercapture', e => release({ pointerId: e.pointerId, type: 'pointercancel' }));
+  el._cancelDrag = () => release({ pointerId, type: 'pointercancel' });
 }
+
+function cancelDrags() { fruitEls.forEach(el => el._cancelDrag()); }
+for (const event of ['blur', 'resize', 'pagehide']) window.addEventListener(event, cancelDrags);
+document.addEventListener('visibilitychange', () => { if (document.hidden) cancelDrags(); });
 
 // ===== 首戳解锁（iOS 音频需手势）=====
 function unlockAudio() {

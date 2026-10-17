@@ -371,7 +371,7 @@
       "action": "一次听完取什么、给谁，再操作",
       "limit": "有重播与提示；提示后的成功单独记",
       "source": "README.md；games/helper/index.html",
-      "reviewed_sha": "a0f3c314a7399b77fdff520e24ca0645eb6bc8db8fe590b7b26d7ec6cbd89894"
+      "reviewed_sha": "39d4aeeb51650047a3b1f03ba5ff4e7c9b531c29138a4a847d3d1b2948506b12"
     },
     {
       "slug": "sort",
@@ -384,7 +384,7 @@
       "action": "同形物件按颜色放进对应篮子",
       "limit": "只按颜色；换一对颜色不是切换分类维度",
       "source": "README.md；games/sort/index.html",
-      "reviewed_sha": "211a6e77e0710f60d9b4de599e7278d7af10e48686a73b072515b95bff42386c"
+      "reviewed_sha": "ed5ec2495061b1affb4dedbc433091ebe6b71507dcf8f0c2b92d815515042efd"
     },
     {
       "slug": "echo",
@@ -429,7 +429,7 @@
       "action": "拖水果入篮，系统逐个播报数量",
       "limit": "数词由系统说；没有独立数量选择",
       "source": "README.md；games/basket/index.html",
-      "reviewed_sha": "100b1ff8b560424ffcf6408871fd7fb59e245d03fd2f142d11dd20c0dc1c861d"
+      "reviewed_sha": "4fd0ce5d6ac7e636ab180dd12f5292eae777ff12ad7ede5f1463c46bb204d17f"
     },
     {
       "slug": "sleep",

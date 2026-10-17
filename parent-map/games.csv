@@ -9,11 +9,11 @@ bus,公交来啦,因果与问题解决,选择性注意、条件与依赖；按�
 elevator,电梯叮咚,空间与方向,位置关系、条件与依赖；比较所在楼层与目标，选上下、到站开门,—,README.md；games/elevator/index.html；目标常驻；不等于地图导航与工作记忆测试,4e22b10b5ba4df3737a192ccb778a2fea411993e6480fac2cde287e8c48239ac
 road,修路喽,空间与方向,旋转连接；看缺口两侧端点，选择直路或弯路,—,README.md；games/road/index.html；两处独立连接，不计两步前瞻,eb40ca3e3c2c6e12d15f5aa30daddf654b96367014521c75b5342dbd7eb8616c
 outing,出门喽,因果与问题解决,条件与依赖、照料脚本、触屏控制；看天气选用品；袜先于鞋、奶先于擦嘴,—,README.md；games/outing/index.html；穿衣惯例不自动证明新情境逻辑推理,f7a5ad0f4d758c2e0db60fc542f0a825d97e63288f5803b4c1b937661e554e4c
-helper,帮帮忙,语言与交流,指令理解、主动记忆；一次听完取什么、给谁，再操作,—,README.md；games/helper/index.html；有重播与提示；提示后的成功单独记,a0f3c314a7399b77fdff520e24ca0645eb6bc8db8fe590b7b26d7ec6cbd89894
-sort,分一分,数量与逻辑,分类与模式；同形物件按颜色放进对应篮子,—,README.md；games/sort/index.html；只按颜色；换一对颜色不是切换分类维度,211a6e77e0710f60d9b4de599e7278d7af10e48686a73b072515b95bff42386c
+helper,帮帮忙,语言与交流,指令理解、主动记忆；一次听完取什么、给谁，再操作,—,README.md；games/helper/index.html；有重播与提示；提示后的成功单独记,39d4aeeb51650047a3b1f03ba5ff4e7c9b531c29138a4a847d3d1b2948506b12
+sort,分一分,数量与逻辑,分类与模式；同形物件按颜色放进对应篮子,—,README.md；games/sort/index.html；只按颜色；换一对颜色不是切换分类维度,ed5ec2495061b1affb4dedbc433091ebe6b71507dcf8f0c2b92d815515042efd
 echo,跟着敲,创造与音乐,—；听示范后敲够次数；显示圆点，够数即庆祝,节奏时值、抑制与等待、数量与多少,README.md；games/echo/index.html；源码只判 hits >= pattern.length；不判间隔、强弱或过量,561af11c32511be4c0db13ea8ab4696b11f39db1845892485e18239e4e641b80
 train,排排队,语言与交流,指令理解、选择性注意；每次听一个动物名称，让它上车,—,README.md；games/train/index.html；逐次点名，不要求记住整段序列,48c843aa61079adce560df8fffaf59157404e0ee3cbc88fa85defe89509afac2
-basket,装一装,感知与动作,触屏控制；拖水果入篮，系统逐个播报数量,一一对应、数量与多少,README.md；games/basket/index.html；数词由系统说；没有独立数量选择,100b1ff8b560424ffcf6408871fd7fb59e245d03fd2f142d11dd20c0dc1c861d
+basket,装一装,感知与动作,触屏控制；拖水果入篮，系统逐个播报数量,一一对应、数量与多少,README.md；games/basket/index.html；数词由系统说；没有独立数量选择,4fd0ce5d6ac7e636ab180dd12f5292eae777ff12ad7ede5f1463c46bb204d17f
 sleep,睡觉觉,情绪与社会生活,照料脚本；盖被子，动物入睡、天亮换下一只,辨认表达情绪,README.md；games/sleep/index.html；安静画面不能证明情绪调节,6fa1818b2f5c1bcfedee5f23b2b4a8b5c7cb24576c099d48a542951274a8effd
 bath,洗澡澡,情绪与社会生活,照料脚本、触屏控制；擦除泥点给动物洗澡,—,README.md；games/bath/index.html；屏幕清洁不等于真实生活自理,21dce3735ed3cc3132a10c8eddceac4ef10db4ab1bcd2264a671481750dd1753
 feed,喂一喂,数量与逻辑,分类与模式、照料脚本；按固定动物食物映射选择，错食物被拒绝,—,README.md；games/feed/index.html；固定偏好配对不作为动物饮食全知识,6967982378739b2f94f4206339639017aa1ef5df5ef53f73ee838462316eb248

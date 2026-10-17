@@ -671,6 +671,9 @@ function bindItem(el) {
   function release(e) {
     if (!dragging || e.pointerId !== pointerId) return;
     dragging = false;
+    const releasedId = pointerId;
+    pointerId = null;
+    try { el.releasePointerCapture(releasedId); } catch (err) {}
     el.dataset.dragging = '0';
     const r = el.getBoundingClientRect();
     el.classList.remove('lift');
@@ -719,8 +722,14 @@ function bindItem(el) {
   }
   el.addEventListener('pointerup', release);
   el.addEventListener('pointercancel', release);
+  el.addEventListener('lostpointercapture', e => release({ pointerId: e.pointerId, type: 'pointercancel' }));
+  el._cancelDrag = () => release({ pointerId, type: 'pointercancel' });
   el.dataset.dragging = '0';
 }
+
+function cancelDrags() { items.forEach(el => el._cancelDrag()); }
+for (const event of ['blur', 'resize', 'pagehide']) window.addEventListener(event, cancelDrags);
+document.addEventListener('visibilitychange', () => { if (document.hidden) cancelDrags(); });
 
 // ===== 首次输入解锁（iOS 音频需手势）=====
 function unlockAudio() {

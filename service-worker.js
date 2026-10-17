@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "b3bc871f2d36d020";
+const CACHE_VERSION = "d2d9a2d5f31f4d46";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",
@@ -632,7 +632,7 @@ const PRECACHE_HASHES = {
   "./games/animals/audio/sheep.mp3": "5f6b4e9c6bd1c08747366ed4e074f471d50865f3eda10a3a8bcb00081cd021f4",
   "./games/animals/audio/tiger.mp3": "f16c82a2ea03917aef59694504a75e174235ad56e5ef849d0286b936dbae3f34",
   "./games/animals/index.html": "617d6df60c92f4db5d38ca1af48bf80596c5b6f54f759096392fccab214d2b6c",
-  "./games/basket/": "100b1ff8b560424ffcf6408871fd7fb59e245d03fd2f142d11dd20c0dc1c861d",
+  "./games/basket/": "4fd0ce5d6ac7e636ab180dd12f5292eae777ff12ad7ede5f1463c46bb204d17f",
   "./games/basket/audio/count_1.mp3": "9cd574dcf033b363077c7a2ca92e8197648001fbfaf0d463e42094831fd82c67",
   "./games/basket/audio/count_2.mp3": "a7685d430e387fc969ab23967632ec4420e6dd4953492111eb108d82e23b5c29",
   "./games/basket/audio/count_3.mp3": "dff1d0ef42e0e738676e46ad0691347bcd8b09c39278f6b39d0a049b138edcc4",
@@ -654,7 +654,7 @@ const PRECACHE_HASHES = {
   "./games/basket/audio/intro_banana.mp3": "db35eebdd683866a9170979c8e977239750972fe31c35d499a13b8ae1f991ddc",
   "./games/basket/audio/intro_orange.mp3": "bb6901cd41d2479b0c6b6e703815152b0e1f28de4b5dc37b6f220cd4fe8f2435",
   "./games/basket/audio/intro_strawberry.mp3": "dd5a38eab5e02d7a65f91a6229ddfaca40a3836ab36dd27aa4e2aa3cafc967f1",
-  "./games/basket/index.html": "100b1ff8b560424ffcf6408871fd7fb59e245d03fd2f142d11dd20c0dc1c861d",
+  "./games/basket/index.html": "4fd0ce5d6ac7e636ab180dd12f5292eae777ff12ad7ede5f1463c46bb204d17f",
   "./games/bath/": "21dce3735ed3cc3132a10c8eddceac4ef10db4ab1bcd2264a671481750dd1753",
   "./games/bath/audio/clean_cat.mp3": "1e39d253ea34e4e02aaa1dd68315fa071f0b98370a505019b4a19fd55ab49bef",
   "./games/bath/audio/clean_chicken.mp3": "0932f1ba8cea7f1ccc1cbe390b3007fc11c4dd20a23443479fdada9f10e416a8",
@@ -911,7 +911,7 @@ const PRECACHE_HASHES = {
   "./games/garage/audio/wheel_first.mp3": "b401b7536083ff2198743a21970f371bca52072e37a051fb4ee0457f74f9e861",
   "./games/garage/audio/wrench.mp3": "a04e326b948d181203507731955d4dfa852d2284b8165c67734f5d3b51fc07c7",
   "./games/garage/index.html": "a3dc54a6e6d88ab761b70b0577af59b6c1a240860da378f3ba507dc35f400f33",
-  "./games/helper/": "a0f3c314a7399b77fdff520e24ca0645eb6bc8db8fe590b7b26d7ec6cbd89894",
+  "./games/helper/": "39d4aeeb51650047a3b1f03ba5ff4e7c9b531c29138a4a847d3d1b2948506b12",
   "./games/helper/audio/first_take.mp3": "95dda062f7cd5d1b345c7ed8448e1f18427937df0a9f68800417263cf6d6e60a",
   "./games/helper/audio/got_apple.mp3": "6be60c803caa5bbeace38448df30adc3be9ec78cb851e046609174ea422afa33",
   "./games/helper/audio/got_ball.mp3": "ecbdc4165d6dd63df5859c1ef70b1fd72e6ded5523227c8c666b49e10a829116",
@@ -954,7 +954,7 @@ const PRECACHE_HASHES = {
   "./games/helper/audio/yay_1.mp3": "fb87ef9a572d92cef32911cac90eb3a957793a86578bca99a76a0c8441ec6cf2",
   "./games/helper/audio/yay_2.mp3": "67cac37686cc964b4bdf9a18745ecd430d3245487e0edee94c5f6da2a0287e66",
   "./games/helper/audio/yay_3.mp3": "32f0e9d0c6accbca3c4876596fad44bfe9429a306000f513b9d019e90f650fb6",
-  "./games/helper/index.html": "a0f3c314a7399b77fdff520e24ca0645eb6bc8db8fe590b7b26d7ec6cbd89894",
+  "./games/helper/index.html": "39d4aeeb51650047a3b1f03ba5ff4e7c9b531c29138a4a847d3d1b2948506b12",
   "./games/keyboard/": "d7f0b83e791df84ddb448002890cd410af4eb98324123cdb13884026f372c741",
   "./games/keyboard/index.html": "d7f0b83e791df84ddb448002890cd410af4eb98324123cdb13884026f372c741",
   "./games/outing/": "f7a5ad0f4d758c2e0db60fc542f0a825d97e63288f5803b4c1b937661e554e4c",
@@ -1056,7 +1056,7 @@ const PRECACHE_HASHES = {
   "./games/sleep/audio/sleepy_panda.mp3": "5754795e41b96f32f2a2dcbb39b49aadbe407589f9d9c27f4e99e40eef4ccc66",
   "./games/sleep/audio/sleepy_rabbit.mp3": "96a6ebafb3d67c6a3add173eb098a4bb05713d5cb40920d0bd02d29d5a78d995",
   "./games/sleep/index.html": "6fa1818b2f5c1bcfedee5f23b2b4a8b5c7cb24576c099d48a542951274a8effd",
-  "./games/sort/": "211a6e77e0710f60d9b4de599e7278d7af10e48686a73b072515b95bff42386c",
+  "./games/sort/": "ed5ec2495061b1affb4dedbc433091ebe6b71507dcf8f0c2b92d815515042efd",
   "./games/sort/audio/done_1.mp3": "7db0b8489a3e5c796d2b80936ef573cee34e7742ace4e1151c0830fa7adaf99b",
   "./games/sort/audio/done_2.mp3": "2194fb4acf5739a5008d25f43a5c4b36035284e14252acd6ea75082239b2987d",
   "./games/sort/audio/done_3.mp3": "a62080337e5e782f6615ff999b2ab99158cab47de8885adc37b8ea2b343e1761",
@@ -1073,7 +1073,7 @@ const PRECACHE_HASHES = {
   "./games/sort/audio/put_green.mp3": "18ab5d0f00547c805f49a94d7dcd39a7e3d638a6d06a94fbb27338306d4c044b",
   "./games/sort/audio/put_red.mp3": "8525a578b0280dee690a3ef82462352253baaec8e33333d20c9525095d822f69",
   "./games/sort/audio/put_yellow.mp3": "9b4cf50637a7ad36df32f1dc83bbda8d4f30fd4f38fefce76811ab156982de54",
-  "./games/sort/index.html": "211a6e77e0710f60d9b4de599e7278d7af10e48686a73b072515b95bff42386c",
+  "./games/sort/index.html": "ed5ec2495061b1affb4dedbc433091ebe6b71507dcf8f0c2b92d815515042efd",
   "./games/storybook/": "d7d6b71b5f1e07aae37de539d5ea4498dafa0b034142d18389648c3225586979",
   "./games/storybook/audio/ask_1.mp3": "5109e0ea024f7da0abfb342ec1025c0ecba827b2fb11196619a15b4b4510f6fa",
   "./games/storybook/audio/ask_2.mp3": "4a2d4398ba03b8bc6081a012a84f6748f932faa11fedb09fb5ef348253a72190",
