@@ -31,16 +31,45 @@
 #cloud:before{top:-10px;width:40px;height:40px}
 #cloud:after{top:-4px;width:36px;height:36px}
 #bird{left:46%;top:var(--sky-top);width:44px;height:44px}
+
+/* 可放预览与天气都不占据输入层。 */
+.landing{position:absolute;left:0;width:var(--unit);height:var(--unit);border:3px dashed #fff3ba;border-radius:8px;pointer-events:none;background:#fff7d330;z-index:6}
+.column.blocked-aim{background:repeating-linear-gradient(135deg,#df9b7733 0 8px,transparent 8px 16px)}
+.ghost.not-fit{opacity:.55;filter:drop-shadow(0 5px 3px #a5684844)}
+.piece .shape.block:before{content:'';position:absolute;z-index:1;left:36%;top:40%;width:8%;height:8%;border-radius:50%;background:#64553e;box-shadow:calc(var(--unit) * .20) 0 #64553e;opacity:0;transform:translateY(5px);transition:opacity .2s,transform .2s}
+.column.welcome .piece .shape.block:before{opacity:1;transform:translateY(0)}
+.column.welcome .piece .shape.block:after{background:#ffe2a3}
+.piece .shape.roof:after{content:'';position:absolute;left:40%;top:59%;width:20%;height:20%;border-radius:50%;background:#f5d58b}
+body.night{background:#395b70}
+#scene.night{background:radial-gradient(circle at 35% 12%,#fff4c8 0 1px,transparent 2px),radial-gradient(circle at 70% 8%,#fff4c8 0 1px,transparent 2px),radial-gradient(circle at 58% 21%,#fff4c8 0 1px,transparent 2px),linear-gradient(#41647b,#6b9196 70%,#91ae83 70%)}
+#scene.night:before{background:#98b38a}
+.night #sun{background:#f8e3a9;box-shadow:0 0 0 10px #f3e1a022}
+.night #sun:before{height:3px;top:44%}
+.night #cloud{background:#c1d1cf}
+.night .piece .shape.block:after,.night .piece .shape.roof:after{background:#ffe2a3;box-shadow:0 0 12px #fce4a133}
+#weather{position:absolute;left:0;right:0;top:0;height:calc(var(--floor) + 8px);overflow:hidden;pointer-events:none;z-index:11}
+.rain-drop{position:absolute;top:-14px;width:3px;height:12px;border-radius:3px;background:#75b0c8;animation:rain 1s linear infinite;animation-delay:var(--delay);opacity:.7;pointer-events:none}
+.bud{position:absolute;left:43%;bottom:0;width:14%;height:12%;background:#6c9863;border-radius:70% 0;transform-origin:bottom;transform:scaleY(.4);transition:transform .5s;pointer-events:none}
+.bud:after{content:'';position:absolute;left:-35%;top:-30%;width:170%;aspect-ratio:1;border-radius:50%;background:#efc862;opacity:0;transition:opacity .4s}
+.raining .bud{transform:scaleY(1)}.raining .bud:after{opacity:1}
+#scene.driving .wheel{animation:wheel-turn .5s linear infinite}
+.ripple{position:fixed;width:16px;height:16px;border:2px solid #fff3c1;border-radius:50%;pointer-events:none;z-index:45;animation:ripple .5s ease-out forwards}
+@keyframes rain{to{transform:translate(-18px,calc(var(--floor) + 24px))}}
+@keyframes wheel-turn{to{rotate:360deg}}
+@keyframes ripple{to{scale:3;opacity:0}}
+@media(prefers-reduced-motion:reduce){.rain-drop,.driving .wheel{animation:none}.rain-drop{top:35%}.ripple{animation-duration:.1s}}
 </style></head><body>
 <a id="back" href="../../" aria-label="返回游戏台">‹</a>
-<main id="scene" aria-label="积木小镇"><button id="sun" class="sky face" aria-label="太阳"></button><button id="cloud" class="sky" aria-label="云"></button><button id="bird" class="sky" aria-label="小鸟"><i></i></button><div id="road"></div><div id="build"></div><button id="car" aria-label="开小车"><span class="car-art"><span class="car-body"></span><i class="wheel a"></i><i class="wheel b"></i></span></button><div id="tray"><button class="material" data-kind="block" aria-label="方积木"><i class="shape block"></i></button><button class="material" data-kind="arch" aria-label="拱门"><i class="shape arch"></i></button><button class="material" data-kind="roof" aria-label="屋顶"><i class="shape roof"></i></button><button id="basket" aria-label="收回积木"></button></div></main>
+<main id="scene" aria-label="积木小镇"><button id="sun" class="sky face" aria-label="太阳"></button><button id="cloud" class="sky" aria-label="云"></button><button id="bird" class="sky" aria-label="小鸟"><i></i></button><div id="weather" aria-hidden="true"></div><div id="road"></div><div id="build"></div><button id="car" aria-label="开小车"><span class="car-art"><span class="car-body"></span><i class="wheel a"></i><i class="wheel b"></i></span></button><div id="tray"><button class="material" data-kind="block" aria-label="方积木"><i class="shape block"></i></button><button class="material" data-kind="arch" aria-label="拱门"><i class="shape arch"></i></button><button class="material" data-kind="roof" aria-label="屋顶"><i class="shape roof"></i></button><button id="basket" aria-label="收回积木"></button></div></main>
 <script>
 'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const kinds=['block','arch','roof'],key='cookie-town-v1',pointers=new Map();
 let columns=load(),selected=null,misses=0,hintReason=null,hintColumn=null,carPhase='idle',carColumn=-1,carTimer=0,voiceTimer=0,audioContext=null,lastTone=0,introduced=false;
-let parkingX=0;
+let parkingX=0,night=false,raining=false,rainTimer=0,introActive=false,lastSpeech='',lastSpeechAt=0,speechRun=0;
+const greeted=new Set();
 const voice=new Audio('audio/intro.mp3');voice.volume=.65;voice.preload='auto';
+voice.addEventListener('ended',()=>{introActive=false;});voice.addEventListener('error',()=>{introActive=false;});
 function layoutScene(){
  const scene=$('#scene'),style=getComputedStyle(scene),w=scene.clientWidth;
  const available=innerHeight-parseFloat(style.top)-parseFloat(style.bottom);
@@ -56,10 +85,30 @@ function layoutScene(){
 function load(){try{const s=JSON.parse(localStorage.getItem(key));if(s?.schema===1&&Array.isArray(s.columns)&&s.columns.length===5&&s.columns.every(c=>Array.isArray(c)&&c.length<=3&&c.every((v,i)=>kinds.includes(v)&&(v!=='roof'||i===c.length-1))))return s.columns;}catch{}return Array.from({length:5},()=>[]);}
 function save(){try{localStorage.setItem(key,JSON.stringify({schema:1,columns}));}catch{}}
 function tone(f=520){if(performance.now()-lastTone<60)return;lastTone=performance.now();try{audioContext??=new(window.AudioContext||window.webkitAudioContext)();audioContext.resume().catch(()=>{});const o=audioContext.createOscillator(),g=audioContext.createGain();o.frequency.setValueAtTime(f,audioContext.currentTime);o.frequency.exponentialRampToValueAtTime(f*.65,audioContext.currentTime+.15);g.gain.setValueAtTime(.08,audioContext.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+.2);o.connect(g);g.connect(audioContext.destination);o.start();o.stop(audioContext.currentTime+.22);}catch{}}
-function say(name){if(document.hidden)return;clearTimeout(voiceTimer);voice.pause();voice.src=`audio/${name}.mp3`;voice.play().catch(()=>{});voiceTimer=setTimeout(()=>voice.pause(),6000);}
+function say(name){
+ if(document.hidden)return;
+ if(introActive&&['block','arch','roof','placed','hello'].includes(name))return;
+ if(name===lastSpeech&&performance.now()-lastSpeechAt<650)return;
+ lastSpeech=name;lastSpeechAt=performance.now();introActive=name==='intro';
+ const run=++speechRun;clearTimeout(voiceTimer);voice.pause();voice.src=`audio/${name}.mp3`;voice.play().catch(()=>{if(run===speechRun)introActive=false;});
+ voiceTimer=setTimeout(()=>{voice.pause();introActive=false;},6000);
+}
 function animate(el,name='pop'){if(!el)return;el.classList.remove(name);void el.offsetWidth;el.classList.add(name);}
-function feedback(el){animate(el);tone();if(!introduced){introduced=true;say('intro');}}
+function feedback(el){if(el!==$('#scene'))animate(el);tone();if(!introduced){introduced=true;say('intro');}}
 function burst(el){const r=el.getBoundingClientRect();for(let i=0;i<6;i++){const p=document.createElement('i');p.className='spark';p.style.left=`${r.x+r.width/2}px`;p.style.top=`${r.y+r.height/2}px`;p.style.setProperty('--dx',`${(i-2.5)*18}px`);document.body.append(p);setTimeout(()=>p.remove(),750);}}
+function ripple(x,y){const el=document.createElement('i');el.className='ripple';el.style.left=`${x-8}px`;el.style.top=`${y-8}px`;document.body.append(el);setTimeout(()=>el.remove(),550);}
+function setRain(on){
+ clearTimeout(rainTimer);raining=on;$('#scene').classList.toggle('raining',on);$('#cloud').setAttribute('aria-pressed',String(on));
+ $('#weather').innerHTML=on?Array.from({length:16},(_,i)=>`<i class="rain-drop" style="left:${5+i*6}%;--delay:-${i*.13}s"></i>`).join(''):'';
+ if(on)rainTimer=setTimeout(()=>setRain(false),6000);
+}
+function skyPlay(el){
+ burst(el);
+ if(el.id==='sun'){night=!night;$('#scene').classList.toggle('night',night);document.body.classList.toggle('night',night);el.setAttribute('aria-label',night?'月亮，切回白天':'太阳，切换夜晚');el.setAttribute('aria-pressed',String(night));tone(night?360:760);}
+ else if(el.id==='cloud'){setRain(!raining);tone(raining?420:620);}
+ else{animate(el);say('hello');tone(860);}
+}
+function greet(col){if(carPhase!=='drive')return;greeted.add(col);const el=$(`[data-column="${col}"]`);el?.classList.add('welcome');if(columns[col].length){tone(600+col*45);burst(el);}}
 function locked(col,except){return [...pointers.values()].some(p=>p!==except&&p.source?.col===col);}
 function clearHints(){hintReason=null;hintColumn=null;$$('.hint').forEach(el=>el.classList.remove('hint'));}
 function hint(){
@@ -73,75 +122,92 @@ function hint(){
 }
 function miss(el,name){misses++;hintReason=name;hintColumn=el?.dataset.col===undefined?null:Number(el.dataset.col);animate(el,'wobble');tone(270);say(name);if(misses>=2)hint();}
 function render(){
- $('#build').innerHTML=columns.map((c,i)=>`<div class="column" data-column="${i}" data-col="${i}" role="button" aria-label="搭建位置"><span></span>${c.map((kind,row)=>`<button class="piece ${locked(i)?'held':''}" data-piece="${kind}" data-col="${i}" data-row="${row}" style="bottom:calc(${row} * var(--unit))" aria-label="${kind==='block'?'方积木':kind==='arch'?'拱门':'屋顶'}"><i class="shape ${kind}"></i></button>`).join('')}</div>`).join('');
+ $('#build').innerHTML=columns.map((c,i)=>`<div class="column ${greeted.has(i)?'welcome':''}" data-column="${i}" data-col="${i}" role="button" aria-label="搭建位置">${c.length?'':'<span class="bud"></span>'}${c.map((kind,row)=>`<button class="piece ${locked(i)?'held':''}" data-piece="${kind}" data-col="${i}" data-row="${row}" style="bottom:calc(${row} * var(--unit))" aria-label="${kind==='block'?'方积木':kind==='arch'?'拱门':'屋顶'}"><i class="shape ${kind}"></i></button>`).join('')}</div>`).join('');
  $$('.material').forEach(el=>el.classList.toggle('selected',selected?.kind===el.dataset.kind&&!selected.source));
  if(selected?.source){const el=$(`.piece[data-col="${selected.source.col}"][data-row="${selected.source.row}"]`);if(el)el.classList.add('hint');}
  if(hintReason&&(misses>=2||hintReason==='blocked'))hint();
+ paintDropHints();
 }
-function stopCar(){clearTimeout(carTimer);carPhase='idle';carColumn=-1;$('#car').style.left=`${parkingX}px`;}
-// 源列直到释放都不变；任何提交都在这里再次核对源块和目的列。
-function commit(item,dest){
+function stopCar(){clearTimeout(carTimer);$('#scene').classList.remove('driving');carPhase='idle';carColumn=-1;$('#car').style.left=`${parkingX}px`;}
+// 预览与提交共用同一份约束，预览不修改作品。
+function placementIssue(item,dest){
  const source=item.source;
- if(source&&(locked(source.col,item)||source.row!==columns[source.col].length-1||columns[source.col][source.row]!==item.kind))return false;
- if(dest===null){if(source){columns[source.col].pop();finish('remove');return true;}tone(350);return false;}
- if(!Number.isInteger(dest)||dest<0||dest>4)return false;
- if(source?.col===dest){tone(420);return false;}
- const c=columns[dest],target=$(`[data-column="${dest}"]`);
- if(locked(dest,item)){miss(target,'release');return false;}
- if(c.length>=3){miss(target,'full');return false;}
- if(c.at(-1)==='roof'){miss(target,'roof_top');return false;}
- if(source)columns[source.col].pop();c.push(item.kind);finish('placed');burst($(`[data-column="${dest}"]`));return true;
+ if(source&&(locked(source.col,item)||source.row!==columns[source.col].length-1||columns[source.col][source.row]!==item.kind))return 'release';
+ if(dest===null)return null;
+ if(!Number.isInteger(dest)||dest<0||dest>4)return 'place';
+ if(source?.col===dest)return null;
+ if(locked(dest,item))return 'release';
+ if(columns[dest].length>=3)return 'full';
+ if(columns[dest].at(-1)==='roof')return 'roof_top';
+ return null;
 }
-function finish(name){stopCar();selected=null;misses=0;clearHints();save();render();tone(name==='remove'?380:720);say(name);}
+function commit(item,dest){
+ const issue=placementIssue(item,dest),source=item.source;
+ if(issue){miss(Number.isInteger(dest)?$(`[data-column="${dest}"]`):$('#basket'),issue);return false;}
+ if(dest===null){if(source){columns[source.col].pop();finish('remove');return true;}tone(350);return false;}
+ if(source?.col===dest){tone(420);return false;}
+ if(source)columns[source.col].pop();columns[dest].push(item.kind);finish('placed');burst($(`[data-column="${dest}"]`));return true;
+}
+function paintDropHints(){
+ $$('.aim,.blocked-aim').forEach(el=>el.classList.remove('aim','blocked-aim'));$$('.landing').forEach(el=>el.remove());
+ for(const p of pointers.values()){
+  if(!p.ghost)continue;const dest=destination(p.cx,p.cy),issue=placementIssue(p,dest);
+  p.ghost.classList.toggle('not-fit',!!issue);
+  if(!Number.isInteger(dest))continue;const col=$(`[data-column="${dest}"]`);col.classList.add(issue?'blocked-aim':'aim');
+  if(!issue){const preview=document.createElement('i');preview.className='landing';preview.style.bottom=`calc(${p.source?.col===dest?p.source.row:columns[dest].length} * var(--unit))`;col.append(preview);}
+ }
+}
+function finish(name){stopCar();greeted.clear();selected=null;misses=0;clearHints();save();render();tone(name==='remove'?380:720);say(name);}
 function drive(){
  if([...pointers.values()].some(p=>p.kind)){animate($('#car'),'wobble');tone(320);say('release');return;}
  if(carPhase==='drive'||carPhase==='arrived'){feedback($('#car'));return;}
- selected=null;render();clearHints();stopCar();carPhase='drive';say('drive');stepCar();
+ selected=null;greeted.clear();render();clearHints();stopCar();carPhase='drive';$('#scene').classList.add('driving');say('drive');stepCar();
 }
 function stepCar(){
  if(carPhase!=='drive')return;
  const next=carColumn+1;
- if(next===5){$('#car').style.left=`${Math.max(0,$('#scene').clientWidth-$('#car').offsetWidth-8)}px`;carPhase='arrived';say('arrived');burst($('#car'));carTimer=setTimeout(stopCar,1600);return;}
+ if(next===5){$('#car').style.left=`${Math.max(0,$('#scene').clientWidth-$('#car').offsetWidth-8)}px`;carPhase='arrived';$('#scene').classList.remove('driving');say('arrived');burst($('#car'));carTimer=setTimeout(stopCar,1600);return;}
  const bottom=columns[next][0];
- if(bottom&&bottom!=='arch'){carPhase='blocked';misses++;hintReason='blocked';hintColumn=next;tone(250);say('blocked');hint();animate($('#car'),'wobble');return;}
+ if(bottom&&bottom!=='arch'){carPhase='blocked';$('#scene').classList.remove('driving');misses++;hintReason='blocked';hintColumn=next;tone(250);say('blocked');hint();animate($('#car'),'wobble');return;}
  const s=$('#scene').getBoundingClientRect(),c=$(`[data-column="${next}"]`).getBoundingClientRect(),w=$('#car').getBoundingClientRect().width;
- $('#car').style.left=`${(c.x+c.width/2-s.x-w/2)/s.width*100}%`;carColumn=next;carTimer=setTimeout(stepCar,570);
+ $('#car').style.left=`${(c.x+c.width/2-s.x-w/2)/s.width*100}%`;carColumn=next;tone(170+next*18);carTimer=setTimeout(()=>{greet(next);stepCar();},570);
 }
 function choose(item){if(item.source&&locked(item.source.col)){say('release');return;}stopCar();selected=selected&&selected.kind===item.kind&&selected.source?.col===item.source?.col?null:item;render();say(item.kind);}
 function tap(target){
  const material=target.closest('[data-kind]'),piece=target.closest('[data-piece]'),col=target.closest('[data-column]');
  if(material){choose({kind:material.dataset.kind,source:null});return;}
- if(piece){const i=+piece.dataset.col,row=+piece.dataset.row;if(selected){commit(selected,i);return;}if(row!==columns[i].length-1){miss(piece,'top');return;}choose({kind:piece.dataset.piece,source:{col:i,row}});return;}
+ if(piece){const i=+piece.dataset.col,row=+piece.dataset.row;if(selected){if(selected.source?.col===i&&selected.source.row===row)choose({kind:piece.dataset.piece,source:{col:i,row}});else commit(selected,i);return;}if(row!==columns[i].length-1){miss(piece,'top');return;}choose({kind:piece.dataset.piece,source:{col:i,row}});return;}
  if(col){if(selected)commit(selected,+col.dataset.column);else{say('place');animate(col);}return;}
  if(target.closest('#basket')){if(selected)commit(selected,null);else{burst($('#basket'));say('remove');}return;}
  if(target.closest('#car')){drive();return;}
- const sky=target.closest('.sky');if(sky){burst(sky);if(sky.id==='bird')say('hello');else tone(sky.id==='sun'?760:370);}
+ const sky=target.closest('.sky');if(sky)skyPlay(sky);
 }
 function destination(x,y){const b=$('#basket').getBoundingClientRect();if(x>=b.left&&x<=b.right&&y>=b.top&&y<=b.bottom)return null;const el=document.elementFromPoint(x,y)?.closest('[data-column]');return el?+el.dataset.column:undefined;}
 function clearPointer(id){const p=pointers.get(id);if(!p)return;p.ghost?.remove();pointers.delete(id);try{if($('#scene').hasPointerCapture(id))$('#scene').releasePointerCapture(id);}catch{}return p;}
 function down(e){
  if(e.target.closest('#back'))return;e.preventDefault();
- const target=e.target.closest('button,[data-column]')||$('#scene');feedback(target);
+ const target=e.target.closest('button,[data-column]')||$('#scene');feedback(target);ripple(e.clientX,e.clientY);
  const material=target.closest('[data-kind]'),piece=target.closest('[data-piece]');let kind=null,source=null;
  if(material)kind=material.dataset.kind;
  if(piece){const col=+piece.dataset.col,row=+piece.dataset.row;if(locked(col)){say('release');return;}if(row!==columns[col].length-1){if(!selected){miss(piece,'top');return;}}else{kind=piece.dataset.piece;source={col,row};}}
  if(kind)stopCar();
- const p={target,kind,source,x:e.clientX,y:e.clientY,moved:false,ghost:null};pointers.set(e.pointerId,p);
+ const p={target,kind,source,x:e.clientX,y:e.clientY,cx:e.clientX,cy:e.clientY,moved:false,ghost:null};pointers.set(e.pointerId,p);
  $('#scene').setPointerCapture(e.pointerId);
- if(kind){const r=(piece||material).getBoundingClientRect();const unit=parseFloat(getComputedStyle($('#scene')).getPropertyValue('--unit'));p.width=unit;p.height=unit;}
+ if(kind){const unit=parseFloat(getComputedStyle($('#scene')).getPropertyValue('--unit'));p.width=unit;p.height=unit;}
+ paintDropHints();
 }
-function move(e){const p=pointers.get(e.pointerId);if(!p)return;e.preventDefault();if(Math.hypot(e.clientX-p.x,e.clientY-p.y)>8)p.moved=true;if(!p.kind||!p.moved)return;
+function move(e){const p=pointers.get(e.pointerId);if(!p)return;e.preventDefault();p.cx=e.clientX;p.cy=e.clientY;if(Math.hypot(e.clientX-p.x,e.clientY-p.y)>8)p.moved=true;if(!p.kind||!p.moved)return;
  if(!p.ghost){selected=null;p.ghost=document.createElement('div');p.ghost.className='ghost';p.ghost.style.width=`${p.width}px`;p.ghost.style.height=`${p.height}px`;p.ghost.innerHTML=`<i class="shape ${p.kind}"></i>`;document.body.append(p.ghost);render();}
  p.ghost.style.left=`${e.clientX}px`;p.ghost.style.top=`${e.clientY}px`;
- $$('.aim').forEach(el=>el.classList.remove('aim'));const dest=destination(e.clientX,e.clientY);if(Number.isInteger(dest))$(`[data-column="${dest}"]`).classList.add('aim');
+ paintDropHints();
 }
-function up(e){const p=clearPointer(e.pointerId);if(!p)return;e.preventDefault();$$('.aim').forEach(el=>el.classList.remove('aim'));
+function up(e){const p=clearPointer(e.pointerId);if(!p)return;e.preventDefault();
  if(p.kind&&p.moved){const dest=destination(e.clientX,e.clientY);if(dest===undefined){miss($('#basket'),'place');}else commit(p,dest);render();return;}
- if(!p.moved){tap(p.target);render();}
+ if(!p.moved){tap(p.target);render();}else paintDropHints();
 }
-function cancel(id){const p=clearPointer(id);if(p){selected=null;render();}$$('.aim').forEach(el=>el.classList.remove('aim'));}
-function cleanup(){[...pointers.keys()].forEach(id=>clearPointer(id));selected=null;stopCar();voice.pause();clearTimeout(voiceTimer);clearHints();render();}
+function cancel(id){const p=clearPointer(id);if(!p)return;selected=null;render();}
+function cleanup(){setRain(false);introActive=false;speechRun++;[...pointers.keys()].forEach(id=>clearPointer(id));selected=null;stopCar();voice.pause();clearTimeout(voiceTimer);clearHints();render();}
 $('#scene').addEventListener('pointerdown',down);$('#scene').addEventListener('pointermove',move);$('#scene').addEventListener('pointerup',up);$('#scene').addEventListener('pointercancel',e=>cancel(e.pointerId));$('#scene').addEventListener('lostpointercapture',e=>cancel(e.pointerId));
 window.addEventListener('blur',cleanup);window.addEventListener('pagehide',cleanup);window.addEventListener('resize',()=>{layoutScene();cleanup();});document.addEventListener('visibilitychange',()=>{if(document.hidden)cleanup();});document.addEventListener('gesturestart',e=>e.preventDefault());
-window.townDebug=()=>({columns:columns.map(c=>c.slice()),held:[...pointers.values()].filter(p=>p.kind).length,selected,carPhase,carColumn,misses});layoutScene();stopCar();render();
+window.townDebug=()=>({columns:columns.map(c=>c.slice()),held:[...pointers.values()].filter(p=>p.kind).length,selected,carPhase,carColumn,misses,night,raining,greeted:[...greeted],introActive});layoutScene();stopCar();render();
 </script></body></html>
