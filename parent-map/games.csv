@@ -1,5 +1,5 @@
 ﻿游戏目录,游戏,主向,明确任务,仅接触,依据与边界,源码SHA256
-town,积木小镇,创造与音乐,开放构造扮演、触屏控制、预测与实验；自由搭建五列小镇；试车观察底部实心块阻挡，再搬顶块重搭,位置关系,README.md；games/town/index.html；不判断作品好坏；试车与改建不等于已形成预测，兴趣待试玩,f7be7d07aab30b6058af063c712c84fd860354b92be1030de3c11f0696b88ead
+town,积木小镇,创造与音乐,开放构造扮演、触屏控制、预测与实验；自由搭建五列小镇；试车观察底部实心块阻挡，再搬顶块重搭,位置关系,README.md；games/town/index.html；不判断作品好坏；试车与改建不等于已形成预测，兴趣待试玩,8c22e857170a6ba6773d7548254a7d90d5121d797c9a5eaa6dd37e189790dbd3
 bridge,搭桥过河,因果与问题解决,长短比较、资源重排；一长一短板分配给宽窄河；长板可拿回重排,—,README.md；games/bridge/index.html；试出来不等于事先规划；未证明迁移,4bd23a580de130aec1f7fe2d6e961ebe599c2e70652cd9e9693d8ac9c1754088
 garage,小小修车铺,因果与问题解决,条件与依赖、触屏控制、照料脚本；看故障选工具；装轮→拧紧→打气；持工具连续操作,—,README.md；games/garage/index.html；固定故障映射不是开放科学实验,a3dc54a6e6d88ab761b70b0577af59b6c1a240860da378f3ba507dc35f400f33
 waterwheel,转转小水车,空间与方向,旋转连接、触屏控制；转弯管连接水源与水车,—,README.md；games/waterwheel/index.html；只有单块旋转，不等于多步路径规划,bbfef4c5548ba5c35c191c0bd4ed91152dd2fdd3fc8e80716ec3de75d1672e57
