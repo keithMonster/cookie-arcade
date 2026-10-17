@@ -213,6 +213,23 @@
   ],
   "games": [
     {
+      "slug": "town",
+      "name": "积木小镇",
+      "primary": "creative",
+      "core": [
+        "imagination",
+        "touch",
+        "experiment"
+      ],
+      "exposure": [
+        "position"
+      ],
+      "action": "自由搭建五列小镇；试车观察底部实心块阻挡，再搬顶块重搭",
+      "limit": "不判断作品好坏；试车与改建不等于已形成预测，兴趣待试玩",
+      "source": "README.md；games/town/index.html",
+      "reviewed_sha": "dd24362861b6fe4002a26e7e3ef0ef1d8b94bdc00d8b26f8d195853360fa7b6b"
+    },
+    {
       "slug": "bridge",
       "name": "搭桥过河",
       "primary": "causal",

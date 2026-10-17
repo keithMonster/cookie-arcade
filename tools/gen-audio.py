@@ -446,6 +446,23 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
         "water.mp3": ("text", "小鱼在桥下面游来游去。", SENT_SPEED),
         "returned.mp3": ("text", "拿回来啦，可以重新搭。", SENT_SPEED),
     }
+    m["town"] = {
+        "intro.mp3": ("text", "搭一个你的小镇，再开小车试试吧。", SENT_SPEED),
+        "block.mp3": ("text", "方方的积木。", SENT_SPEED),
+        "arch.mp3": ("text", "拱门下面有个洞。", SENT_SPEED),
+        "roof.mp3": ("text", "尖尖的屋顶。", SENT_SPEED),
+        "placed.mp3": ("text", "搭上啦！", SENT_SPEED),
+        "remove.mp3": ("text", "放回篮子，可以重新搭。", SENT_SPEED),
+        "top.mp3": ("text", "先拿最上面的积木吧。", SENT_SPEED),
+        "full.mp3": ("text", "这里很高啦，换个地方搭吧。", SENT_SPEED),
+        "roof_top.mp3": ("text", "屋顶上放不稳，换个地方吧。", SENT_SPEED),
+        "blocked.mp3": ("text", "嘀嘀，前面挡住啦！挪开积木，或者换个拱门吧。", SENT_SPEED),
+        "drive.mp3": ("text", "嘀嘀，小车出发！", SENT_SPEED),
+        "arrived.mp3": ("text", "穿过小镇啦！还想怎么搭呢？", SENT_SPEED),
+        "release.mp3": ("text", "积木还拿在手里，放好再开车吧。", SENT_SPEED),
+        "place.mp3": ("text", "把积木放到小镇里，或者放回篮子。", SENT_SPEED),
+        "hello.mp3": ("text", "你好呀！我喜欢你的小镇。", SENT_SPEED),
+    }
     return m
 
 

@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "3dac1deefe201fb2";
+const CACHE_VERSION = "a47cc45bcb2cb10c";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",
@@ -481,6 +481,23 @@ const PRECACHE_PATHS = [
   "./games/storybook/audio/reveal_chickedy.mp3",
   "./games/storybook/audio/reveal_toodloo.mp3",
   "./games/storybook/index.html",
+  "./games/town/",
+  "./games/town/audio/arch.mp3",
+  "./games/town/audio/arrived.mp3",
+  "./games/town/audio/block.mp3",
+  "./games/town/audio/blocked.mp3",
+  "./games/town/audio/drive.mp3",
+  "./games/town/audio/full.mp3",
+  "./games/town/audio/hello.mp3",
+  "./games/town/audio/intro.mp3",
+  "./games/town/audio/place.mp3",
+  "./games/town/audio/placed.mp3",
+  "./games/town/audio/release.mp3",
+  "./games/town/audio/remove.mp3",
+  "./games/town/audio/roof.mp3",
+  "./games/town/audio/roof_top.mp3",
+  "./games/town/audio/top.mp3",
+  "./games/town/index.html",
   "./games/train/",
   "./games/train/audio/first_cat.mp3",
   "./games/train/audio/first_chicken.mp3",
@@ -591,7 +608,7 @@ const PRECACHE_PATHS = [
   "./manifest.json"
 ];
 const PRECACHE_HASHES = {
-  "./": "51870d6d6d30aafadc6dc7a9d901a51a91f55c09438d72a1faa5809f128f04aa",
+  "./": "5b96848ada5d2ee89e85f0ecef799a835ed7997668b2f06a27303aa86d4d6b57",
   "./apple-touch-icon.png": "f13bedd187a81e96dc2357f3353b53a73b0ab386c0730addf91710d05b2c870a",
   "./games/_lib/stage.js": "b76441eb6da988b153bc1d64931a11d8bca2db9432761359bcd68974166f75c9",
   "./games/_lib/twirlywoos.js": "f495dfbf52f75a01a85105def28b544cc618e62f1e95f4af6ebf38ce758a5031",
@@ -1069,6 +1086,23 @@ const PRECACHE_HASHES = {
   "./games/storybook/audio/reveal_chickedy.mp3": "05a14fca7cce0b80f4ef97863c38877bd94bb2be38ebfbf7c1a1a18c626adff2",
   "./games/storybook/audio/reveal_toodloo.mp3": "d30ab5414d260f81120ea2f1b3ab082dfac434b1a18109fb4bc7c3405513f58d",
   "./games/storybook/index.html": "d7d6b71b5f1e07aae37de539d5ea4498dafa0b034142d18389648c3225586979",
+  "./games/town/": "dd24362861b6fe4002a26e7e3ef0ef1d8b94bdc00d8b26f8d195853360fa7b6b",
+  "./games/town/audio/arch.mp3": "20a949879927b88d271415cd01771f5ea5862e9b9cc9c70598977e7e14b88194",
+  "./games/town/audio/arrived.mp3": "e936b2c68c1adebe5e2bd0c82d3b407bea50860b16dc62bc16036bbef6f68796",
+  "./games/town/audio/block.mp3": "3a044ab3610d0edd1611f8984e326b30367460bda2fc4693257a19b5cb2a21f0",
+  "./games/town/audio/blocked.mp3": "d5f442b2aade93043dc19bbf3fe87c567bef3d4ebed08f0db3ee71a50a08899a",
+  "./games/town/audio/drive.mp3": "ccc4f1e78723806633d4e142709bf6e9553b5e04044d16cb6efd16f9ea0c5193",
+  "./games/town/audio/full.mp3": "a578034f1a91ae8b53f8690c9167065e761064d6b35fc756e31cc8753e45a6a6",
+  "./games/town/audio/hello.mp3": "11d20fcc34bbf1b58dde55d050a6acc01b2610495cc04257c69c8cf8757b5c1d",
+  "./games/town/audio/intro.mp3": "bdbe2ecb4d32cb13d01f91f7aeb7ff9334c33ced1e8873200f5e7f3a5b9b5044",
+  "./games/town/audio/place.mp3": "6966ec5bbd0024102d6a50bd3024461af4be80f12d2b95ecea11c0b596888d35",
+  "./games/town/audio/placed.mp3": "18af00c5e0ec09c882318bdc2a6866b04d57e516fb86c36e2c156cbd0b08e4f9",
+  "./games/town/audio/release.mp3": "efa4e2b442d1767663e4eb7204fb7c359796e72ba6285cf42c46234f0a75e71e",
+  "./games/town/audio/remove.mp3": "edc1dd641d0f567a186cd5f2c69c9116ff18b220e611ec9ef05b91071ba4faa4",
+  "./games/town/audio/roof.mp3": "1f6d7b765d80057c4f8f176fa4ef61cd96d11faf45643916066375ba4bce4011",
+  "./games/town/audio/roof_top.mp3": "052a724e7a68cfd5c8e4ac8056404087208514d095375e90a1cab523e3c98f24",
+  "./games/town/audio/top.mp3": "534b8665169033591926c022d64e7dc4e0c21594836e1cd9e418ee5f6b2f9dd9",
+  "./games/town/index.html": "dd24362861b6fe4002a26e7e3ef0ef1d8b94bdc00d8b26f8d195853360fa7b6b",
   "./games/train/": "48c843aa61079adce560df8fffaf59157404e0ee3cbc88fa85defe89509afac2",
   "./games/train/audio/first_cat.mp3": "5ca6b7c3002036af0f727d5daf7805ed5da23813cb37e16be7b0b9374f72c82e",
   "./games/train/audio/first_chicken.mp3": "50ec039102efdf06991befbbd876d84a058472aeef40a4f7f5c2dd97336bda89",
@@ -1175,7 +1209,7 @@ const PRECACHE_HASHES = {
   "./games/words/audio/yeye.mp3": "b590c4ab518641b6140c2d65dfb6eae96cf084bfe9b3794f3f2782fd9d648984",
   "./games/words/index.html": "2b2f39c59da09ae4d2dd609b083e727c72a8a74278a2814d4db146d6c9f30e85",
   "./icon-512.png": "a530eb48a4319756b8bcad8816a1196a7e8870e285b148bd5de83c59bb65caab",
-  "./index.html": "51870d6d6d30aafadc6dc7a9d901a51a91f55c09438d72a1faa5809f128f04aa",
+  "./index.html": "5b96848ada5d2ee89e85f0ecef799a835ed7997668b2f06a27303aa86d4d6b57",
   "./manifest.json": "d69e8e038642ab66493c79fa4c964a75087ac156e8e0184378c4009f4b642573"
 };
 // END GENERATED OFFLINE MANIFEST
