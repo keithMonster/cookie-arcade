@@ -463,6 +463,24 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
         "place.mp3": ("text", "把积木放到小镇里，或者放回篮子。", SENT_SPEED),
         "hello.mp3": ("text", "你好呀！我喜欢你的小镇。", SENT_SPEED),
     }
+    m["garden"] = {
+        "intro.mp3": ("text", "选一袋种子，种到土里吧。", SENT_SPEED),
+        "carrot.mp3": ("text", "胡萝卜种子。", SENT_SPEED),
+        "strawberry.mp3": ("text", "草莓种子。", SENT_SPEED),
+        "flower.mp3": ("text", "花种子。", SENT_SPEED),
+        "plant.mp3": ("text", "种下啦，给它浇浇水吧。", SENT_SPEED),
+        "water.mp3": ("text", "用小水壶给植物浇水吧。", SENT_SPEED),
+        "sprout.mp3": ("text", "发芽啦！再浇一次水吧。", SENT_SPEED),
+        "ready.mp3": ("text", "长好啦，拖进小篮子吧。", SENT_SPEED),
+        "harvest.mp3": ("text", "收进篮子啦！", SENT_SPEED),
+        "deliver.mp3": ("text", "送到小狐狸的桌上啦！", SENT_SPEED),
+        "empty.mp3": ("text", "这里还是空的，先种一袋种子吧。", SENT_SPEED),
+        "occupied.mp3": ("text", "这里有植物啦，换块空地吧。", SENT_SPEED),
+        "young.mp3": ("text", "还没长好呢，给它浇浇水吧。", SENT_SPEED),
+        "full.mp3": ("text", "篮子满啦，点点篮子，送到小狐狸的桌上吧。", SENT_SPEED),
+        "place.mp3": ("text", "把种子放到空地，把收成放进篮子吧。", SENT_SPEED),
+        "hello.mp3": ("text", "你好呀！我在桌边等你。", SENT_SPEED),
+    }
     return m
 
 

@@ -213,6 +213,22 @@
   ],
   "games": [
     {
+      "slug": "garden",
+      "name": "小小花园",
+      "primary": "social",
+      "core": [
+        "care",
+        "imagination",
+        "dependencies",
+        "touch"
+      ],
+      "exposure": [],
+      "action": "自选三种种子，分别照料三圃：播种、浇水发芽、再浇成熟；收获入篮送上桌，再种新组合，保存花园",
+      "limit": "这是压缩生长时间的假装照料，不是植物生长模拟；不据重复游玩证明耐玩或现实照料能力",
+      "source": "README.md；games/garden/index.html",
+      "reviewed_sha": "02c2a5fb7b602e90805d2b48484409e982d84bf6f6cb9370f019f4f07d116456"
+    },
+    {
       "slug": "town",
       "name": "积木小镇",
       "primary": "creative",
