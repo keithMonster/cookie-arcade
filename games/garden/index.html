@@ -170,7 +170,7 @@ function tap(el,pointer){
  }
  const a=el.dataset.action;
  if(a==='water'){if(!isLocked('water',pointer))choose({type:'water'});return;}
- if(a==='basket'){if(selected?.type==='crop')harvest(selected.bed,pointer);else deliver();return;}
+ if(a==='basket'){if(selected?.type==='crop'){if(!harvest(selected.bed,pointer)){selected=null;syncSelection();}}else deliver();return;}
  animate(el);burst(el);tone(a==='bee');if(a==='friend')say('hello');
 }
 function hit(x,y){return document.elementFromPoint(x,y)?.closest('[data-bed],[data-action],[data-seed]');}

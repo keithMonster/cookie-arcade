@@ -12,7 +12,7 @@ async page => {
  const water=async i=>{await tap('#water');await tap('[data-bed="'+i+'"]');};
  const harvest=async i=>{await tap('[data-bed="'+i+'"]');await tap('#basket');};
  const ripe=(kind='carrot')=>({kind,color:0,stage:3});
- await page.setViewportSize({width:390,height:844});await page.reload();await reset();
+ await page.setViewportSize({width:390,height:844});await page.goto(origin+'/games/garden/');await reset();
  check('无文字UI',!(await page.locator('#scene').innerText()).trim());
  for(const [i,kind] of ['carrot','strawberry','flower'].entries()){
   await plant(kind,i);check(kind+'种下',(await state()).state.beds[i]?.stage===1);
@@ -26,8 +26,8 @@ async page => {
  check('三种收获进篮',(await state()).state.basket.length===3&&(await state()).state.beds.every(c=>!c));
  await plant('flower',1);await water(1);await water(1);await harvest(1);
  check('满篮不摘除',(await state()).state.beds[1]?.stage===3&&(await state()).state.basket.length===3);
- // 选中成熟作物再次点击取消，再配送。
- await tap('[data-bed="1"]');await tap('#basket');
+ // 满篮提示之后直接点篮子配送，不要求孩子额外取消选中。
+ await tap('#basket');
  check('配送立即原子提交',(await state()).state.basket.length===0&&(await state()).state.table.length===3);
  await page.reload();check('配送动画中刷新不丢物',(await state()).state.table.length===3&&(await state()).state.basket.length===0);
  await reset();await water(0);check('空地浇水不生植物',(await state()).state.beds[0]===null);

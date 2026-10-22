@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "ed82bf001cf03e72";
+const CACHE_VERSION = "104ba461a93df87d";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",
@@ -929,7 +929,7 @@ const PRECACHE_HASHES = {
   "./games/garage/audio/wheel_first.mp3": "b401b7536083ff2198743a21970f371bca52072e37a051fb4ee0457f74f9e861",
   "./games/garage/audio/wrench.mp3": "a04e326b948d181203507731955d4dfa852d2284b8165c67734f5d3b51fc07c7",
   "./games/garage/index.html": "a3dc54a6e6d88ab761b70b0577af59b6c1a240860da378f3ba507dc35f400f33",
-  "./games/garden/": "02c2a5fb7b602e90805d2b48484409e982d84bf6f6cb9370f019f4f07d116456",
+  "./games/garden/": "5904f23073abfb8dc5524cce7488f5ccc859fd985f33057ced953c577a16a544",
   "./games/garden/audio/carrot.mp3": "f0ed71b9a38a8cd92891b139ae92ec899ee63abe21c88adbda3c920436673c7c",
   "./games/garden/audio/deliver.mp3": "49d4e760e9fe3d0e16164a17e922e19123b16862bc019f3670e762dc18b8c52f",
   "./games/garden/audio/empty.mp3": "983cb401247f22c417a5684d6a6495ad55292e363a37385ff702bb24e265c2e1",
@@ -946,7 +946,7 @@ const PRECACHE_HASHES = {
   "./games/garden/audio/strawberry.mp3": "b3a8392ff9764c92d8e3990a24eeb40b2af227dc7277fde979147af8b5902720",
   "./games/garden/audio/water.mp3": "2dbd51d5589d041bc39e818c6485fc98682f823d338c62c6b7ce42c2e533c990",
   "./games/garden/audio/young.mp3": "7be2861195ade895c40c21d8e6fb4e40861d33800e89d3e94172bfee71875c82",
-  "./games/garden/index.html": "02c2a5fb7b602e90805d2b48484409e982d84bf6f6cb9370f019f4f07d116456",
+  "./games/garden/index.html": "5904f23073abfb8dc5524cce7488f5ccc859fd985f33057ced953c577a16a544",
   "./games/helper/": "39d4aeeb51650047a3b1f03ba5ff4e7c9b531c29138a4a847d3d1b2948506b12",
   "./games/helper/audio/first_take.mp3": "95dda062f7cd5d1b345c7ed8448e1f18427937df0a9f68800417263cf6d6e60a",
   "./games/helper/audio/got_apple.mp3": "6be60c803caa5bbeace38448df30adc3be9ec78cb851e046609174ea422afa33",
