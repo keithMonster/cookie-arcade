@@ -213,6 +213,38 @@
   ],
   "games": [
     {
+      "slug": "hidecar",
+      "name": "车车藏哪儿",
+      "primary": "executive",
+      "core": [
+        "memory",
+        "touch"
+      ],
+      "exposure": [
+        "position"
+      ],
+      "action": "看小车入库，门关后找回，再拖车或点选到路面出发",
+      "limit": "短暂视觉位置记忆；不代表日常记忆提升",
+      "source": "README.md；games/hidecar/index.html",
+      "reviewed_sha": "d1dfcaa197f8f02bcd143c7d9e706160eede3330c8ad57a0559baa6163092df2"
+    },
+    {
+      "slug": "market",
+      "name": "小小水果铺",
+      "primary": "math",
+      "core": [
+        "quantity",
+        "touch"
+      ],
+      "exposure": [
+        "care"
+      ],
+      "action": "照常驻图卡装1–3个同种水果；多拿可取回，主动交篮时判需求",
+      "limit": "可见小数量匹配；不要求数字认读，不代表算术掌握",
+      "source": "README.md；games/market/index.html",
+      "reviewed_sha": "779103ccc0acbdfb5fbdc246925286c801529616e98ccc3275ef77c7439e60c6"
+    },
+    {
       "slug": "garden",
       "name": "小小花园",
       "primary": "social",

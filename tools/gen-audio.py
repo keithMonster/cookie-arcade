@@ -481,6 +481,39 @@ def build_manifest() -> dict[str, dict[str, tuple]]:
         "place.mp3": ("text", "把种子放到空地，把收成放进篮子吧。", SENT_SPEED),
         "hello.mp3": ("text", "你好呀！我在桌边等你。", SENT_SPEED),
     }
+    m["hidecar"] = {
+        'look.mp3': ("text", '看，车车开进去了。', SENT_SPEED),
+        'find.mp3': ("text", '车车藏在哪儿？', SENT_SPEED),
+        'found.mp3': ("text", '找到车车啦！', SENT_SPEED),
+        'drive.mp3': ("text", '把车车开到路上吧。', SENT_SPEED),
+        'go.mp3': ("text", '出发喽！', SENT_SPEED),
+        'empty.mp3': ("text", '这里没有，再找找。', SENT_SPEED),
+        'hint.mp3': ("text", '看看亮亮的门。', SENT_SPEED),
+    }
+    m["market"] = {
+        'want_apple_1.mp3': ("text", '我想要一个苹果。', SENT_SPEED),
+        'want_apple_2.mp3': ("text", '我想要两个苹果。', SENT_SPEED),
+        'want_apple_3.mp3': ("text", '我想要三个苹果。', SENT_SPEED),
+        'want_pear_1.mp3': ("text", '我想要一个梨。', SENT_SPEED),
+        'want_pear_2.mp3': ("text", '我想要两个梨。', SENT_SPEED),
+        'want_pear_3.mp3': ("text", '我想要三个梨。', SENT_SPEED),
+        'apple.mp3': ("text", '苹果。放进篮子吧。', SENT_SPEED),
+        'pear.mp3': ("text", '梨。放进篮子吧。', SENT_SPEED),
+        'put.mp3': ("text", '装进来啦。', SENT_SPEED),
+        'back.mp3': ("text", '放回货架啦。', SENT_SPEED),
+        'give.mp3': ("text", '装好啦？把篮子给小顾客吧。', SENT_SPEED),
+        'return.mp3': ("text", '这个水果，放回一样的货架吧。', SENT_SPEED),
+        'full.mp3': ("text", '篮子满啦，可以拿一些出来。', SENT_SPEED),
+        'hands.mp3': ("text", '先放下手里的，再交给我吧。', SENT_SPEED),
+        'wrong.mp3': ("text", '看看图卡，我想要的是哪种水果呀？', SENT_SPEED),
+        'less.mp3': ("text", '还少了一点，看看图卡吧。', SENT_SPEED),
+        'more.mp3': ("text", '多了一点，可以拿一些出来。', SENT_SPEED),
+        'thanks.mp3': ("text", '正好！谢谢你！', SENT_SPEED),
+        'place.mp3': ("text", '水果放进篮子，篮子送给小顾客。', SENT_SPEED),
+        'hello.mp3': ("text", '叮咚，欢迎光临！', SENT_SPEED),
+        'sun.mp3': ("text", '太阳暖暖的。', SENT_SPEED),
+        'cloud.mp3': ("text", '小云朵，飘呀飘。', SENT_SPEED),
+    }
     return m
 
 
