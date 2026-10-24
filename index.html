@@ -1704,6 +1704,27 @@
     if (event.touches.length > 1) preventPageZoom(event);
   }, { passive: false });
 
+  // 游戏返回键会重新打开首页，不能只依赖浏览器的历史滚动恢复。
+  const homeScrollKey = 'cookie-arcade:home-scroll:' + new URL('./', location.href).pathname;
+  function rememberHomeScroll() {
+    try { sessionStorage.setItem(homeScrollKey, String(window.scrollY)); } catch { /* 存储禁用不阻塞导航。 */ }
+  }
+  function restoreHomeScroll() {
+    try {
+      const saved = sessionStorage.getItem(homeScrollKey);
+      if (saved === null || saved.trim() === '') return;
+      const y = Number(saved);
+      if (!Number.isFinite(y) || y < 0 || y > Number.MAX_SAFE_INTEGER) return;
+      history.scrollRestoration = 'manual';
+      requestAnimationFrame(() => window.scrollTo(0, y));
+    } catch { /* 存储不可用时保留浏览器自身行为。 */ }
+  }
+  document.addEventListener('click', event => {
+    if (event.target.closest('a.tile')) rememberHomeScroll();
+  }, { capture: true });
+  window.addEventListener('pagehide', rememberHomeScroll);
+  window.addEventListener('pageshow', restoreHomeScroll);
+
   const refreshButton = document.getElementById('refresh-games');
   const refreshStatus = document.getElementById('refresh-status');
   const pageController = navigator.serviceWorker?.controller;
