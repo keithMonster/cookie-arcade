@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "cookie-arcade-offline-";
 
 // BEGIN GENERATED OFFLINE MANIFEST
-const CACHE_VERSION = "34495a432d6120cd";
+const CACHE_VERSION = "9e137a5f6c0463da";
 const PRECACHE_PATHS = [
   "./",
   "./apple-touch-icon.png",
@@ -659,7 +659,7 @@ const PRECACHE_PATHS = [
   "./manifest.json"
 ];
 const PRECACHE_HASHES = {
-  "./": "0d4c208d6312ec7074dd55e354bb321073da13f83586e62517b75d651b234caf",
+  "./": "979f724e19b982243facd1f2ee95f30bb0ea63221ac69079d8db6a0b986a36ed",
   "./apple-touch-icon.png": "f13bedd187a81e96dc2357f3353b53a73b0ab386c0730addf91710d05b2c870a",
   "./games/_lib/stage.js": "b76441eb6da988b153bc1d64931a11d8bca2db9432761359bcd68974166f75c9",
   "./games/_lib/twirlywoos.js": "f495dfbf52f75a01a85105def28b544cc618e62f1e95f4af6ebf38ce758a5031",
@@ -1024,7 +1024,7 @@ const PRECACHE_HASHES = {
   "./games/helper/audio/yay_2.mp3": "67cac37686cc964b4bdf9a18745ecd430d3245487e0edee94c5f6da2a0287e66",
   "./games/helper/audio/yay_3.mp3": "32f0e9d0c6accbca3c4876596fad44bfe9429a306000f513b9d019e90f650fb6",
   "./games/helper/index.html": "39d4aeeb51650047a3b1f03ba5ff4e7c9b531c29138a4a847d3d1b2948506b12",
-  "./games/hidecar/": "d1dfcaa197f8f02bcd143c7d9e706160eede3330c8ad57a0559baa6163092df2",
+  "./games/hidecar/": "bd0f942d65b546354d5dcf24bb120b874420263ba459654e49d7b664b4e4000e",
   "./games/hidecar/audio/drive.mp3": "3be95c69befcbf0ada0c2a2a00b09c335645ec6ce2b9effd3ec297ad4e6b0952",
   "./games/hidecar/audio/empty.mp3": "0266170feab42a05e5940e39e023c9742b35d3a5f4393bb3813042c19aec1b4f",
   "./games/hidecar/audio/find.mp3": "f981e40743063ec41755c6af7ba84adde841734ab95b3df60da3ab76fdb0e080",
@@ -1032,7 +1032,7 @@ const PRECACHE_HASHES = {
   "./games/hidecar/audio/go.mp3": "70d8c88113f0fb0de15a97552d0e3911b944a34cb5bb10f68a6ee73340dce5b8",
   "./games/hidecar/audio/hint.mp3": "01abdea31099763b44d7d29131a2d6faf09457c42e0fa96a9f480803e3a31ef5",
   "./games/hidecar/audio/look.mp3": "0ed09efe90b91992ec3847aae2b7e3e8b73f142ef49b8172375345554adc0df8",
-  "./games/hidecar/index.html": "d1dfcaa197f8f02bcd143c7d9e706160eede3330c8ad57a0559baa6163092df2",
+  "./games/hidecar/index.html": "bd0f942d65b546354d5dcf24bb120b874420263ba459654e49d7b664b4e4000e",
   "./games/keyboard/": "d7f0b83e791df84ddb448002890cd410af4eb98324123cdb13884026f372c741",
   "./games/keyboard/index.html": "d7f0b83e791df84ddb448002890cd410af4eb98324123cdb13884026f372c741",
   "./games/market/": "779103ccc0acbdfb5fbdc246925286c801529616e98ccc3275ef77c7439e60c6",
@@ -1311,7 +1311,7 @@ const PRECACHE_HASHES = {
   "./games/words/audio/yeye.mp3": "b590c4ab518641b6140c2d65dfb6eae96cf084bfe9b3794f3f2782fd9d648984",
   "./games/words/index.html": "2b2f39c59da09ae4d2dd609b083e727c72a8a74278a2814d4db146d6c9f30e85",
   "./icon-512.png": "a530eb48a4319756b8bcad8816a1196a7e8870e285b148bd5de83c59bb65caab",
-  "./index.html": "0d4c208d6312ec7074dd55e354bb321073da13f83586e62517b75d651b234caf",
+  "./index.html": "979f724e19b982243facd1f2ee95f30bb0ea63221ac69079d8db6a0b986a36ed",
   "./manifest.json": "d69e8e038642ab66493c79fa4c964a75087ac156e8e0184378c4009f4b642573"
 };
 // END GENERATED OFFLINE MANIFEST
