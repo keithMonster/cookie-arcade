@@ -40,10 +40,10 @@ https://keithmonster.github.io/cookie-arcade/
 | 11 | **车车 Cars** | Tap anywhere — a vehicle appears and drives off-screen with dust trails, name + sound. Emergency vehicles flash. |
 | 10 | **动物园 Zoo** | 2×2 animal panels. Tap an animal to hear its name + cry; panels rotate through 17 animals. |
 | 5-9 | **Twirlywoos × 5** | Summon birds / falling bubbles / four-bird chorus / mood colors / more-more-more ball pile — starring BigHoo, Toodloo, Chickedy & Chick on their red-boat stage. |
-| 1 | **碰碰形状 Shape Pop** | Tap anywhere to spawn a shape, a soft piano note and particles. |
-| 2 | **戳泡泡 Pop Bubbles** | Bubbles drift up; hover / touch to pop. |
-| 3 | **小鼓机 Drum Pad** | Tap the upper pads for drums and the lower pads for chimes. |
-| 4 | **变色屏 Color Cascade** | Each tap fades the screen to a new color with a soft note. Calming. |
+| 4 | **碰碰形状 Shape Pop** | Tap anywhere to spawn a shape, a soft piano note and particles. |
+| 3 | **戳泡泡 Pop Bubbles** | Bubbles drift up; hover / touch to pop. |
+| 2 | **小鼓机 Drum Pad** | Tap the upper pads for drums and the lower pads for chimes. |
+| 1 | **变色屏 Color Cascade** | Each tap fades the screen to a new color with a soft note. Calming. |
 
 ## Navigation
 
